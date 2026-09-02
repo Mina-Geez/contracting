@@ -1,0 +1,157 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:profile_name",
+ "creation": "2026-09-02 00:00:00.000000",
+ "description": "Bundles a trade's calculation rules, default accounts, tolerance policy and visible dimensions. Onboarding a new trade = creating a Trade Profile, not editing code.",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "profile_name",
+  "trade",
+  "disabled",
+  "column_break_head",
+  "tolerance_percentage",
+  "description",
+  "accounts_section",
+  "accounts",
+  "dimensions_section",
+  "show_base_qty",
+  "show_height",
+  "show_width",
+  "column_break_dims",
+  "show_length",
+  "show_waste_factor"
+ ],
+ "fields": [
+  {
+   "fieldname": "profile_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Profile Name",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "trade",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Trade",
+   "description": "e.g. Glass, Aluminium, Wood/Joinery, Civil."
+  },
+  {
+   "default": "0",
+   "fieldname": "disabled",
+   "fieldtype": "Check",
+   "label": "Disabled"
+  },
+  {
+   "fieldname": "column_break_head",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "tolerance_percentage",
+   "fieldtype": "Percent",
+   "label": "Tolerance %",
+   "description": "Planned vs executed tolerance for this trade (used by clause reporting/guards)."
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "label": "Description"
+  },
+  {
+   "fieldname": "accounts_section",
+   "fieldtype": "Section Break",
+   "label": "Default Accounts (per company)"
+  },
+  {
+   "fieldname": "accounts",
+   "fieldtype": "Table",
+   "label": "Accounts",
+   "options": "Trade Profile Account"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "dimensions_section",
+   "fieldtype": "Section Break",
+   "label": "Visible Dimensions"
+  },
+  {
+   "default": "1",
+   "fieldname": "show_base_qty",
+   "fieldtype": "Check",
+   "label": "Show Base Qty / Count"
+  },
+  {
+   "default": "1",
+   "fieldname": "show_height",
+   "fieldtype": "Check",
+   "label": "Show Height"
+  },
+  {
+   "default": "1",
+   "fieldname": "show_width",
+   "fieldtype": "Check",
+   "label": "Show Width"
+  },
+  {
+   "fieldname": "column_break_dims",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "show_length",
+   "fieldtype": "Check",
+   "label": "Show Length"
+  },
+  {
+   "default": "0",
+   "fieldname": "show_waste_factor",
+   "fieldtype": "Check",
+   "label": "Show Waste Factor"
+  }
+ ],
+ "links": [
+  {
+   "group": "Rules",
+   "link_doctype": "Calculation Rule",
+   "link_fieldname": "trade_profile"
+  }
+ ],
+ "modified": "2026-09-02 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Contracting",
+ "name": "Trade Profile",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Contracting Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

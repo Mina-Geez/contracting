@@ -1,0 +1,101 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: contracting\n"
+"Report-Msgid-Bugs-To: mina@inspect-solutions.com\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: ar\n"
+"Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);\n"
+
+# NOTE: Seed translations. Regenerate the full catalog with:
+#   bench generate-pot-file --app contracting
+#   bench update-po-files --app contracting --locale ar
+#   bench compile-po-to-mo --app contracting
+
+msgid "Trade Profile"
+msgstr "ملف المهنة"
+
+msgid "Calculation Rule"
+msgstr "قاعدة الحساب"
+
+msgid "Calculation Method"
+msgstr "طريقة الحساب"
+
+msgid "Contract Clause"
+msgstr "بند العقد"
+
+msgid "Contracting Settings"
+msgstr "إعدادات المقاولات"
+
+msgid "Clause Portfolio"
+msgstr "محفظة البنود"
+
+msgid "Trade"
+msgstr "المهنة"
+
+msgid "Profile Name"
+msgstr "اسم الملف"
+
+msgid "Rule Name"
+msgstr "اسم القاعدة"
+
+msgid "Priority"
+msgstr "الأولوية"
+
+msgid "Apply On"
+msgstr "يُطبق على"
+
+msgid "Item Group"
+msgstr "مجموعة الصنف"
+
+msgid "Formula"
+msgstr "المعادلة"
+
+msgid "Height"
+msgstr "الارتفاع"
+
+msgid "Width"
+msgstr "العرض"
+
+msgid "Length"
+msgstr "الطول"
+
+msgid "Base Qty / Count"
+msgstr "الكمية الأساسية / العدد"
+
+msgid "Waste Factor"
+msgstr "معامل الهدر"
+
+msgid "Calculated Qty"
+msgstr "الكمية المحسوبة"
+
+msgid "Clause Code"
+msgstr "كود البند"
+
+msgid "Title"
+msgstr "العنوان"
+
+msgid "Status"
+msgstr "الحالة"
+
+msgid "Scope of Work"
+msgstr "نطاق العمل"
+
+msgid "Scope Description"
+msgstr "وصف النطاق"
+
+msgid "Planned Amount"
+msgstr "المبلغ المخطط"
+
+msgid "Planned Qty"
+msgstr "الكمية المخططة"
+
+msgid "Planned"
+msgstr "المخطط"
+
+msgid "Delivered"
+msgstr "المسلَّم"
+
+msgid "Invoiced"
+msgstr "المفوتر"
