@@ -49,6 +49,7 @@ def load_rules():
 			{
 				"source": doc.work_item_type,
 				"rule": doc.name,
+				"title": doc.rule_title or doc.name,
 				"preset": doc.preset,
 				"formula": doc.formula,
 				# token -> the field on the line that supplies it
@@ -157,7 +158,7 @@ def _report_changes(changes):
 
 def _stamp(row, rule, values):
 	"""Record which rule ran and what it read, so a quantity can be traced."""
-	row.set("custom_calc_measure", rule["preset"])
+	row.set("custom_calc_measure", rule["title"])
 	row.set("custom_calc_source", rule["source"])
 	row.set("custom_calc_dimensions", json.dumps(values))
 

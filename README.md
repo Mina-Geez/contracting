@@ -7,12 +7,18 @@ ordered, delivered and invoiced.
 
 ## What it adds
 
-- **Work Item Type** — a kind of work, and how you measure it. One Work Item
-  Type holds the measurement rules for a group of items, for example `Glass`.
-- **Measurement engine** — Insite reads the Height, Width, Length, Count and
-  Wastage on a line. It writes the quantity when you save the document. Wastage
-  is a multiplier, not a percentage. Type 1.1 to add 10 percent. Leave blank for
-  none.
+- **Work Item Type** — a kind of work, for example `Glass`. It holds a
+  description, the default accounts per company and the options. Its Measurement
+  Rules are listed on the form under **Measurement**.
+- **Measurement Rule** — a record of its own. Pick the fields the rule reads
+  from the line, then write the formula that combines them. Ready-made starting
+  points fill in both: Area, Perimeter, Linear, Count, Piece × Wastage and
+  Volume. Edit what a starting point gives you. A rule reads any number field on
+  the line, including a field your site added itself. Insite writes the quantity
+  when you save the document.
+- **Measurement fields on the item rows** — Count, Height, Width, Length and
+  Wastage. Wastage is a multiplier, not a percentage. Type 1.1 to add 10
+  percent. Leave blank for none.
 - **Scope Item** — a scope of work inside a project. It carries a Planned
   Amount, and it acts as an accounting dimension named **Scope**.
 - **Project and Scope on sales documents** — Insite asks for a Project on the
@@ -56,12 +62,13 @@ The app is `insite` and the module is `Insite`. It sits on ERPNext transactions,
 the general ledger and accounting dimensions.
 
 The calculation code is plain Python and does not import Frappe. It holds the
-measures, the formula reader and the rule match. The rule match picks the most
-specific rule: item, then template, then attribute value, then item group.
+starting points, the formula reader and the rule match. The rule match picks the
+most specific rule: item, then template, then attribute value, then item group.
 Priority breaks a tie.
 
 A document hook calls the calculation on the server before each save. The server
-writes the quantity, so a typed quantity cannot replace the calculated one.
+writes the quantity, so a typed quantity cannot replace a calculated one. A line
+whose inputs are all empty keeps the quantity the user typed.
 
 Code creates the custom fields on the item rows, the Scope accounting dimension,
 the Contracting Manager role and the Contracting Settings record. This code runs

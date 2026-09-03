@@ -74,7 +74,7 @@ def _fields():
 		},
 		{
 			"fieldname": "custom_calc_measure",
-			"label": "Measure Used",
+			"label": "Rule Used",
 			"fieldtype": "Data",
 			"insert_after": "custom_calculated_qty",
 			"read_only": 1,

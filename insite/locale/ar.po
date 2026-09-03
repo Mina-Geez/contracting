@@ -206,7 +206,7 @@ msgstr "إنسايت — المحسوب"
 msgid "Calculated Quantity"
 msgstr "الكمية المحسوبة"
 
-msgid "Measure Used"
+msgid "Rule Used"
 msgstr "طريقة القياس المستخدمة"
 
 # Variation Order

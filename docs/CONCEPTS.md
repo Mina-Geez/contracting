@@ -5,48 +5,93 @@ deliveries, invoices, accounting — stays standard ERPNext.
 
 ## Work Item Type
 
-A kind of work you do, and **how it is measured**. Example: "Glass",
-"Wood — Doors", "Handrails".
+A kind of work you do. Example: "Glass", "Wood — Doors", "Handrails".
 
 A Work Item Type holds:
 
-- **Measurement Rules** — for a given item or item group, how to turn the site
-  dimensions into a billable quantity.
+- **Description** — what this kind of work covers.
 - **Default accounts** per company.
+- **Disabled** — stops every rule for this kind of work.
 - **Tolerance %** for this kind of work. Tolerance is on the roadmap. Insite
   stores the number, but nothing acts on it yet. Do not rely on it.
+
+The form lists the rules of this type under **Measurement**. You create a rule
+from there.
 
 To add a new kind of work, add a Work Item Type. You do not write code.
 
 ## Measurement Rule
 
-One line inside a Work Item Type. It answers one question. For this item, how is
-the quantity calculated?
+A record of its own. It answers one question. For this item, how is the quantity
+calculated?
 
-Each rule names what it applies to, and how to measure it. **Applies To** takes
-an item, an item group, an item template, or an attribute value. **Measured By**
-takes one of these ready-made measures.
+A rule belongs to a Work Item Type. **Applies To** says what the rule covers. It
+takes an item, an item group, an item template, or an attribute value. Insite
+names each rule after the work and what it covers. Nobody types a code.
 
-| Measured By | Quantity |
+A rule is a formula over the fields you choose.
+
+### Inputs
+
+The **Inputs** table is the heart of a rule. Each row picks a number field on
+the transaction line. Each row also gives that field a short name for the
+formula.
+
+The field list holds Insite's own five measurement fields — Count, Height,
+Width, Length and Wastage. It also holds every other number field the site has
+added to its sales lines. You pick the field from the list. You never type a
+fieldname.
+
+Insite suggests the name from the label of the field. The field "Number of
+Panels" becomes `number_of_panels`. Edit the name when you want another one.
+
+### Formula
+
+The **Formula** combines the names of the inputs. Two examples:
+
+- `height * width * count`
+- `height * width * number_of_panels * 1.1`
+
+A formula takes the names of the inputs and plain numbers. It also takes the
+signs `+ - * / %`, the functions `abs`, `round`, `min`, `max`, `pow`, `sqrt`,
+`ceil` and `floor`, and `pi`. Insite checks the formula when you save the rule,
+and runs it on the server only.
+
+**Try it** sits on a saved rule. Enter sample numbers, and read the quantity.
+The same server code runs here and on a real document.
+
+### Start from
+
+**Start from** offers ready-made starting points. Each one fills in the Inputs
+and the Formula for you.
+
+| Start from | Formula it fills in |
 | --- | --- |
-| Area (Height × Width × Count) | Height × Width × Count |
-| Perimeter ((Height + Width) × 2 × Count) | (Height + Width) × 2 × Count |
-| Linear (Length × Count) | Length × Count |
-| Count | Count |
-| Piece × Wastage (Count × Wastage) | Count × Wastage |
-| Manual (keep the typed quantity) | Insite keeps the quantity you typed |
+| Area | `height * width * count` |
+| Perimeter | `(height + width) * 2 * count` |
+| Linear | `length * count` |
+| Count | `count` |
+| Piece × Wastage | `count * wastage` |
+| Volume | `height * width * length * count` |
+
+A starting point is a start, not a fixed choice. Edit the Inputs, the Formula,
+or both.
+
+Two more choices sit in the same list. **Manual** tells Insite never to
+calculate the line, and to keep the quantity you typed. **Custom** is for a
+formula you write from scratch.
 
 **Wastage** is a multiplier, not a percentage. Type 1.1 to add 10 percent.
 Leave blank for none. A value of 10 gives ten times the quantity.
 
-If none of these fit, choose **Custom formula** and write the calculation in
-plain words, for example `height * width * count * 1.1`. The words you can use
-are `height`, `width`, `length`, `count` and `wastage`, with `+ - * / %` and
-`abs round min max pow sqrt ceil floor` and `pi`. Insite checks a formula when
-you save it, and runs it on the server only.
+### Which rule runs
 
 When two rules match the same item, the more specific one wins: item, then
-template, then attribute value, then item group. Priority breaks a tie.
+template, then attribute value, then item group. Priority breaks a tie between
+two rules that are equally specific.
+
+A line whose inputs are all empty is left alone. Insite does not overwrite a
+typed quantity when nothing was measured.
 
 ## Scope Item
 
@@ -83,7 +128,7 @@ in view.
 
 ## How the pieces work together
 
-1. You set up the Work Item Types once.
+1. You set up the Work Item Types and their Measurement Rules once.
 2. You create a Project and its Scope Items, with the planned amounts.
 3. Your team quotes, orders, delivers and invoices as usual. Insite calculates
    the quantity of a measured line, and keeps the line tied to its Scope.
