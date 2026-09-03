@@ -1,0 +1,4 @@
+[pre_model_sync]
+
+[post_model_sync]
+insite.patches.v0_0_1.ensure_setup

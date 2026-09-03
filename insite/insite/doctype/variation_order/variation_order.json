@@ -1,0 +1,34 @@
+{
+  "doctype": "DocType",
+  "name": "Variation Order",
+  "module": "Insite",
+  "autoname": "naming_series:",
+  "is_submittable": 1,
+  "track_changes": 1,
+  "editable_grid": 1,
+  "engine": "InnoDB",
+  "creation": "2026-09-03 00:00:00.000000",
+  "modified": "2026-09-03 00:00:00.000000",
+  "owner": "Administrator",
+  "modified_by": "Administrator",
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "field_order": ["naming_series", "project", "date", "column_break_head", "customer", "reason",
+                  "lines_section", "variation_lines", "description", "amended_from"],
+  "fields": [
+    {"fieldname": "naming_series", "fieldtype": "Select", "label": "Series", "options": "VO-.YYYY.-", "default": "VO-.YYYY.-", "hidden": 1},
+    {"fieldname": "project", "fieldtype": "Link", "options": "Project", "label": "Project", "reqd": 1, "in_standard_filter": 1},
+    {"fieldname": "date", "fieldtype": "Date", "label": "Date", "default": "Today", "reqd": 1},
+    {"fieldname": "column_break_head", "fieldtype": "Column Break"},
+    {"fieldname": "customer", "fieldtype": "Link", "options": "Customer", "label": "Customer", "fetch_from": "project.customer", "read_only": 1},
+    {"fieldname": "reason", "fieldtype": "Data", "label": "Reason"},
+    {"fieldname": "lines_section", "fieldtype": "Section Break", "label": "Scope Changes"},
+    {"fieldname": "variation_lines", "fieldtype": "Table", "options": "Variation Line", "label": "Variation Lines", "reqd": 1},
+    {"fieldname": "description", "fieldtype": "Text", "label": "Description"},
+    {"fieldname": "amended_from", "fieldtype": "Link", "options": "Variation Order", "label": "Amended From", "read_only": 1, "no_copy": 1, "print_hide": 1}
+  ],
+  "permissions": [
+    {"role": "System Manager", "read": 1, "write": 1, "create": 1, "delete": 1, "submit": 1, "cancel": 1, "amend": 1, "report": 1, "export": 1, "share": 1, "print": 1, "email": 1},
+    {"role": "Contracting Manager", "read": 1, "write": 1, "create": 1, "delete": 1, "submit": 1, "cancel": 1, "amend": 1, "report": 1, "export": 1, "share": 1, "print": 1, "email": 1}
+  ]
+}

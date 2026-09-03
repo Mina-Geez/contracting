@@ -1,0 +1,32 @@
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8\nLanguage: ar\n"
+
+msgid "Work Item Type"
+msgstr "نوع بند العمل"
+
+msgid "Measurement Rule"
+msgstr "قاعدة القياس"
+
+msgid "Scope Item"
+msgstr "بند الأعمال"
+
+msgid "Variation Order"
+msgstr "أمر تغيير"
+
+msgid "Contract Progress"
+msgstr "تقدم العقد"
+
+msgid "Count"
+msgstr "العدد"
+
+msgid "Wastage"
+msgstr "الهدر"
+
+msgid "Planned Amount"
+msgstr "المبلغ المخطط"
+
+msgid "Revised Amount"
+msgstr "المبلغ المعدّل"
+
+msgid "How is this measured?"
+msgstr "كيف يُقاس هذا؟"

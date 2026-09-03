@@ -1,40 +1,16 @@
 [project]
-name = "contracting"
-authors = [
-    { name = "Inspect Solutions", email = "mina@inspect-solutions.com" },
-]
-description = "Generic, UI-configurable contracting vertical for Frappe/ERPNext v16 — onboard any trade (glass, wood/joinery, aluminium, civil) by configuration, not code."
+name = "insite"
+authors = [{ name = "Inspect Solutions", email = "mina@inspect-solutions.com" }]
+description = "Insite — configuration-driven contracting vertical for ERPNext"
 requires-python = ">=3.10"
 readme = "README.md"
 dynamic = ["version"]
-dependencies = [
-    # Frappe & ERPNext are provided by the bench, not pip-installed here.
-    # See required_apps in hooks.py.
-]
+dependencies = []
 
 [build-system]
 requires = ["flit_core >=3.4,<4"]
 build-backend = "flit_core.buildapi"
 
-# Frappe reads the app version from contracting/__init__.py:__version__
 [tool.bench.frappe-dependencies]
 frappe = ">=15.0.0,<17.0.0"
 erpnext = ">=15.0.0,<17.0.0"
-
-[tool.ruff]
-line-length = 110
-target-version = "py310"
-
-[tool.ruff.lint]
-select = ["F", "E", "W", "I", "UP", "B", "RUF"]
-ignore = [
-    "B017", "B018", "B023", "B904",
-    "E101", "E402", "E501", "E741",
-    "F401", "F403", "F405", "F722",
-    "W191",
-]
-typing-modules = ["frappe.types.DF"]
-
-[tool.ruff.format]
-quote-style = "double"
-indent-style = "tab"

@@ -1,0 +1,27 @@
+{
+  "doctype": "DocType",
+  "name": "Contracting Settings",
+  "module": "Insite",
+  "issingle": 1,
+  "editable_grid": 1,
+  "engine": "InnoDB",
+  "creation": "2026-09-03 00:00:00.000000",
+  "modified": "2026-09-03 00:00:00.000000",
+  "owner": "Administrator",
+  "modified_by": "Administrator",
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "field_order": ["price_visibility_section", "enable_price_visibility", "price_visibility_roles",
+                  "calc_section", "default_tolerance_percentage"],
+  "fields": [
+    {"fieldname": "price_visibility_section", "fieldtype": "Section Break", "label": "Role-Based Price Visibility"},
+    {"fieldname": "enable_price_visibility", "fieldtype": "Check", "label": "Enable Role-Based Price Visibility", "default": "0", "description": "Restricts selling price/amount visibility to the roles below (applied on save)."},
+    {"fieldname": "price_visibility_roles", "fieldtype": "Table", "options": "Contracting Price Role", "label": "Price-Visible Roles", "depends_on": "enable_price_visibility"},
+    {"fieldname": "calc_section", "fieldtype": "Section Break", "label": "Defaults"},
+    {"fieldname": "default_tolerance_percentage", "fieldtype": "Percent", "label": "Default Tolerance %", "default": "0", "description": "Fallback tolerance when a Work Item Type does not set one."}
+  ],
+  "permissions": [
+    {"role": "System Manager", "read": 1, "write": 1, "create": 1, "delete": 1, "print": 1, "email": 1, "share": 1},
+    {"role": "Contracting Manager", "read": 1, "write": 1}
+  ]
+}

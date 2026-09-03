@@ -1,0 +1,12 @@
+{
+  "doctype": "Workspace", "name": "Insite", "label": "Insite", "title": "Insite",
+  "module": "Insite", "public": 1, "icon": "project", "is_hidden": 0,
+  "content": "[{\"type\":\"header\",\"data\":{\"text\":\"Setup\",\"level\":4}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Work Item Type\"}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Contracting Settings\"}},{\"type\":\"header\",\"data\":{\"text\":\"Work\",\"level\":4}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Scope Item\"}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Variation Order\"}},{\"type\":\"header\",\"data\":{\"text\":\"Reports\",\"level\":4}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Contract Progress\"}}]",
+  "shortcuts": [
+    {"type": "DocType", "link_to": "Work Item Type", "label": "Work Item Type"},
+    {"type": "DocType", "link_to": "Contracting Settings", "label": "Contracting Settings"},
+    {"type": "DocType", "link_to": "Scope Item", "label": "Scope Item"},
+    {"type": "DocType", "link_to": "Variation Order", "label": "Variation Order"},
+    {"type": "Report", "link_to": "Contract Progress", "label": "Contract Progress"}
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "doctype": "DocType",
+  "name": "Work Item Type",
+  "module": "Insite",
+  "autoname": "field:work_item_type_name",
+  "allow_rename": 1,
+  "track_changes": 1,
+  "editable_grid": 1,
+  "engine": "InnoDB",
+  "creation": "2026-09-03 00:00:00.000000",
+  "modified": "2026-09-03 00:00:00.000000",
+  "owner": "Administrator",
+  "modified_by": "Administrator",
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "field_order": ["work_item_type_name", "disabled", "column_break_head",
+                  "tolerance_percentage", "description",
+                  "rules_section", "measurement_rules",
+                  "accounts_section", "accounts"],
+  "fields": [
+    {"fieldname": "work_item_type_name", "fieldtype": "Data", "label": "Work Item Type",
+     "reqd": 1, "unique": 1, "in_list_view": 1},
+    {"fieldname": "disabled", "fieldtype": "Check", "label": "Disabled"},
+    {"fieldname": "column_break_head", "fieldtype": "Column Break"},
+    {"fieldname": "tolerance_percentage", "fieldtype": "Percent", "label": "Tolerance %"},
+    {"fieldname": "description", "fieldtype": "Small Text", "label": "Description"},
+    {"fieldname": "rules_section", "fieldtype": "Section Break", "label": "How is this measured?"},
+    {"fieldname": "measurement_rules", "fieldtype": "Table", "options": "Measurement Rule",
+     "label": "Measurement Rules"},
+    {"fieldname": "accounts_section", "fieldtype": "Section Break", "label": "Default Accounts (per company)"},
+    {"fieldname": "accounts", "fieldtype": "Table", "options": "Insite Type Account", "label": "Accounts"}
+  ],
+  "permissions": [
+    {"role": "System Manager", "read": 1, "write": 1, "create": 1, "delete": 1, "report": 1, "export": 1, "share": 1, "print": 1, "email": 1},
+    {"role": "Contracting Manager", "read": 1, "write": 1, "create": 1, "delete": 1, "report": 1, "export": 1, "share": 1, "print": 1, "email": 1}
+  ]
+}

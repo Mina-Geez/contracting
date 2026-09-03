@@ -1,21 +1,3 @@
-.DS_Store
-*.pyc
-*.egg-info
-*.swp
-tags
-node_modules
 __pycache__/
-*.py[cod]
-.venv/
-env/
-venv/
-.idea/
-.vscode/
-dist/
-build/
-contracting/public/dist/
-# local audit/parity dumps produced on a clone
-audit_dump.json
-audit_dump.md
-parity_cases.json
-parity_results.json
+*.pyc
+.DS_Store
