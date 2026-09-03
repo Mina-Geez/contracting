@@ -14,20 +14,28 @@ ordered, delivered and invoiced.
   is a multiplier, not a percentage. Type 1.1 to add 10 percent. Leave blank for
   none.
 - **Scope Item** — a scope of work inside a project. It carries a Planned
-  Amount and a Revised Amount, and it acts as an accounting dimension named
-  **Scope**.
-- **Variation Order** — an approved change to a scope. Submit it, and Insite
-  updates the Revised Amount of every scope it names.
+  Amount, and it acts as an accounting dimension named **Scope**.
 - **Project and Scope on sales documents** — Insite asks for a Project on the
   header, and a Scope on each line that a Measurement Rule matched. Insite does
   not check the other lines. You can switch the whole check off in
   **Contracting Settings**.
-- **Contract Progress report** — planned, net variations, revised, ordered,
-  delivered, invoiced and variance, for each scope.
+- **Contract Progress report** — scope, status, planned, ordered, variance to
+  plan, delivered, invoiced, left to invoice and percent invoiced, for each
+  scope.
+
+Insite uses standard ERPNext documents on purpose. The Project, the Quotation,
+the Sales Order, the Delivery Note, the Sales Invoice and the purchase documents
+stay untouched. Insite adds the measurement fields on the item rows, the Scope
+dimension, and its own configuration. It adds nothing else. Everything reports
+against two axes: the **Project** and the **Scope Item**.
+
+A change of scope needs no special document. Raise another Sales Order against
+the same Scope Item, the way many contractors already work. Contract Progress
+then reads the change as **Variance to Plan**.
 
 ## Documentation
 
-- [docs/CONCEPTS.md](docs/CONCEPTS.md) — the four ideas Insite adds.
+- [docs/CONCEPTS.md](docs/CONCEPTS.md) — the three ideas Insite adds.
 - [docs/SETUP.md](docs/SETUP.md) — install, first job, worked example.
 
 ## Install

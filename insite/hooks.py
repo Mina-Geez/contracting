@@ -3,7 +3,7 @@ from insite.constants import ENFORCED_DOCTYPES, MEASURED_DOCTYPES, TAGGED_DOCTYP
 app_name = "insite"
 app_title = "Insite"
 app_publisher = "Inspect Solutions"
-app_description = "Contracting for ERPNext: measured quantities, scopes, variations and progress."
+app_description = "Contracting for ERPNext: measured quantities, scopes and progress."
 app_email = "mina@inspect-solutions.com"
 app_license = "MIT"
 

@@ -16,45 +16,173 @@
   "modified_by": "Administrator",
   "sort_field": "modified",
   "sort_order": "DESC",
-  "field_order": ["naming_series", "scope_title", "status", "column_break_head",
-                  "project", "customer", "company", "currency",
-                  "scope_section", "scope_description",
-                  "planning_section", "original_planned_amount", "original_planned_qty", "uom",
-                  "column_break_plan", "net_variations_amount", "revised_planned_amount",
-                  "options_section", "disabled"],
+  "field_order": [
+    "naming_series",
+    "scope_title",
+    "status",
+    "column_break_head",
+    "project",
+    "customer",
+    "company",
+    "currency",
+    "scope_section",
+    "scope_description",
+    "planning_section",
+    "planned_amount",
+    "planned_qty",
+    "uom",
+    "options_section",
+    "disabled"
+  ],
   "fields": [
-    {"fieldname": "naming_series", "fieldtype": "Select", "label": "Series", "options": "SC-.YYYY.-", "default": "SC-.YYYY.-", "hidden": 1},
-    {"fieldname": "scope_title", "fieldtype": "Data", "label": "Title", "reqd": 1, "in_list_view": 1,
-     "description": "What this scope of work covers, for example Curtain wall glazing."},
-    {"fieldname": "status", "fieldtype": "Select", "label": "Status", "options": "Draft\nActive\nOn Hold\nCompleted\nCancelled", "default": "Draft", "in_standard_filter": 1, "in_list_view": 1},
-    {"fieldname": "column_break_head", "fieldtype": "Column Break"},
-    {"fieldname": "project", "fieldtype": "Link", "options": "Project", "label": "Project", "reqd": 1, "in_standard_filter": 1, "in_list_view": 1},
-    {"fieldname": "customer", "fieldtype": "Link", "options": "Customer", "label": "Customer", "fetch_from": "project.customer", "read_only": 1},
-    {"fieldname": "company", "fieldtype": "Link", "options": "Company", "label": "Company", "fetch_from": "project.company", "read_only": 1},
-    {"fieldname": "currency", "fieldtype": "Link", "options": "Currency", "label": "Currency"},
-    {"fieldname": "scope_section", "fieldtype": "Section Break", "label": "Scope of Work"},
-    {"fieldname": "scope_description", "fieldtype": "Text Editor", "label": "Scope Description"},
-    {"fieldname": "planning_section", "fieldtype": "Section Break", "label": "Planned Values"},
-    {"fieldname": "original_planned_amount", "fieldtype": "Currency", "label": "Planned Amount", "options": "currency",
-     "description": "The value of this scope at award, before any variation."},
-    {"fieldname": "original_planned_qty", "fieldtype": "Float", "label": "Planned Qty",
-     "description": "For your own reference. Insite does not calculate with it."},
-    {"fieldname": "uom", "fieldtype": "Link", "options": "UOM", "label": "UOM",
-     "description": "For your own reference. Insite does not calculate with it."},
-    {"fieldname": "column_break_plan", "fieldtype": "Column Break"},
-    {"fieldname": "net_variations_amount", "fieldtype": "Currency", "label": "Net Variations", "options": "currency", "read_only": 1,
-     "description": "The total of the approved variation orders for this scope."},
-    {"fieldname": "revised_planned_amount", "fieldtype": "Currency", "label": "Revised Amount", "options": "currency", "read_only": 1, "in_list_view": 1,
-     "description": "Planned Amount plus the approved variations. Insite keeps this up to date."},
-    {"fieldname": "options_section", "fieldtype": "Section Break", "label": "Options", "collapsible": 1},
-    {"fieldname": "disabled", "fieldtype": "Check", "label": "Disabled",
-     "description": "Stops this scope appearing in the Scope list on new documents. Documents that already use it keep it."}
+    {
+      "fieldname": "naming_series",
+      "fieldtype": "Select",
+      "label": "Series",
+      "options": "SC-.YYYY.-",
+      "default": "SC-.YYYY.-",
+      "hidden": 1
+    },
+    {
+      "fieldname": "scope_title",
+      "fieldtype": "Data",
+      "label": "Title",
+      "reqd": 1,
+      "in_list_view": 1,
+      "description": "What this scope of work covers, for example Curtain wall glazing."
+    },
+    {
+      "fieldname": "status",
+      "fieldtype": "Select",
+      "label": "Status",
+      "options": "Draft\nActive\nOn Hold\nCompleted\nCancelled",
+      "default": "Draft",
+      "in_standard_filter": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "column_break_head",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "project",
+      "fieldtype": "Link",
+      "options": "Project",
+      "label": "Project",
+      "reqd": 1,
+      "in_standard_filter": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "customer",
+      "fieldtype": "Link",
+      "options": "Customer",
+      "label": "Customer",
+      "fetch_from": "project.customer",
+      "read_only": 1
+    },
+    {
+      "fieldname": "company",
+      "fieldtype": "Link",
+      "options": "Company",
+      "label": "Company",
+      "fetch_from": "project.company",
+      "read_only": 1
+    },
+    {
+      "fieldname": "currency",
+      "fieldtype": "Link",
+      "options": "Currency",
+      "label": "Currency"
+    },
+    {
+      "fieldname": "scope_section",
+      "fieldtype": "Section Break",
+      "label": "Scope of Work"
+    },
+    {
+      "fieldname": "scope_description",
+      "fieldtype": "Text Editor",
+      "label": "Scope Description"
+    },
+    {
+      "fieldname": "planning_section",
+      "fieldtype": "Section Break",
+      "label": "Planned Values"
+    },
+    {
+      "fieldname": "planned_amount",
+      "fieldtype": "Currency",
+      "label": "Planned Amount",
+      "options": "currency",
+      "description": "The agreed value of this scope. Update it when a variation is formally agreed; Insite keeps the change history.",
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "planned_qty",
+      "fieldtype": "Float",
+      "label": "Planned Qty",
+      "description": "For your own reference. Insite does not calculate with it."
+    },
+    {
+      "fieldname": "uom",
+      "fieldtype": "Link",
+      "options": "UOM",
+      "label": "UOM",
+      "description": "For your own reference. Insite does not calculate with it."
+    },
+    {
+      "fieldname": "options_section",
+      "fieldtype": "Section Break",
+      "label": "Options",
+      "collapsible": 1
+    },
+    {
+      "fieldname": "disabled",
+      "fieldtype": "Check",
+      "label": "Disabled",
+      "description": "Stops this scope appearing in the Scope list on new documents. Documents that already use it keep it."
+    }
   ],
   "permissions": [
-    {"role": "System Manager", "read": 1, "write": 1, "create": 1, "delete": 1, "report": 1, "export": 1, "share": 1, "print": 1, "email": 1},
-    {"role": "Contracting Manager", "read": 1, "write": 1, "create": 1, "delete": 1, "report": 1, "export": 1, "share": 1, "print": 1, "email": 1},
-    {"role": "Accounts User", "read": 1, "report": 1},
-    {"role": "Sales User", "read": 1, "report": 1},
-    {"role": "Purchase User", "read": 1, "report": 1}
+    {
+      "role": "System Manager",
+      "read": 1,
+      "write": 1,
+      "create": 1,
+      "delete": 1,
+      "report": 1,
+      "export": 1,
+      "share": 1,
+      "print": 1,
+      "email": 1
+    },
+    {
+      "role": "Contracting Manager",
+      "read": 1,
+      "write": 1,
+      "create": 1,
+      "delete": 1,
+      "report": 1,
+      "export": 1,
+      "share": 1,
+      "print": 1,
+      "email": 1
+    },
+    {
+      "role": "Accounts User",
+      "read": 1,
+      "report": 1
+    },
+    {
+      "role": "Sales User",
+      "read": 1,
+      "report": 1
+    },
+    {
+      "role": "Purchase User",
+      "read": 1,
+      "report": 1
+    }
   ]
 }

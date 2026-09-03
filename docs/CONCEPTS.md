@@ -1,6 +1,6 @@
 # Insite concepts
 
-Insite adds four ideas to ERPNext. Everything else — quotations, orders,
+Insite adds three ideas to ERPNext. Everything else — quotations, orders,
 deliveries, invoices, accounting — stays standard ERPNext.
 
 ## Work Item Type
@@ -53,37 +53,33 @@ template, then attribute value, then item group. Priority breaks a tie.
 A scope of work in a project — the unit you plan, track and report against.
 Example: "Curtain wall glazing", "ACP cladding".
 
-A Scope Item belongs to a **Project**, and holds:
+A Scope Item belongs to a **Project**, and holds a **Planned Amount**. The
+Planned Amount is the agreed baseline value of the scope.
 
-- **Planned Amount** — the baseline value at award.
-- **Revised Amount** — the current value, after the approved changes. Insite
-  keeps this up to date. You do not type it.
+The Contracting Manager types the Planned Amount and can edit it later. When the
+client signs a change, set the Planned Amount to the new contract value. Frappe
+keeps the change history on the document.
 
 A Scope Item is also an **Accounting Dimension**. Every sales and purchase line
 can carry a Scope, so the cost and the revenue stay attached to the work.
 
-## Variation Order
+## A change of scope
 
-An approved change to the scope of a project.
+Insite has no change document. A mid-project change of scope is another Sales
+Order against the same Scope Item. Many contractors already work this way.
 
-A Variation Order belongs to a Project. It lists the scopes it changes, and the
-amount of each change. To submit it is to approve it. Each named Scope Item then
-gets a new Revised Amount, and the history stays on the document. Canceling the
-Variation Order puts the values back.
+1. The client asks for extra work, or asks you to take work out.
+2. Raise a new Sales Order for the change. Use the same Project and the same
+   Scope as the original order.
+3. For work the client takes out, use the standard ERPNext route. Raise a credit
+   note or a return, or raise the follow-on order for the reduced amount.
+4. Read the change in **Contract Progress**. Work ordered beyond the plan shows
+   as a positive **Variance to Plan**.
+5. When the client signs the change, set the **Planned Amount** of the Scope
+   Item to the new contract value. The baseline then matches the contract.
 
-### Add, Omit and Modify
-
-Each line carries a **Type**. The Type sets the direction of the change, so you
-always type a positive **Amount Change**.
-
-| Type | Effect on the scope |
-| --- | --- |
-| Add | Insite adds the amount. Use it for new work. |
-| Omit | Insite subtracts the amount. Use it for work you take out. |
-| Modify | Insite adds the amount. Use it to change work already in the scope. |
-
-To take work out of a scope, type the amount as a positive number and pick
-`Omit`. Do not type a negative amount.
+Step 5 is optional. Leave the Planned Amount alone to keep the original baseline
+in view.
 
 ## How the pieces work together
 
@@ -91,6 +87,7 @@ To take work out of a scope, type the amount as a positive number and pick
 2. You create a Project and its Scope Items, with the planned amounts.
 3. Your team quotes, orders, delivers and invoices as usual. Insite calculates
    the quantity of a measured line, and keeps the line tied to its Scope.
-4. When the scope changes, you raise a Variation Order.
-5. **Contract Progress** shows, for each scope: planned, variations, revised,
-   ordered, delivered, invoiced, and the variance between them.
+4. When the scope changes, you raise another Sales Order against the same Scope
+   Item.
+5. **Contract Progress** shows, for each scope: planned, ordered, the variance
+   to plan, delivered, invoiced, and what is left to invoice.

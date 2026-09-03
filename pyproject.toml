@@ -1,7 +1,7 @@
 [project]
 name = "insite"
 authors = [{ name = "Inspect Solutions", email = "mina@inspect-solutions.com" }]
-description = "Contracting for ERPNext: measured quantities, scopes, variations and progress."
+description = "Contracting for ERPNext: measured quantities, scopes and progress."
 requires-python = ">=3.10"
 readme = "README.md"
 dynamic = ["version"]

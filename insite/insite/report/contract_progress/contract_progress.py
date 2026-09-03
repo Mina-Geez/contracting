@@ -1,5 +1,10 @@
 """Contract Progress — planned against ordered, delivered and invoiced, per scope.
 
+Variations are raised as further Sales Orders against the same scope, so the
+ordered total is the current committed value of the work and **Variance to
+Plan** (ordered minus planned) is what a variation looks like in this report.
+The planned amount stays the agreed baseline until someone updates it.
+
 Scopes are read with `get_list` so the reader only ever sees the scopes their
 permissions allow, and the money is then totalled for those scopes alone. That
 keeps the report both correct and bounded: without the scope list the three
@@ -34,9 +39,8 @@ def get_columns():
 		},
 		{"label": _("Status"), "fieldname": "status", "fieldtype": "Data", "width": 100},
 		{"label": _("Planned"), "fieldname": "planned", "fieldtype": "Currency", "width": 120},
-		{"label": _("Net Variations"), "fieldname": "net_variations", "fieldtype": "Currency", "width": 120},
-		{"label": _("Revised"), "fieldname": "revised", "fieldtype": "Currency", "width": 120},
 		{"label": _("Ordered"), "fieldname": "ordered", "fieldtype": "Currency", "width": 120},
+		{"label": _("Variance to Plan"), "fieldname": "variance_to_plan", "fieldtype": "Currency", "width": 130},
 		{"label": _("Delivered"), "fieldname": "delivered", "fieldtype": "Currency", "width": 120},
 		{"label": _("Invoiced"), "fieldname": "invoiced", "fieldtype": "Currency", "width": 120},
 		{"label": _("Left to Invoice"), "fieldname": "variance", "fieldtype": "Currency", "width": 130},
@@ -56,20 +60,22 @@ def get_data(filters):
 
 	data = []
 	for scope in scopes:
-		revised = flt(scope.original_planned_amount) + flt(scope.net_variations_amount)
+		planned = flt(scope.planned_amount)
+		ordered_amount = flt(ordered.get(scope.name))
 		invoiced_amount = flt(invoiced.get(scope.name))
+		# What is committed today: the orders raised, or the plan if none yet.
+		committed = ordered_amount or planned
 		data.append(
 			{
 				"scope": scope.name,
 				"status": scope.status,
-				"planned": flt(scope.original_planned_amount),
-				"net_variations": flt(scope.net_variations_amount),
-				"revised": revised,
-				"ordered": flt(ordered.get(scope.name)),
+				"planned": planned,
+				"ordered": ordered_amount,
+				"variance_to_plan": ordered_amount - planned,
 				"delivered": flt(delivered.get(scope.name)),
 				"invoiced": invoiced_amount,
-				"variance": revised - invoiced_amount,
-				"pct_invoiced": (invoiced_amount / revised * 100.0) if revised else 0.0,
+				"variance": committed - invoiced_amount,
+				"pct_invoiced": (invoiced_amount / committed * 100.0) if committed else 0.0,
 			}
 		)
 	return data
@@ -84,7 +90,7 @@ def _scopes(filters):
 	return frappe.get_list(
 		"Scope Item",
 		filters=conditions,
-		fields=["name", "scope_title", "status", "original_planned_amount", "net_variations_amount"],
+		fields=["name", "scope_title", "status", "planned_amount"],
 		order_by="name asc",
 		limit_page_length=0,
 	)

@@ -76,18 +76,24 @@ Sales Documents** in **Contracting Settings**.
 
 ## 5. Handle a change of scope
 
-1. Open **Variation Order > New**.
-2. Choose the **Project**.
-3. Add one line for each scope that changes.
-4. Set **Type** on the line to `Add`, `Omit` or `Modify`.
-5. Type the **Amount Change** as a positive number.
-6. Submit the Variation Order. The **Revised Amount** of each Scope Item
-   updates.
+Insite has no change document. You raise another Sales Order against the same
+scope, the way many contractors already work.
 
-The **Type** sets the direction of the change, so you always type a positive
-amount. `Add` and `Modify` raise the scope. `Omit` lowers it. To take work out
-of a scope, type the amount as a positive number and pick `Omit`. Do not type a
-negative amount. Canceling the Variation Order puts the values back.
+1. Agree the change with the client.
+2. Create a **Sales Order** on the same **Project** as the original order.
+3. Enter the extra work on the lines. Set the **Scope** on each line to the same
+   Scope Item.
+4. Submit the order. **Ordered** rises in **Contract Progress**, and **Variance
+   to Plan** rises with it.
+5. For work the client takes out, use the standard ERPNext route. Raise a credit
+   note or a return, or raise the follow-on order for the reduced amount.
+6. When the client signs the change, open the **Scope Item** and set the
+   **Planned Amount** to the new contract value.
+
+Step 6 is optional. It moves the baseline to the new contract value, so
+**Variance to Plan** returns to zero. Frappe keeps the change history on the
+Scope Item. Leave the Planned Amount alone to keep the original baseline in
+view.
 
 ## 6. Read the progress
 
@@ -95,14 +101,19 @@ Open **Contract Progress**. Filter by company, project or status.
 
 | Column | Meaning |
 | --- | --- |
-| Planned | baseline amount at award |
-| Net Variations | total of the approved changes |
-| Revised | current contract value for the scope |
-| Ordered | value on submitted Sales Orders |
+| Scope | the Scope Item |
+| Status | the status of the Scope Item |
+| Planned | the agreed baseline value of the scope |
+| Ordered | value on submitted Sales Orders for this scope |
+| Variance to Plan | Ordered − Planned |
 | Delivered | value on submitted Delivery Notes |
 | Invoiced | value on submitted Sales Invoices |
-| Left to Invoice | Revised − Invoiced |
-| % Invoiced | Invoiced as a percentage of Revised |
+| Left to Invoice | Ordered − Invoiced |
+| % Invoiced | Invoiced as a percentage of Ordered |
+
+A change of scope is another Sales Order, so **Ordered** is the current
+committed value of the work. **Variance to Plan** is how a change reads in the
+report. Work ordered beyond the original plan shows as a positive number.
 
 ## 7. A worked example
 
@@ -118,9 +129,18 @@ rate is 900 per square meter.
 4. Save. Insite writes a quantity of 25.92, because 2.4 × 1.8 × 6 = 25.92.
 5. The line amount is 25.92 × 900 = 23,328.
 6. Submit the Sales Order. **Contract Progress** shows Planned 25,000, Ordered
-   23,328 and Left to Invoice 25,000, because nothing is invoiced yet.
-7. Invoice the whole order. Invoiced becomes 23,328, % Invoiced reads 93.3, and
-   Left to Invoice becomes 1,672.
+   23,328, Variance to Plan −1,672 and Left to Invoice 23,328.
+7. Invoice the whole order. Invoiced becomes 23,328, % Invoiced reads 100, and
+   Left to Invoice becomes 0.
+8. The client now asks for two more units. Raise a second Sales Order on the
+   same Project, and set the same Scope on the line.
+9. Enter Height 2.4, Width 1.8 and Count 2. The quantity is 8.64, and the
+   amount is 8.64 × 900 = 7,776.
+10. Submit the second order. Ordered becomes 31,104, and Variance to Plan
+    becomes +6,104. Left to Invoice becomes 7,776. That positive variance is
+    the change of scope.
+11. When the client signs the change, set the **Planned Amount** of the scope to
+    31,104. Variance to Plan returns to zero.
 
 To bill a 10 percent cutting allowance on the same line, type 1.1 in
 **Wastage** and add the formula `height * width * count * wastage` to a Custom
@@ -139,7 +159,7 @@ To apply a new rule to an open draft, open the draft and save it again.
 
 | Role | What they do |
 | --- | --- |
-| Contracting Manager | Sets up Work Item Types and Measurement Rules. Creates and edits Scope Items. Raises and submits Variation Orders. Reads Contract Progress. |
+| Contracting Manager | Sets up Work Item Types and Measurement Rules. Creates and edits Scope Items, and sets the Planned Amount. Reads Contract Progress. |
 | Sales User | Reads Scope Items. Enters the measurements and the Scope on quotations, sales orders and delivery notes. Reads Contract Progress. |
 | Purchase User | Enters the measurements and the Scope on purchase documents. |
 | Accounts User | Reads Scope Items. Enters the measurements and the Scope on invoices. Reads Contract Progress. |

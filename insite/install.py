@@ -13,7 +13,7 @@ from insite.config.custom_fields import ensure_custom_fields
 from insite.config.price_visibility import apply_from_settings
 
 ROLES = [
-	("Contracting Manager", "Sets up Work Item Types, and manages scopes and variation orders."),
+	("Contracting Manager", "Sets up Work Item Types, and manages the scopes of work."),
 ]
 
 
