@@ -17,6 +17,7 @@ Two things worth knowing before changing this file:
   `count` and `piece_waste` the count IS the quantity, so a 0 stays 0 — turning
   it into 1 would invent a unit nobody ordered.
 """
+
 from __future__ import annotations
 
 import ast
@@ -56,6 +57,7 @@ MAX_EXPONENT = 64
 MAX_BASE = 1e12
 MAX_NODES = 200
 
+
 def _guarded_pow(base, exponent, *rest):
 	"""`pow` with the same ceiling as the ** operator."""
 	if abs(_f(exponent)) > MAX_EXPONENT or abs(_f(base)) > MAX_BASE:
@@ -64,13 +66,25 @@ def _guarded_pow(base, exponent, *rest):
 
 
 _ALLOWED_FUNCS = {
-	"abs": abs, "round": round, "min": min, "max": max, "pow": _guarded_pow,
-	"sqrt": math.sqrt, "ceil": math.ceil, "floor": math.floor,
+	"abs": abs,
+	"round": round,
+	"min": min,
+	"max": max,
+	"pow": _guarded_pow,
+	"sqrt": math.sqrt,
+	"ceil": math.ceil,
+	"floor": math.floor,
 }
 #: (minimum args, maximum args) — None means "no maximum".
 _FUNC_ARITY = {
-	"abs": (1, 1), "round": (1, 2), "min": (1, None), "max": (1, None),
-	"pow": (2, 2), "sqrt": (1, 1), "ceil": (1, 1), "floor": (1, 1),
+	"abs": (1, 1),
+	"round": (1, 2),
+	"min": (1, None),
+	"max": (1, None),
+	"pow": (2, 2),
+	"sqrt": (1, 1),
+	"ceil": (1, 1),
+	"floor": (1, 1),
 }
 _ALLOWED_CONSTS = {"pi": math.pi}
 _ALLOWED_BINOPS = (ast.Add, ast.Sub, ast.Mult, ast.Div, ast.FloorDiv, ast.Mod, ast.Pow)
@@ -84,8 +98,7 @@ def normalize_measure(value):
 	return LABEL_TO_KEY.get(value, value)
 
 
-def compute(measure, *, height=0.0, width=0.0, length=0.0, count=1.0,
-            wastage=1.0, formula=None):
+def compute(measure, *, height=0.0, width=0.0, length=0.0, count=1.0, wastage=1.0, formula=None):
 	"""Return the billable quantity for `measure`, or None for `manual`."""
 	measure = normalize_measure(measure)
 	h, w, ln = _f(height), _f(width), _f(length)
@@ -104,8 +117,9 @@ def compute(measure, *, height=0.0, width=0.0, length=0.0, count=1.0,
 	if measure == MANUAL:
 		return None
 	if measure == FORMULA:
-		return evaluate_formula(formula, {"height": h, "width": w, "length": ln,
-		                                  "count": _f(count), "wastage": wf})
+		return evaluate_formula(
+			formula, {"height": h, "width": w, "length": ln, "count": _f(count), "wastage": wf}
+		)
 	raise ValueError(f"Unknown measure: {measure!r}")
 
 
@@ -130,6 +144,7 @@ def evaluate_formula(formula, tokens):
 
 
 # --- internals ---------------------------------------------------------------
+
 
 def _f(value) -> float:
 	"""Coerce to float; None/blank/garbage become 0.0."""
@@ -175,7 +190,8 @@ def _walk(node, names, evaluate):
 			return names.get(node.id, 0.0) if evaluate else None
 		raise ValueError(
 			f"The formula uses the word '{node.id}'. You can use these words only: "
-			+ ", ".join(FORMULA_TOKENS) + "."
+			+ ", ".join(FORMULA_TOKENS)
+			+ "."
 		)
 
 	if isinstance(node, ast.BinOp) and isinstance(node.op, _ALLOWED_BINOPS):
@@ -194,9 +210,7 @@ def _walk(node, names, evaluate):
 	if isinstance(node, ast.Call):
 		name = node.func.id if isinstance(node.func, ast.Name) else None
 		if name not in _ALLOWED_FUNCS:
-			raise ValueError(
-				"You can use these functions only: " + ", ".join(sorted(_ALLOWED_FUNCS)) + "."
-			)
+			raise ValueError("You can use these functions only: " + ", ".join(sorted(_ALLOWED_FUNCS)) + ".")
 		if node.keywords:
 			raise ValueError("Write the values in order, for example round(height * width, 2).")
 		_check_arity(name, len(node.args))
@@ -207,7 +221,8 @@ def _walk(node, names, evaluate):
 
 	raise ValueError(
 		"Insite cannot read part of this formula. Use numbers, the words "
-		+ ", ".join(FORMULA_TOKENS) + ", the signs + - * / %, and the allowed functions."
+		+ ", ".join(FORMULA_TOKENS)
+		+ ", the signs + - * / %, and the allowed functions."
 	)
 
 
@@ -233,8 +248,7 @@ def _check_static_power(base_node, exponent_node):
 	"""Reject a power whose size can be worked out without the measurements."""
 	exponent = _static_value(exponent_node)
 	base = _static_value(base_node)
-	if (exponent is not None and abs(exponent) > MAX_EXPONENT) or \
-			(base is not None and abs(base) > MAX_BASE):
+	if (exponent is not None and abs(exponent) > MAX_EXPONENT) or (base is not None and abs(base) > MAX_BASE):
 		raise ValueError(f"The power in this formula is too large (highest allowed is {MAX_EXPONENT}).")
 
 

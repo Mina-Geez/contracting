@@ -8,6 +8,7 @@ aggregates would scan every sales line ever written.
 Amounts are summed in company currency (`base_amount`), because a scope's
 planned figure is a single number and documents may be raised in any currency.
 """
+
 from __future__ import annotations
 
 import frappe
@@ -24,8 +25,13 @@ def execute(filters=None):
 
 def get_columns():
 	return [
-		{"label": _("Scope"), "fieldname": "scope", "fieldtype": "Link",
-		 "options": "Scope Item", "width": 220},
+		{
+			"label": _("Scope"),
+			"fieldname": "scope",
+			"fieldtype": "Link",
+			"options": "Scope Item",
+			"width": 220,
+		},
 		{"label": _("Status"), "fieldname": "status", "fieldtype": "Data", "width": 100},
 		{"label": _("Planned"), "fieldname": "planned", "fieldtype": "Currency", "width": 120},
 		{"label": _("Net Variations"), "fieldname": "net_variations", "fieldtype": "Currency", "width": 120},
@@ -52,18 +58,20 @@ def get_data(filters):
 	for scope in scopes:
 		revised = flt(scope.original_planned_amount) + flt(scope.net_variations_amount)
 		invoiced_amount = flt(invoiced.get(scope.name))
-		data.append({
-			"scope": scope.name,
-			"status": scope.status,
-			"planned": flt(scope.original_planned_amount),
-			"net_variations": flt(scope.net_variations_amount),
-			"revised": revised,
-			"ordered": flt(ordered.get(scope.name)),
-			"delivered": flt(delivered.get(scope.name)),
-			"invoiced": invoiced_amount,
-			"variance": revised - invoiced_amount,
-			"pct_invoiced": (invoiced_amount / revised * 100.0) if revised else 0.0,
-		})
+		data.append(
+			{
+				"scope": scope.name,
+				"status": scope.status,
+				"planned": flt(scope.original_planned_amount),
+				"net_variations": flt(scope.net_variations_amount),
+				"revised": revised,
+				"ordered": flt(ordered.get(scope.name)),
+				"delivered": flt(delivered.get(scope.name)),
+				"invoiced": invoiced_amount,
+				"variance": revised - invoiced_amount,
+				"pct_invoiced": (invoiced_amount / revised * 100.0) if revised else 0.0,
+			}
+		)
 	return data
 
 
@@ -86,8 +94,9 @@ def _sum_by_scope(child_doctype, parent_doctype, scopes, company=None):
 	"""Total submitted line amounts per scope, in company currency."""
 	if SCOPE_FIELD not in _columns_of(child_doctype):
 		frappe.throw(
-			_("The Scope field is missing from {0}. Run 'bench migrate' to finish setting up Insite.")
-			.format(_(child_doctype)),
+			_("The Scope field is missing from {0}. Run 'bench migrate' to finish setting up Insite.").format(
+				_(child_doctype)
+			),
 			title=_("Setup Incomplete"),
 		)
 

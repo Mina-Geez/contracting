@@ -4,6 +4,7 @@ Everything here is caught at save time, so a rule that could never work is
 rejected while the person who wrote it is still looking at it — rather than
 failing later on somebody else's Sales Order.
 """
+
 from __future__ import annotations
 
 import frappe
@@ -23,7 +24,7 @@ _SCOPE_FIELDS = {
 
 class WorkItemType(Document):
 	def validate(self):
-		for row in (self.measurement_rules or []):
+		for row in self.measurement_rules or []:
 			row.measure = measures.normalize_measure(row.measure)
 			self._validate_measure(row)
 			self._validate_scope(row)
@@ -31,16 +32,19 @@ class WorkItemType(Document):
 	def _validate_measure(self, row):
 		if row.measure not in measures.MEASURE_KEYS:
 			frappe.throw(
-				_("Row {0}: '{1}' is not a measure Insite knows. Choose a value from the Measured By list.")
-				.format(row.idx, row.measure),
+				_(
+					"Row {0}: '{1}' is not a measure Insite knows. Choose a value from the Measured By list."
+				).format(row.idx, row.measure),
 				title=_("Unknown Measure"),
 			)
 		if row.measure != measures.FORMULA:
 			return
 		if not (row.formula or "").strip():
 			frappe.throw(
-				_("Row {0}: Measured By is set to Custom formula, but the Formula box is empty. "
-				  "Write a formula, or choose a ready-made measure.").format(row.idx),
+				_(
+					"Row {0}: Measured By is set to Custom formula, but the Formula box is empty. "
+					"Write a formula, or choose a ready-made measure."
+				).format(row.idx),
 				title=_("Formula Required"),
 			)
 		try:
@@ -52,13 +56,15 @@ class WorkItemType(Document):
 		field, label = _SCOPE_FIELDS.get(row.apply_on, (None, None))
 		if field and not row.get(field):
 			frappe.throw(
-				_("Row {0}: Applies To is set to {1}. Fill in the {2} box.")
-				.format(row.idx, row.apply_on, label),
+				_("Row {0}: Applies To is set to {1}. Fill in the {2} box.").format(
+					row.idx, row.apply_on, label
+				),
 				title=_("Scope Required"),
 			)
 		if row.apply_on == "Item Attribute Value" and not (row.attribute_value or "").strip():
 			frappe.throw(
-				_("Row {0}: fill in the Attribute Value. A rule with no value can never match a line.")
-				.format(row.idx),
+				_(
+					"Row {0}: fill in the Attribute Value. A rule with no value can never match a line."
+				).format(row.idx),
 				title=_("Attribute Value Required"),
 			)

@@ -22,8 +22,7 @@ doctype_js["Work Item Type"] = "public/js/work_item_type.js"
 # --- Document events (server-authoritative) ---------------------------------
 # Quantities are computed before ERPNext totals the document; the Project and
 # Scope check runs afterwards, once the engine has marked the measured rows.
-doc_events = {dt: {"before_validate": "insite.overrides.transaction.recalculate"}
-              for dt in MEASURED_DOCTYPES}
+doc_events = {dt: {"before_validate": "insite.overrides.transaction.recalculate"} for dt in MEASURED_DOCTYPES}
 
 for _doctype in ENFORCED_DOCTYPES:
 	doc_events.setdefault(_doctype, {})["validate"] = "insite.overrides.transaction.enforce_project_scope"

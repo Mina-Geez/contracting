@@ -10,8 +10,13 @@ MEASURED_DOCTYPES = ("Quotation", "Sales Order", "Delivery Note", "Sales Invoice
 
 #: Buying-side documents. They carry the Scope tag for cost attribution, but
 #: their quantities are entered, not measured.
-BUYING_DOCTYPES = ("Material Request", "Supplier Quotation", "Purchase Order",
-                   "Purchase Receipt", "Purchase Invoice")
+BUYING_DOCTYPES = (
+	"Material Request",
+	"Supplier Quotation",
+	"Purchase Order",
+	"Purchase Receipt",
+	"Purchase Invoice",
+)
 
 #: Everything Insite touches.
 TAGGED_DOCTYPES = MEASURED_DOCTYPES + BUYING_DOCTYPES

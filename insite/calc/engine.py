@@ -6,6 +6,7 @@ filled in. When a rule stops matching a line — the item changed, the rule was
 deleted — it clears what it previously wrote, so a stale quantity can never
 outlive the rule that produced it.
 """
+
 from __future__ import annotations
 
 import json
@@ -21,8 +22,12 @@ TARGET_FIELD = "qty"
 DEFAULT_PRECISION = 3
 
 #: Fields the engine owns on a transaction line.
-_AUDIT_FIELDS = ("custom_calculated_qty", "custom_calc_measure",
-                 "custom_calc_source", "custom_calc_dimensions")
+_AUDIT_FIELDS = (
+	"custom_calculated_qty",
+	"custom_calc_measure",
+	"custom_calc_source",
+	"custom_calc_dimensions",
+)
 
 #: The inputs each measure actually reads. A row with none of them filled in
 #: has not been measured, so the engine leaves the typed quantity alone.
@@ -38,20 +43,26 @@ _REQUIRED_INPUTS = {
 def load_rules():
 	"""Every rule on every enabled Work Item Type, most important first."""
 	rules = []
-	types = frappe.get_all("Work Item Type", filters={"disabled": 0},
-	                       fields=["name"], order_by="modified desc")
+	types = frappe.get_all(
+		"Work Item Type", filters={"disabled": 0}, fields=["name"], order_by="modified desc"
+	)
 	for entry in types:
 		doc = frappe.get_cached_doc("Work Item Type", entry.name)
 		for row in doc.measurement_rules:
-			rules.append({
-				"source": doc.name,
-				"measure": measures.normalize_measure(row.measure),
-				"formula": row.formula,
-				"apply_on": row.apply_on, "item_code": row.item_code,
-				"item_template": row.item_template, "item_group": row.item_group,
-				"item_attribute": row.item_attribute, "attribute_value": row.attribute_value,
-				"priority": cint(row.priority),
-			})
+			rules.append(
+				{
+					"source": doc.name,
+					"measure": measures.normalize_measure(row.measure),
+					"formula": row.formula,
+					"apply_on": row.apply_on,
+					"item_code": row.item_code,
+					"item_template": row.item_template,
+					"item_group": row.item_group,
+					"item_attribute": row.item_attribute,
+					"attribute_value": row.attribute_value,
+					"priority": cint(row.priority),
+				}
+			)
 	rules.sort(key=lambda r: r["priority"], reverse=True)  # stable: keeps modified-desc within a tier
 	return rules
 
@@ -82,7 +93,8 @@ def apply_rule_to_row(row, rule):
 	except ArithmeticError:
 		frappe.throw(
 			_("Row {0}: the formula on {1} cannot be worked out with these measurements ({2}).").format(
-				row.idx, rule["source"], _describe(inputs)),
+				row.idx, rule["source"], _describe(inputs)
+			),
 			title=_("Measurement Problem"),
 		)
 
@@ -183,8 +195,9 @@ def _inputs(row):
 
 
 def _item_context(item_code, attributes):
-	values = frappe.get_cached_value("Item", item_code,
-	                                 ["item_group", "variant_of", "has_variants"], as_dict=True)
+	values = frappe.get_cached_value(
+		"Item", item_code, ["item_group", "variant_of", "has_variants"], as_dict=True
+	)
 	if not values:
 		return None
 	return {
@@ -201,9 +214,11 @@ def _attributes_for(items):
 	codes = {row.item_code for row in items if row.get("item_code")}
 	if not codes:
 		return {}
-	rows = frappe.get_all("Item Variant Attribute",
-	                      filters={"parent": ["in", list(codes)]},
-	                      fields=["parent", "attribute", "attribute_value"])
+	rows = frappe.get_all(
+		"Item Variant Attribute",
+		filters={"parent": ["in", list(codes)]},
+		fields=["parent", "attribute", "attribute_value"],
+	)
 	grouped: dict[str, dict] = {}
 	for row in rows:
 		grouped.setdefault(row.parent, {})[row.attribute] = row.attribute_value

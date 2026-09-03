@@ -1,4 +1,5 @@
 """Whitelisted endpoints for the Insite desk UI."""
+
 from __future__ import annotations
 
 import frappe
@@ -25,8 +26,9 @@ def preview_measure(
 	"""
 	frappe.only_for(["Contracting Manager", "System Manager"])
 	try:
-		return compute(measure, height=height, width=width, length=length,
-		               count=count, wastage=wastage, formula=formula)
+		return compute(
+			measure, height=height, width=width, length=length, count=count, wastage=wastage, formula=formula
+		)
 	except ValueError as e:
 		frappe.throw(str(e), title=_("Measurement Problem"))
 	except ArithmeticError:

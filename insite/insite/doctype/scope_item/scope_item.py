@@ -7,6 +7,7 @@ Variation Orders submitted at the same moment each read their own rows only,
 and the second write silently discards the first. The wrong figure would then
 persist until someone happened to re-save the scope.
 """
+
 from __future__ import annotations
 
 import frappe

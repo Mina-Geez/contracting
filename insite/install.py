@@ -3,6 +3,7 @@
 Safe to re-run: every step either checks first or upserts. No `db_set`, no
 fixtures of standard doctypes — documented APIs only.
 """
+
 from __future__ import annotations
 
 import frappe
@@ -43,10 +44,14 @@ def create_roles():
 				role.description = description
 				role.save(ignore_permissions=True)
 			continue
-		frappe.get_doc({
-			"doctype": "Role", "role_name": role_name,
-			"desk_access": 1, "description": description,
-		}).insert(ignore_permissions=True)
+		frappe.get_doc(
+			{
+				"doctype": "Role",
+				"role_name": role_name,
+				"desk_access": 1,
+				"description": description,
+			}
+		).insert(ignore_permissions=True)
 
 
 def ensure_settings_singleton():

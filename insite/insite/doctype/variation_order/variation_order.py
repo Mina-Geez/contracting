@@ -4,6 +4,7 @@ The Type column decides the direction of the change, so a user types a positive
 amount and picks Add or Omit — they never have to remember a sign convention.
 On submit or cancel, every scope the order touches is re-totalled.
 """
+
 from __future__ import annotations
 
 import frappe
@@ -18,7 +19,7 @@ MODIFY = "Modify"
 
 class VariationOrder(Document):
 	def validate(self):
-		for row in (self.variation_lines or []):
+		for row in self.variation_lines or []:
 			if not row.scope_item:
 				frappe.throw(
 					_("Row {0}: choose the Scope this change applies to.").format(row.idx),

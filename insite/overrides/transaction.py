@@ -13,6 +13,7 @@ Two responsibilities, both server-authoritative:
 The document lists live in `insite.constants`, which hooks.py reads too, so the
 hooks and the handlers can never drift apart.
 """
+
 from __future__ import annotations
 
 import frappe
@@ -53,16 +54,18 @@ def enforce_project_scope(doc, method=None):
 
 	if not doc.get("project"):
 		frappe.throw(
-			_("Add a Project in the header before you save this {0}. Insite tracks contracting work by project.")
-			.format(_(doc.doctype)),
+			_(
+				"Add a Project in the header before you save this {0}. Insite tracks contracting work by project."
+			).format(_(doc.doctype)),
 			title=_("Project Required"),
 		)
 
 	missing = [row for row in rows if not row.get("scope_item")]
 	if missing:
 		frappe.throw(
-			_("Choose a Scope on {0}. Insite tracks contracting work by scope of work.")
-			.format(_rows_phrase(missing)),
+			_("Choose a Scope on {0}. Insite tracks contracting work by scope of work.").format(
+				_rows_phrase(missing)
+			),
 			title=_("Scope Required"),
 		)
 
@@ -76,8 +79,11 @@ def _check_scopes_belong_to_document(doc, rows):
 		return
 	scopes = {
 		s.name: s
-		for s in frappe.get_all("Scope Item", filters={"name": ["in", list(names)]},
-		                        fields=["name", "project", "company", "scope_title"])
+		for s in frappe.get_all(
+			"Scope Item",
+			filters={"name": ["in", list(names)]},
+			fields=["name", "project", "company", "scope_title"],
+		)
 	}
 	for row in rows:
 		scope = scopes.get(row.scope_item)
@@ -85,14 +91,16 @@ def _check_scopes_belong_to_document(doc, rows):
 			continue
 		if scope.project and doc.get("project") and scope.project != doc.project:
 			frappe.throw(
-				_("Row {0}: the Scope '{1}' belongs to project {2}, but this document is for {3}.")
-				.format(row.idx, scope.scope_title or scope.name, scope.project, doc.project),
+				_("Row {0}: the Scope '{1}' belongs to project {2}, but this document is for {3}.").format(
+					row.idx, scope.scope_title or scope.name, scope.project, doc.project
+				),
 				title=_("Scope Belongs to Another Project"),
 			)
 		if scope.company and doc.get("company") and scope.company != doc.company:
 			frappe.throw(
-				_("Row {0}: the Scope '{1}' belongs to company {2}, but this document is for {3}.")
-				.format(row.idx, scope.scope_title or scope.name, scope.company, doc.company),
+				_("Row {0}: the Scope '{1}' belongs to company {2}, but this document is for {3}.").format(
+					row.idx, scope.scope_title or scope.name, scope.company, doc.company
+				),
 				title=_("Scope Belongs to Another Company"),
 			)
 

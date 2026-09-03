@@ -10,6 +10,7 @@ So the fields are created synchronously here and then verified, and a failure
 raises rather than whispering into the Error Log. An install that cannot finish
 must say so.
 """
+
 from __future__ import annotations
 
 import frappe
@@ -20,8 +21,14 @@ DIMENSION_FIELDNAME = "scope_item"
 DIMENSION_LABEL = "Scope"
 
 #: The tables the app itself reads the dimension from.
-_VERIFY_TABLES = ("Sales Order Item", "Delivery Note Item", "Sales Invoice Item",
-                  "Purchase Order Item", "Purchase Receipt Item", "Purchase Invoice Item")
+_VERIFY_TABLES = (
+	"Sales Order Item",
+	"Delivery Note Item",
+	"Sales Invoice Item",
+	"Purchase Order Item",
+	"Purchase Receipt Item",
+	"Purchase Invoice Item",
+)
 
 
 def ensure_scope_dimension():
@@ -56,9 +63,10 @@ def _verify_columns():
 	missing = [table for table in _VERIFY_TABLES if not _has_column(table)]
 	if missing:
 		frappe.throw(
-			_("Insite could not add the Scope field to: {0}. Run 'bench migrate' again; "
-			  "if it keeps failing, re-save the Scope Item Accounting Dimension.")
-			.format(", ".join(missing)),
+			_(
+				"Insite could not add the Scope field to: {0}. Run 'bench migrate' again; "
+				"if it keeps failing, re-save the Scope Item Accounting Dimension."
+			).format(", ".join(missing)),
 			title=_("Scope Dimension Incomplete"),
 		)
 
