@@ -4,35 +4,28 @@ from __future__ import annotations
 
 import frappe
 from frappe import _
+from frappe.utils import flt
 
-from insite.calc.measures import compute
+from insite.calc.measures import evaluate_formula
 
 
 @frappe.whitelist(methods=["POST"])
 @frappe.rate_limit(limit=60, seconds=60)
-def preview_measure(
-	measure: str,
-	height: float = 0,
-	width: float = 0,
-	length: float = 0,
-	count: float = 1,
-	wastage: float = 1,
-	formula: str | None = None,
-):
-	"""Work out one quantity from sample measurements.
+def preview_formula(formula: str, values: str | dict | None = None):
+	"""Work out one quantity from sample numbers.
 
-	Backs the "Test a Measure" button, so a rule can be checked before anyone
-	relies on it. Reads nothing and writes nothing.
+	Backs the "Try it" button on a Measurement Rule, so a rule can be checked
+	before anyone relies on it. Reads nothing and writes nothing.
 	"""
 	frappe.only_for(["Contracting Manager", "System Manager"])
+	values = frappe.parse_json(values) if isinstance(values, str) else (values or {})
+	numbers = {str(token): flt(value) for token, value in values.items()}
 	try:
-		return compute(
-			measure, height=height, width=width, length=length, count=count, wastage=wastage, formula=formula
-		)
+		return evaluate_formula(formula, numbers)
 	except ValueError as e:
-		frappe.throw(str(e), title=_("Measurement Problem"))
+		frappe.throw(str(e), title=_("Formula Problem"))
 	except ArithmeticError:
 		frappe.throw(
-			_("That formula cannot be worked out with these measurements."),
-			title=_("Measurement Problem"),
+			_("That formula cannot be worked out with these numbers."),
+			title=_("Formula Problem"),
 		)

@@ -15,7 +15,6 @@
   "sort_field": "modified",
   "sort_order": "DESC",
   "field_order": ["work_item_type_name", "column_break_head", "description",
-                  "rules_section", "measurement_rules",
                   "accounts_section", "accounts",
                   "options_section", "disabled", "tolerance_percentage"],
   "fields": [
@@ -24,16 +23,16 @@
      "description": "The kind of work, for example Glass or Wood — Doors."},
     {"fieldname": "column_break_head", "fieldtype": "Column Break"},
     {"fieldname": "description", "fieldtype": "Small Text", "label": "Description"},
-    {"fieldname": "rules_section", "fieldtype": "Section Break", "label": "How is this measured?"},
-    {"fieldname": "measurement_rules", "fieldtype": "Table", "options": "Measurement Rule",
-     "label": "", "description": "One row for each item, or group of items, and how to measure it."},
     {"fieldname": "accounts_section", "fieldtype": "Section Break", "label": "Default Accounts (per company)", "collapsible": 1},
     {"fieldname": "accounts", "fieldtype": "Table", "options": "Insite Type Account", "label": ""},
     {"fieldname": "options_section", "fieldtype": "Section Break", "label": "Options", "collapsible": 1},
     {"fieldname": "disabled", "fieldtype": "Check", "label": "Disabled",
-     "description": "Stops every rule on this type. Quantities are no longer calculated for these items."},
+     "description": "Stops every rule for this kind of work. Quantities are no longer calculated for these items."},
     {"fieldname": "tolerance_percentage", "fieldtype": "Percent", "label": "Tolerance %",
      "description": "On the roadmap. Insite stores the number but nothing acts on it yet."}
+  ],
+  "links": [
+    {"group": "Measurement", "link_doctype": "Measurement Rule", "link_fieldname": "work_item_type"}
   ],
   "permissions": [
     {"role": "System Manager", "read": 1, "write": 1, "create": 1, "delete": 1, "report": 1, "export": 1, "share": 1, "print": 1, "email": 1},

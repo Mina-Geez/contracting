@@ -1,73 +1,89 @@
 import pytest
 
-from insite.calc.measures import compute
+from insite.calc.measures import (
+	CUSTOM,
+	MANUAL,
+	PRESET_CHOICES,
+	PRESETS,
+	evaluate_formula,
+	is_valid_token,
+	suggest_token,
+)
+
+# --- the presets are just a starting pair of inputs and formula --------------
 
 
-def test_area():
-	assert compute("area", height=1.5, width=2.8, count=40) == pytest.approx(168.0)
+def test_every_preset_formula_uses_exactly_its_own_inputs():
+	from insite.calc.measures import formula_tokens
+
+	for name, preset in PRESETS.items():
+		tokens = {token for token, _field in preset["inputs"]}
+		assert formula_tokens(preset["formula"]) == tokens, f"{name} names an input it does not declare"
 
 
-def test_perimeter():
-	assert compute("perimeter", height=1.5, width=2.8, count=40) == 344.0
+def test_preset_choices_cover_the_presets_plus_manual_and_custom():
+	assert set(PRESET_CHOICES) == set(PRESETS) | {MANUAL, CUSTOM}
 
 
-def test_linear():
-	assert compute("linear", length=3.0, count=60) == 180.0
+def test_area_preset_computes_the_expected_quantity():
+	preset = PRESETS["Area"]
+	assert evaluate_formula(preset["formula"], {"height": 1.5, "width": 2.8, "count": 40}) == pytest.approx(
+		168.0
+	)
 
 
-def test_count_only():
-	assert compute("count", count=12) == 12.0
+def test_perimeter_preset():
+	preset = PRESETS["Perimeter"]
+	assert evaluate_formula(preset["formula"], {"height": 1.5, "width": 2.8, "count": 40}) == 344.0
 
 
-def test_piece_waste():
-	assert compute("piece_waste", count=500, wastage=1.1) == 550.0
+def test_linear_preset():
+	assert evaluate_formula(PRESETS["Linear"]["formula"], {"length": 3.0, "count": 60}) == 180.0
 
 
-def test_manual_returns_none():
-	assert compute("manual", count=5) is None
+def test_count_preset_keeps_a_zero():
+	# The count IS the quantity here, so a zero must stay a zero rather than
+	# become one and invent a unit nobody ordered.
+	assert evaluate_formula(PRESETS["Count"]["formula"], {"count": 0}) == 0.0
+	assert evaluate_formula(PRESETS["Count"]["formula"], {"count": 25}) == 25.0
 
 
-def test_defaults_count_and_wastage_default_to_one():
-	assert compute("area", height=2, width=3) == 6.0  # count defaults 1
-	assert compute("piece_waste", count=10) == 10.0  # wastage defaults 1
+def test_piece_waste_preset():
+	formula = PRESETS["Piece × Wastage"]["formula"]
+	assert evaluate_formula(formula, {"count": 500, "wastage": 1.1}) == pytest.approx(550.0)
 
 
-def test_blank_inputs_coerced_to_zero():
-	assert compute("area", height="", width=None, count=40) == 0.0
+def test_volume_preset():
+	formula = PRESETS["Volume"]["formula"]
+	assert evaluate_formula(formula, {"height": 2, "width": 3, "length": 4, "count": 2}) == 48.0
 
 
-def test_unknown_measure_raises():
-	with pytest.raises(ValueError):
-		compute("nope", count=1)
+# --- a rule may name its inputs whatever the site calls them -----------------
 
 
-# --- a zero count is a real zero where the count IS the quantity -------------
+def test_a_formula_can_use_a_sites_own_field_name():
+	assert evaluate_formula(
+		"height * width * panels", {"height": 1.2, "width": 2.4, "panels": 3}
+	) == pytest.approx(8.64)
 
 
-def test_count_of_zero_stays_zero():
-	# A blank Float reads as 0. For `count` and `piece_waste` the count is the
-	# quantity, so inventing 1 would bill a unit nobody ordered.
-	assert compute("count", count=0) == 0.0
-	assert compute("piece_waste", count=0, wastage=1.1) == 0.0
+def test_blank_values_are_treated_as_zero():
+	assert evaluate_formula("height * width", {"height": "", "width": None}) == 0.0
 
 
-def test_zero_count_still_falls_back_where_it_is_only_a_multiplier():
-	assert compute("area", height=2, width=3, count=0) == 6.0
-	assert compute("linear", length=4, count=0) == 4.0
+# --- tokens ------------------------------------------------------------------
 
 
-# --- measures are stored and shown by label, resolved by key ----------------
+def test_suggest_token_from_a_label():
+	assert suggest_token("Number of Panels") == "number_of_panels"
+	assert suggest_token("Height") == "height"
+	assert suggest_token("  ") == "field"
+	assert suggest_token("2nd Layer") == "f_2nd_layer"
 
 
-def test_labels_resolve_to_the_same_measure():
-	from insite.calc.measures import MEASURE_LABELS, normalize_measure
-
-	assert normalize_measure(MEASURE_LABELS["area"]) == "area"
-	assert compute(MEASURE_LABELS["area"], height=1.5, width=2.8, count=40) == pytest.approx(168.0)
-
-
-def test_every_measure_has_a_label():
-	from insite.calc.measures import MEASURE_KEYS, MEASURE_LABELS
-
-	assert set(MEASURE_LABELS) == MEASURE_KEYS
-	assert len(set(MEASURE_LABELS.values())) == len(MEASURE_KEYS)  # labels are unique
+def test_valid_tokens():
+	assert is_valid_token("height")
+	assert is_valid_token("number_of_panels")
+	assert not is_valid_token("Number of Panels")
+	assert not is_valid_token("2panels")
+	assert not is_valid_token("")

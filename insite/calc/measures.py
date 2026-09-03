@@ -1,9 +1,11 @@
 """Pure, framework-free measurement engine (the correctness oracle core).
 
-No Frappe import: unit-testable and runnable offline. `compute` returns the
-billable quantity for a measure; `manual` returns None (caller keeps the
-user-entered qty). Formulas are walked by a restricted AST evaluator — never
-`eval`/`exec` — over the plain-words tokens only.
+No Frappe import: unit-testable and runnable offline.
+
+A rule is a **formula over named inputs**. Each input names a field on the
+transaction line and gives it a short name; the formula combines those names.
+The presets below are nothing more than a starting pair of inputs and formula
+for the arithmetic most trades need, so there is one mechanism, not two.
 
 Two things worth knowing before changing this file:
 
@@ -12,42 +14,61 @@ Two things worth knowing before changing this file:
   and a formula accepted at save time would behave differently on a customer's
   invoice. Add a node type once and both paths get it.
 * **Blank vs zero.** A Frappe Float stores a blank as 0, so the two are
-  indistinguishable here. For measures where the value is only a *multiplier*
-  (area, perimeter, linear) a 0 means "not given" and falls back to 1. For
-  `count` and `piece_waste` the count IS the quantity, so a 0 stays 0 — turning
-  it into 1 would invent a unit nobody ordered.
+  indistinguishable here. The engine decides what an empty line means; this
+  module just evaluates what it is given.
 """
 
 from __future__ import annotations
 
 import ast
 import math
+import re
 
-AREA = "area"
-PERIMETER = "perimeter"
-LINEAR = "linear"
-COUNT = "count"
-PIECE_WASTE = "piece_waste"
-MANUAL = "manual"
-FORMULA = "formula"
-MEASURE_KEYS = {AREA, PERIMETER, LINEAR, COUNT, PIECE_WASTE, MANUAL, FORMULA}
+#: A formula refers to its inputs by these names.
+TOKEN_PATTERN = re.compile(r"^[a-z_][a-z0-9_]*$")
 
-#: What the user picks and what gets stamped on the line. The stored value is
-#: the label — contractors never see a snake_case key — and everything inside
-#: the engine works from the key.
-MEASURE_LABELS = {
-	AREA: "Area (Height × Width × Count)",
-	PERIMETER: "Perimeter ((Height + Width) × 2 × Count)",
-	LINEAR: "Linear (Length × Count)",
-	COUNT: "Count",
-	PIECE_WASTE: "Piece × Wastage (Count × Wastage)",
-	MANUAL: "Manual (keep the typed quantity)",
-	FORMULA: "Custom formula",
+#: Ready-made starting points. Each names the inputs it expects — by token and
+#: by the Insite field that usually supplies it — and the formula over them.
+PRESETS = {
+	"Area": {
+		"inputs": [("height", "custom_height"), ("width", "custom_width"), ("count", "custom_base_qty")],
+		"formula": "height * width * count",
+	},
+	"Perimeter": {
+		"inputs": [("height", "custom_height"), ("width", "custom_width"), ("count", "custom_base_qty")],
+		"formula": "(height + width) * 2 * count",
+	},
+	"Linear": {
+		"inputs": [("length", "custom_length"), ("count", "custom_base_qty")],
+		"formula": "length * count",
+	},
+	"Count": {
+		"inputs": [("count", "custom_base_qty")],
+		"formula": "count",
+	},
+	"Piece × Wastage": {
+		"inputs": [("count", "custom_base_qty"), ("wastage", "custom_waste_factor")],
+		"formula": "count * wastage",
+	},
+	"Volume": {
+		"inputs": [
+			("height", "custom_height"),
+			("width", "custom_width"),
+			("length", "custom_length"),
+			("count", "custom_base_qty"),
+		],
+		"formula": "height * width * length * count",
+	},
 }
-LABEL_TO_KEY = {label: key for key, label in MEASURE_LABELS.items()}
 
-#: The plain words a formula author may use.
-FORMULA_TOKENS = ("height", "width", "length", "count", "wastage")
+#: Chosen on a rule when the quantity is typed by hand and never calculated.
+MANUAL = "Manual"
+
+#: Chosen when the formula is written from scratch.
+CUSTOM = "Custom"
+
+#: Everything the Preset field may hold.
+PRESET_CHOICES = (*PRESETS.keys(), MANUAL, CUSTOM)
 
 # Guards against a formula that is valid but ruinous to run. A Contracting
 # Manager authors formulas; ordinary users trigger them on every save, so an
@@ -91,56 +112,54 @@ _ALLOWED_BINOPS = (ast.Add, ast.Sub, ast.Mult, ast.Div, ast.FloorDiv, ast.Mod, a
 _ALLOWED_UNARYOPS = (ast.UAdd, ast.USub)
 
 
-def normalize_measure(value):
-	"""Accept either a stored label or an internal key; return the key."""
-	if value in MEASURE_KEYS:
-		return value
-	return LABEL_TO_KEY.get(value, value)
+def suggest_token(label):
+	"""Turn a field label into a name a formula can use: 'Number of Panels' -> 'number_of_panels'."""
+	token = re.sub(r"[^a-z0-9]+", "_", (label or "").strip().lower()).strip("_")
+	if not token or token[0].isdigit():
+		token = f"f_{token}" if token else "field"
+	return token
 
 
-def compute(measure, *, height=0.0, width=0.0, length=0.0, count=1.0, wastage=1.0, formula=None):
-	"""Return the billable quantity for `measure`, or None for `manual`."""
-	measure = normalize_measure(measure)
-	h, w, ln = _f(height), _f(width), _f(length)
-	wf = _f(wastage) or 1.0
-
-	if measure == AREA:
-		return h * w * (_f(count) or 1.0)
-	if measure == PERIMETER:
-		return (h + w) * 2.0 * (_f(count) or 1.0)
-	if measure == LINEAR:
-		return ln * (_f(count) or 1.0)
-	if measure == COUNT:
-		return _f(count)
-	if measure == PIECE_WASTE:
-		return _f(count) * wf
-	if measure == MANUAL:
-		return None
-	if measure == FORMULA:
-		return evaluate_formula(
-			formula, {"height": h, "width": w, "length": ln, "count": _f(count), "wastage": wf}
-		)
-	raise ValueError(f"Unknown measure: {measure!r}")
+def is_valid_token(token):
+	return bool(token) and bool(TOKEN_PATTERN.match(token))
 
 
-def validate_formula(formula):
+def validate_formula(formula, tokens):
 	"""Check a formula can always be run, without running the arithmetic.
 
-	Deliberately does not compute: `count / (width - height)` is a legitimate
-	formula that would divide by zero against sample values, and rejecting it
-	at save time would be wrong. Raises ValueError with a message written for
-	the person editing the rule.
+	`tokens` is the set of names the rule's inputs provide. Deliberately does
+	not compute: `count / (width - height)` is a legitimate formula that would
+	divide by zero against sample values, and rejecting it at save time would
+	be wrong.
 	"""
-	_walk(_parse(formula), {}, evaluate=False)
+	_walk(_parse(formula), {token: 0.0 for token in tokens}, evaluate=False)
 
 
-def evaluate_formula(formula, tokens):
-	"""Evaluate a plain-words formula over `tokens` (height/width/…)."""
-	result = _walk(_parse(formula), dict(tokens), evaluate=True)
+def evaluate_formula(formula, values):
+	"""Evaluate a formula over `values`, a mapping of token name to number.
+
+	Values are coerced here, so a blank field reads as zero rather than failing
+	the arithmetic.
+	"""
+	numbers = {token: _f(value) for token, value in (values or {}).items()}
+	result = _walk(_parse(formula), numbers, evaluate=True)
 	value = _f(result)
 	if not math.isfinite(value):
 		raise ValueError("This formula produced a number too large to use.")
 	return value
+
+
+def formula_tokens(formula):
+	"""Every name a formula refers to, so a rule can be checked against its inputs."""
+	try:
+		tree = ast.parse(str(formula or ""), mode="eval")
+	except SyntaxError:
+		return set()
+	return {
+		node.id
+		for node in ast.walk(tree)
+		if isinstance(node, ast.Name) and node.id not in _ALLOWED_FUNCS and node.id not in _ALLOWED_CONSTS
+	}
 
 
 # --- internals ---------------------------------------------------------------
@@ -186,17 +205,14 @@ def _walk(node, names, evaluate):
 	if isinstance(node, ast.Name):
 		if node.id in _ALLOWED_CONSTS:
 			return _ALLOWED_CONSTS[node.id] if evaluate else None
-		if node.id in FORMULA_TOKENS:
-			return names.get(node.id, 0.0) if evaluate else None
-		raise ValueError(
-			f"The formula uses the word '{node.id}'. You can use these words only: "
-			+ ", ".join(FORMULA_TOKENS)
-			+ "."
-		)
+		if node.id in names:
+			return names[node.id] if evaluate else None
+		known = ", ".join(sorted(names)) or "none yet"
+		raise ValueError(f"The formula uses '{node.id}', which is not one of this rule's inputs ({known}).")
 
 	if isinstance(node, ast.BinOp) and isinstance(node.op, _ALLOWED_BINOPS):
 		if isinstance(node.op, ast.Pow):
-			_check_exponent(node)
+			_check_static_power(node.left, node.right)
 		left = _walk(node.left, names, evaluate)
 		right = _walk(node.right, names, evaluate)
 		return _apply_binop(node.op, left, right) if evaluate else None
@@ -220,9 +236,8 @@ def _walk(node, names, evaluate):
 		return _ALLOWED_FUNCS[name](*args) if evaluate else None
 
 	raise ValueError(
-		"Insite cannot read part of this formula. Use numbers, the words "
-		+ ", ".join(FORMULA_TOKENS)
-		+ ", the signs + - * / %, and the allowed functions."
+		"Insite cannot read part of this formula. Use numbers, the rule's inputs, "
+		"the signs + - * / %, and the allowed functions."
 	)
 
 
@@ -231,17 +246,6 @@ def _check_arity(name, given):
 	if given < low or (high is not None and given > high):
 		expected = f"{low}" if high == low else (f"{low} or more" if high is None else f"{low} to {high}")
 		raise ValueError(f"{name}() needs {expected} value(s), but {given} were given.")
-
-
-def _check_exponent(node):
-	"""Reject an exponent big enough to hang a worker, at save time.
-
-	`**` binds right to left, so `9 ** 9 ** 9` hides its real exponent behind
-	another power. Anything built only from numbers is folded here — in floats,
-	so the check itself cannot blow up — and an exponent that depends on a
-	measurement is left to the runtime guard in `_apply_binop`.
-	"""
-	_check_static_power(node.left, node.right)
 
 
 def _check_static_power(base_node, exponent_node):

@@ -1,0 +1,45 @@
+{
+  "doctype": "DocType",
+  "name": "Measurement Input",
+  "module": "Insite",
+  "istable": 1,
+  "editable_grid": 1,
+  "engine": "InnoDB",
+  "creation": "2026-09-03 00:00:00.000000",
+  "modified": "2026-09-03 00:00:00.000000",
+  "owner": "Administrator",
+  "modified_by": "Administrator",
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "field_order": ["field_label", "token", "field_name"],
+  "fields": [
+    {
+      "fieldname": "field_label",
+      "fieldtype": "Data",
+      "label": "Field on the line",
+      "in_list_view": 1,
+      "read_only": 1,
+      "columns": 4,
+      "description": "Chosen below. This is what the person filling in the document sees."
+    },
+    {
+      "fieldname": "token",
+      "fieldtype": "Data",
+      "label": "Name in the formula",
+      "in_list_view": 1,
+      "reqd": 1,
+      "columns": 3,
+      "description": "Lower case letters, digits and underscores, for example number_of_panels."
+    },
+    {
+      "fieldname": "field_name",
+      "fieldtype": "Autocomplete",
+      "label": "Field",
+      "reqd": 1,
+      "in_list_view": 1,
+      "columns": 3,
+      "description": "Pick a number field from the transaction line."
+    }
+  ],
+  "permissions": []
+}

@@ -29,82 +29,77 @@ _AUDIT_FIELDS = (
 	"custom_calc_dimensions",
 )
 
-#: The inputs each measure actually reads. A row with none of them filled in
-#: has not been measured, so the engine leaves the typed quantity alone.
-_REQUIRED_INPUTS = {
-	measures.AREA: ("height", "width"),
-	measures.PERIMETER: ("height", "width"),
-	measures.LINEAR: ("length",),
-	measures.COUNT: ("count",),
-	measures.PIECE_WASTE: ("count",),
-}
-
 
 def load_rules():
-	"""Every rule on every enabled Work Item Type, most important first."""
+	"""Every enabled rule whose Work Item Type is also enabled, most important first."""
+	enabled_types = set(frappe.get_all("Work Item Type", filters={"disabled": 0}, pluck="name"))
+	if not enabled_types:
+		return []
+
 	rules = []
-	types = frappe.get_all(
-		"Work Item Type", filters={"disabled": 0}, fields=["name"], order_by="modified desc"
+	names = frappe.get_all(
+		"Measurement Rule",
+		filters={"disabled": 0, "work_item_type": ["in", list(enabled_types)]},
+		pluck="name",
+		order_by="modified desc",
 	)
-	for entry in types:
-		doc = frappe.get_cached_doc("Work Item Type", entry.name)
-		for row in doc.measurement_rules:
-			rules.append(
-				{
-					"source": doc.name,
-					"measure": measures.normalize_measure(row.measure),
-					"formula": row.formula,
-					"apply_on": row.apply_on,
-					"item_code": row.item_code,
-					"item_template": row.item_template,
-					"item_group": row.item_group,
-					"item_attribute": row.item_attribute,
-					"attribute_value": row.attribute_value,
-					"priority": cint(row.priority),
-				}
-			)
+	for name in names:
+		doc = frappe.get_cached_doc("Measurement Rule", name)
+		rules.append(
+			{
+				"source": doc.work_item_type,
+				"rule": doc.name,
+				"preset": doc.preset,
+				"formula": doc.formula,
+				# token -> the field on the line that supplies it
+				"inputs": {row.token: row.field_name for row in doc.inputs},
+				"apply_on": doc.apply_on,
+				"item_code": doc.item_code,
+				"item_template": doc.item_template,
+				"item_group": doc.item_group,
+				"item_attribute": doc.item_attribute,
+				"attribute_value": doc.attribute_value,
+				"priority": cint(doc.priority),
+			}
+		)
 	rules.sort(key=lambda r: r["priority"], reverse=True)  # stable: keeps modified-desc within a tier
 	return rules
 
 
-def compute_qty_for_row(row, rule):
-	"""Return (qty, inputs) for a row and rule. qty is None for `manual`."""
-	inputs = _inputs(row)
-	qty = measures.compute(rule["measure"], formula=rule.get("formula"), **inputs)
-	return qty, inputs
+def read_inputs(row, rule):
+	"""{token: value} for a rule, read off the transaction line."""
+	return {token: flt(row.get(fieldname)) for token, fieldname in rule["inputs"].items()}
 
 
 def apply_rule_to_row(row, rule):
 	"""Write the measured quantity and the audit trail onto `row`."""
-	inputs = _inputs(row)
-	if not _has_measurements(rule["measure"], inputs):
+	if rule["preset"] == measures.MANUAL:
+		# The rule exists to say "do not calculate this". Record that, and leave
+		# the typed quantity exactly as it is.
+		_stamp(row, rule, {})
+		row.set("custom_calculated_qty", None)
+		return None
+
+	values = read_inputs(row, rule)
+	if not any(values.values()):
 		# Nothing was measured on this line — leave the user's quantity alone
 		# and do not claim the line was measured.
 		_clear_calc_fields(row)
 		return None
 
 	try:
-		qty = measures.compute(rule["measure"], formula=rule.get("formula"), **inputs)
+		qty = measures.evaluate_formula(rule["formula"], values)
 	except ValueError as e:
-		frappe.throw(
-			_("Row {0}: {1}").format(row.idx, str(e)),
-			title=_("Measurement Problem"),
-		)
+		frappe.throw(_("Row {0}: {1}").format(row.idx, str(e)), title=_("Measurement Problem"))
 	except ArithmeticError:
 		frappe.throw(
 			_("Row {0}: the formula on {1} cannot be worked out with these measurements ({2}).").format(
-				row.idx, rule["source"], _describe(inputs)
+				row.idx, rule["source"], _describe(values)
 			),
 			title=_("Measurement Problem"),
 		)
 
-	row.set("custom_calc_measure", measures.MEASURE_LABELS.get(rule["measure"], rule["measure"]))
-	row.set("custom_calc_source", rule["source"])
-	row.set("custom_calc_dimensions", json.dumps(inputs))
-
-	if qty is None:  # manual: keep the typed quantity, and do not leave a stale one behind
-		row.set("custom_calculated_qty", None)
-		return None
+	_stamp(row, rule, values)
 
 	precision = _precision(row)
 	rounded = flt(qty, precision)
@@ -160,17 +155,17 @@ def _report_changes(changes):
 	)
 
 
+def _stamp(row, rule, values):
+	"""Record which rule ran and what it read, so a quantity can be traced."""
+	row.set("custom_calc_measure", rule["preset"])
+	row.set("custom_calc_source", rule["source"])
+	row.set("custom_calc_dimensions", json.dumps(values))
+
+
 def _clear_calc_fields(row):
 	for field in _AUDIT_FIELDS:
 		if row.get(field):
 			row.set(field, None)
-
-
-def _has_measurements(measure, inputs):
-	needed = _REQUIRED_INPUTS.get(measure)
-	if not needed:  # manual and formula decide for themselves
-		return True
-	return any(inputs.get(name) for name in needed)
 
 
 def _precision(row):
@@ -180,18 +175,8 @@ def _precision(row):
 		return DEFAULT_PRECISION
 
 
-def _describe(inputs):
-	return ", ".join(f"{name.title()} {value:g}" for name, value in inputs.items() if value)
-
-
-def _inputs(row):
-	return {
-		"height": flt(row.get("custom_height")),
-		"width": flt(row.get("custom_width")),
-		"length": flt(row.get("custom_length")),
-		"count": flt(row.get("custom_base_qty")),
-		"wastage": flt(row.get("custom_waste_factor")),
-	}
+def _describe(values):
+	return ", ".join(f"{name} {value:g}" for name, value in values.items() if value)
 
 
 def _item_context(item_code, attributes):

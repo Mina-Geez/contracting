@@ -71,22 +71,22 @@ def test_every_doctype_field_order_matches_its_fields():
 		)
 
 
-def test_measure_options_match_the_labels_in_code():
+def test_preset_options_match_the_presets_in_code():
 	"""The Select stores what the engine reads back, so the two must agree.
 
 	A mismatch is invisible offline and fatal on a site: Frappe validates a
 	Select against its options after the controller runs, so a value the code
 	produces but the field does not offer makes the document unsaveable.
 	"""
-	from insite.calc.measures import MEASURE_LABELS
+	from insite.calc.measures import PRESET_CHOICES
 
 	with open("insite/insite/doctype/measurement_rule/measurement_rule.json", encoding="utf-8") as fh:
 		doc = json.load(fh)
-	field = next(f for f in doc["fields"] if f["fieldname"] == "measure")
+	field = next(f for f in doc["fields"] if f["fieldname"] == "preset")
 	options = field["options"].split("\n")
 
-	assert options == list(MEASURE_LABELS.values()), (
-		"measurement_rule.json 'measure' options must match MEASURE_LABELS exactly"
+	assert options == list(PRESET_CHOICES), (
+		"measurement_rule.json 'preset' options must match PRESET_CHOICES exactly"
 	)
 	assert field["default"] in options, "the default must be one of the options"
 
