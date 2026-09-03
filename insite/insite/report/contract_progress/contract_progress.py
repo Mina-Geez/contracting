@@ -40,7 +40,12 @@ def get_columns():
 		{"label": _("Status"), "fieldname": "status", "fieldtype": "Data", "width": 100},
 		{"label": _("Planned"), "fieldname": "planned", "fieldtype": "Currency", "width": 120},
 		{"label": _("Ordered"), "fieldname": "ordered", "fieldtype": "Currency", "width": 120},
-		{"label": _("Variance to Plan"), "fieldname": "variance_to_plan", "fieldtype": "Currency", "width": 130},
+		{
+			"label": _("Variance to Plan"),
+			"fieldname": "variance_to_plan",
+			"fieldtype": "Currency",
+			"width": 130,
+		},
 		{"label": _("Delivered"), "fieldname": "delivered", "fieldtype": "Currency", "width": 120},
 		{"label": _("Invoiced"), "fieldname": "invoiced", "fieldtype": "Currency", "width": 120},
 		{"label": _("Left to Invoice"), "fieldname": "variance", "fieldtype": "Currency", "width": 130},

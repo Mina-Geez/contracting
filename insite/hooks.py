@@ -1,4 +1,6 @@
-from insite.constants import ENFORCED_DOCTYPES, MEASURED_DOCTYPES, TAGGED_DOCTYPES
+# Imported under a private name: Frappe turns every public module-level name in
+# this file into a hook, and these are configuration, not hooks.
+from insite import constants as _c
 
 app_name = "insite"
 app_title = "Insite"
@@ -16,15 +18,17 @@ after_install = "insite.install.after_install"
 after_migrate = "insite.install.after_migrate"
 
 # --- Client scripts ---------------------------------------------------------
-doctype_js = {dt: "public/js/insite_transaction.js" for dt in TAGGED_DOCTYPES}
+doctype_js = {dt: "public/js/insite_transaction.js" for dt in _c.TAGGED_DOCTYPES}
 doctype_js["Work Item Type"] = "public/js/work_item_type.js"
 
 # --- Document events (server-authoritative) ---------------------------------
 # Quantities are computed before ERPNext totals the document; the Project and
 # Scope check runs afterwards, once the engine has marked the measured rows.
-doc_events = {dt: {"before_validate": "insite.overrides.transaction.recalculate"} for dt in MEASURED_DOCTYPES}
+doc_events = {
+	dt: {"before_validate": "insite.overrides.transaction.recalculate"} for dt in _c.MEASURED_DOCTYPES
+}
 
-for _doctype in ENFORCED_DOCTYPES:
+for _doctype in _c.ENFORCED_DOCTYPES:
 	doc_events.setdefault(_doctype, {})["validate"] = "insite.overrides.transaction.enforce_project_scope"
 
 del _doctype

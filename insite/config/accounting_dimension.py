@@ -49,14 +49,23 @@ def _get_or_create_dimension():
 
 
 def _create_dimension_fields(doc):
-	"""Run ERPNext's field creation now instead of waiting for a worker."""
+	"""Run ERPNext's field creation now instead of waiting for a worker.
+
+	Best effort: ERPNext may have moved this helper, or a queued worker may
+	already be doing the same work. Either way `_verify_columns` has the last
+	word, so a failure here is logged rather than raised.
+	"""
 	try:
 		from erpnext.accounts.doctype.accounting_dimension.accounting_dimension import (
 			make_dimension_in_accounting_doctypes,
 		)
-	except ImportError:  # pragma: no cover - ERPNext is a required app
-		return
-	make_dimension_in_accounting_doctypes(doc=doc)
+
+		make_dimension_in_accounting_doctypes(doc=doc)
+	except Exception:  # noqa: BLE001 - the verification below is the real check
+		frappe.log_error(
+			title="Insite: could not create the Scope dimension fields directly",
+			message=frappe.get_traceback(),
+		)
 
 
 def _verify_columns():

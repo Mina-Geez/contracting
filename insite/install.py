@@ -12,9 +12,9 @@ from insite.config.accounting_dimension import ensure_scope_dimension
 from insite.config.custom_fields import ensure_custom_fields
 from insite.config.price_visibility import apply_from_settings
 
-ROLES = [
-	("Contracting Manager", "Sets up Work Item Types, and manages the scopes of work."),
-]
+#: Roles Insite needs. Frappe's Role doctype carries no description field, so
+#: what each role is for lives in docs/SETUP.md, not on the record.
+ROLE_NAMES = ("Contracting Manager",)
 
 
 def after_install():
@@ -35,23 +35,17 @@ def setup():
 
 
 def create_roles():
-	for role_name, description in ROLES:
+	"""Create the roles Insite needs, if a DocType's permissions have not already.
+
+	Frappe creates any role named in a permissions block while it syncs the
+	doctypes, so on a normal install there is usually nothing left to do here.
+	"""
+	for role_name in ROLE_NAMES:
 		if frappe.db.exists("Role", role_name):
-			# Frappe auto-creates roles named in a DocType's permissions, so the
-			# role usually exists already but without our description.
-			role = frappe.get_doc("Role", role_name)
-			if not role.description:
-				role.description = description
-				role.save(ignore_permissions=True)
 			continue
-		frappe.get_doc(
-			{
-				"doctype": "Role",
-				"role_name": role_name,
-				"desk_access": 1,
-				"description": description,
-			}
-		).insert(ignore_permissions=True)
+		frappe.get_doc({"doctype": "Role", "role_name": role_name, "desk_access": 1}).insert(
+			ignore_permissions=True
+		)
 
 
 def ensure_settings_singleton():
@@ -64,6 +58,5 @@ def ensure_settings_singleton():
 	settings = frappe.get_single("Contracting Settings")
 	if frappe.db.get_single_value("Contracting Settings", "enforce_project_and_scope") is None:
 		settings.enforce_project_and_scope = 1
-		settings.save(ignore_permissions=True)
-	elif not frappe.db.exists("Singles", {"doctype": "Contracting Settings"}):
-		settings.save(ignore_permissions=True)
+	# Saving unconditionally also materialises the document on a fresh site.
+	settings.save(ignore_permissions=True)
