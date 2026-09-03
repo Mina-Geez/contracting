@@ -30,6 +30,8 @@ after_migrate = "insite.install.after_migrate"
 # --- Client scripts ---------------------------------------------------------
 doctype_js = {dt: "public/js/insite_transaction.js" for dt in _c.TAGGED_DOCTYPES}
 doctype_js["Measurement Rule"] = "public/js/measurement_rule.js"
+doctype_js["Work Item Type"] = "public/js/work_item_type.js"
+doctype_js["Project"] = "public/js/project.js"
 
 # --- Document events (server-authoritative) ---------------------------------
 # Quantities are computed before ERPNext totals the document; the Project and

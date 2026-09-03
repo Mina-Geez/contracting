@@ -7,7 +7,7 @@
   "public": 1,
   "icon": "project",
   "is_hidden": 0,
-  "content": "[{\"type\": \"header\", \"data\": {\"text\": \"Setup\", \"level\": 4}}, {\"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Work Item Type\"}}, {\"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Measurement Rule\"}}, {\"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Measurement Field\"}}, {\"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Contracting Settings\"}}, {\"type\": \"header\", \"data\": {\"text\": \"Contracts\", \"level\": 4}}, {\"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Scope Item\"}}, {\"type\": \"header\", \"data\": {\"text\": \"Reports\", \"level\": 4}}, {\"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Contract Progress\"}}]",
+  "content": "[{\"type\": \"paragraph\", \"data\": {\"text\": \"Set up in this order: <b>1.</b> a <b>Work Item Type</b> for each kind of work &nbsp;<b>2.</b> a <b>Measurement Rule</b> on it saying how that work is measured &nbsp;<b>3.</b> a <b>Scope Item</b> on a Project for each scope of work you will report on. Add a <b>Measurement Field</b> first if you measure something Insite does not already ask for.\"}}, {\"type\": \"header\", \"data\": {\"text\": \"Setup\", \"level\": 4}}, {\"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Work Item Type\"}}, {\"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Measurement Rule\"}}, {\"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Measurement Field\"}}, {\"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Contracting Settings\"}}, {\"type\": \"header\", \"data\": {\"text\": \"Contracts\", \"level\": 4}}, {\"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Scope Item\"}}, {\"type\": \"header\", \"data\": {\"text\": \"Reports\", \"level\": 4}}, {\"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Contract Progress\"}}]",
   "shortcuts": [
     {
       "type": "DocType",
@@ -41,6 +41,6 @@
     }
   ],
   "app": "insite",
-  "modified": "2026-09-03 23:45:00.000000",
+  "modified": "2026-09-04 00:45:00.000000",
   "sequence_id": 1.0
 }

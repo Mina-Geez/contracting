@@ -1,10 +1,10 @@
 // Insite — transaction lines.
 //
-// Quantities are worked out on the server when the document is saved, so this
-// script does no arithmetic. It has two small jobs: ask which measurement
-// boxes a line actually needs as soon as an item is chosen, so a door does not
-// offer a length nobody will fill in, and make the form react when a
-// measurement changes so there is something to save.
+// The server decides the quantity when the document is saved. This script
+// keeps the person entering the document from working blind until then: it
+// asks which measurement boxes the line needs, shows the quantity as they
+// type, offers only the scopes that belong to this project, and carries the
+// scope down to the next line.
 
 const INSITE_MEASUREMENT_FIELDS = [
 	"custom_base_qty",
@@ -14,46 +14,72 @@ const INSITE_MEASUREMENT_FIELDS = [
 	"custom_waste_factor",
 ];
 
-const INSITE_ITEM_DOCTYPES = [
-	"Quotation Item",
-	"Sales Order Item",
-	"Delivery Note Item",
-	"Sales Invoice Item",
-	"Material Request Item",
-	"Supplier Quotation Item",
-	"Purchase Order Item",
-	"Purchase Receipt Item",
-	"Purchase Invoice Item",
+const INSITE_PARENT_DOCTYPES = [
+	"Quotation",
+	"Sales Order",
+	"Delivery Note",
+	"Sales Invoice",
+	"Material Request",
+	"Supplier Quotation",
+	"Purchase Order",
+	"Purchase Receipt",
+	"Purchase Invoice",
 ];
 
-// One answer per item, kept for the life of the page.
-const insite_inputs_cache = {};
+function insite_refresh_line(frm, cdt, cdn) {
+	const row = locals[cdt][cdn];
+	if (!row || !row.item_code) return;
 
-function insite_apply_inputs(cdt, cdn, item_code) {
-	if (!item_code) return;
-	const use = (value) => frappe.model.set_value(cdt, cdn, "custom_measurement_inputs", value);
-	if (item_code in insite_inputs_cache) {
-		use(insite_inputs_cache[item_code]);
-		return;
-	}
+	const values = {};
+	INSITE_MEASUREMENT_FIELDS.forEach((fieldname) => {
+		values[fieldname] = row[fieldname] || 0;
+	});
+
 	frappe.call({
-		method: "insite.api.inputs_for_item",
-		args: { item_code: item_code },
+		method: "insite.api.line_preview",
+		args: { item_code: row.item_code, values: values },
 		callback(r) {
-			insite_inputs_cache[item_code] = r.message || "";
-			use(insite_inputs_cache[item_code]);
+			const answer = r.message;
+			if (!answer) return;
+			frappe.model.set_value(cdt, cdn, "custom_measurement_inputs", answer.inputs);
+			if (answer.quantity !== null && answer.quantity !== undefined) {
+				frappe.model.set_value(cdt, cdn, "qty", answer.quantity);
+			}
 		},
 	});
 }
 
-INSITE_ITEM_DOCTYPES.forEach((doctype) => {
+INSITE_PARENT_DOCTYPES.forEach((parent) => {
+	const child = `${parent} Item`;
+
+	frappe.ui.form.on(parent, {
+		onload(frm) {
+			// Never offer a scope from another project: the document would be
+			// refused on save, and the picker should not have suggested it.
+			frm.set_query("scope_item", "items", () => ({
+				filters: frm.doc.project ? { project: frm.doc.project } : {},
+			}));
+		},
+	});
+
 	const handlers = {
 		item_code(frm, cdt, cdn) {
-			insite_apply_inputs(cdt, cdn, locals[cdt][cdn].item_code);
+			insite_refresh_line(frm, cdt, cdn);
+		},
+		items_add(frm, cdt, cdn) {
+			// Most lines on a document belong to the same scope. Carry it down
+			// rather than making someone pick it forty times.
+			const rows = frm.doc.items || [];
+			const previous = rows[rows.length - 2];
+			if (previous && previous.scope_item) {
+				frappe.model.set_value(cdt, cdn, "scope_item", previous.scope_item);
+			}
 		},
 	};
+
 	INSITE_MEASUREMENT_FIELDS.forEach((fieldname) => {
-		handlers[fieldname] = (frm) => frm.dirty();
+		handlers[fieldname] = (frm, cdt, cdn) => insite_refresh_line(frm, cdt, cdn);
 	});
-	frappe.ui.form.on(doctype, handlers);
+
+	frappe.ui.form.on(child, handlers);
 });
