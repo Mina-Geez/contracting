@@ -120,6 +120,7 @@ def recalculate_document(doc):
 	rules = load_rules()
 	attributes = _attributes_for(items) if rules else {}
 	changes = []
+	no_longer_measured = []
 
 	for row in items:
 		rule = None
@@ -133,11 +134,17 @@ def recalculate_document(doc):
 				changes.append((row.idx, change[0], change[1], rule["source"]))
 		else:
 			# No rule applies any more. Anything the engine wrote before must go,
-			# or the line keeps a quantity and an audit trail it no longer earns.
+			# or the line keeps an audit trail it no longer earns. The quantity
+			# is left alone — it is the user's field, and ERPNext keeps it too
+			# when an item changes — but they are told to look at it.
+			if row.get("custom_calc_source"):
+				no_longer_measured.append((row.idx, row.get("item_code"), flt(row.get(TARGET_FIELD))))
 			_clear_calc_fields(row)
 
 	if changes:
 		_report_changes(changes)
+	if no_longer_measured:
+		_report_no_longer_measured(no_longer_measured)
 	return len(changes)
 
 
@@ -153,6 +160,23 @@ def _report_changes(changes):
 		"<br>".join(lines),
 		title=_("Quantities recalculated from measurements"),
 		indicator="blue",
+	)
+
+
+def _report_no_longer_measured(rows):
+	"""Warn when a line stops being measured but keeps its old quantity.
+
+	The quantity is not reset — it belongs to the user — so the only safe thing
+	is to say plainly that nothing is calculating it any more.
+	"""
+	lines = [
+		_("Row {0} ({1}): quantity is still {2}").format(idx, item_code or "", quantity)
+		for idx, item_code, quantity in rows[:10]
+	]
+	frappe.msgprint(
+		"<br>".join(lines),
+		title=_("These lines are no longer measured — check the quantity"),
+		indicator="orange",
 	)
 
 
