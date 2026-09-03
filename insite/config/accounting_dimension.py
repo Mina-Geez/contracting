@@ -61,7 +61,7 @@ def _create_dimension_fields(doc):
 		)
 
 		make_dimension_in_accounting_doctypes(doc=doc)
-	except Exception:  # noqa: BLE001 - the verification below is the real check
+	except Exception:
 		frappe.log_error(
 			title="Insite: could not create the Scope dimension fields directly",
 			message=frappe.get_traceback(),
