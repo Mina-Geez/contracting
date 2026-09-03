@@ -196,7 +196,11 @@ def in_plain_words(formula, inputs):
 		if not row.token:
 			continue
 		label = row.field_label or (str(row.constant_value or "") if row.source == "Constant" else row.token)
-		text = re.sub(rf"{re.escape(row.token)}", str(label), text)
+		# Built by concatenation, not an f-string: a "\b" written inline is one
+		# keystroke away from becoming a literal backspace, which matches
+		# nothing and silently leaves the tokens unreplaced.
+		pattern = r"\b" + re.escape(row.token) + r"\b"
+		text = re.sub(pattern, str(label), text)
 	return text.replace("*", "×").replace("  ", " ").strip()
 
 

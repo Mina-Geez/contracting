@@ -102,6 +102,26 @@ def test_input_source_options_match_the_code():
 	assert field["default"] in INPUT_SOURCES
 
 
+def test_source_files_hold_no_stray_control_characters():
+	"""A control character in the source is invisible in every editor and fatal.
+
+	This caught a real one: the word boundaries in the Measurement Rule summary
+	had been written as actual backspace bytes (0x08) instead of the two
+	characters backslash and b. The regex then looked for a backspace either
+	side of the token, matched nothing, and 'Worked out as' quietly showed
+	`height * width * count` instead of `Height × Width × Count`. Nothing
+	failed; it was found by reading a rule on the site.
+
+	Tabs, newlines and carriage returns are the only control bytes source may
+	contain.
+	"""
+	allowed = {9, 10, 13}
+	for path in glob.glob("insite/**/*.py", recursive=True) + glob.glob("insite/**/*.js", recursive=True):
+		data = open(path, "rb").read()
+		found = sorted({byte for byte in data if byte < 0x20 and byte not in allowed})
+		assert not found, f"{path} holds control character(s) {[hex(b) for b in found]}"
+
+
 def test_rejection_status_options_match_the_code():
 	"""The guard and the report compare against these strings; the field offers them."""
 	from insite.constants import REJECTION_OPEN, REJECTION_STATUSES

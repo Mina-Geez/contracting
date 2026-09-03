@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import frappe
 from frappe import _
+from frappe.query_builder.functions import Sum
 from frappe.utils import flt
 
 from insite.config.accounting_dimension import DIMENSION_FIELDNAME as SCOPE_FIELD
@@ -121,17 +122,24 @@ def _open_rejections(scopes, company=None):
 	work already delivered, and nothing has been credited yet. That is why it
 	sits beside Delivered rather than being netted off it, and why Left to
 	Invoice is untouched — reworked work is still owed to you.
+
+	Built with the query builder rather than `get_all`: Frappe refuses an
+	aggregate written as a field string ("SQL functions are not allowed as
+	strings in SELECT"), and that refusal would take the whole report down, not
+	just this column.
 	"""
-	conditions = {"scope_item": ["in", scopes], "status": REJECTION_OPEN}
-	if company:
-		conditions["company"] = company
-	rows = frappe.get_all(
-		"Rejection",
-		filters=conditions,
-		fields=["scope_item as scope", "sum(rejected_amount) as amount"],
-		group_by="scope_item",
+	rejection = frappe.qb.DocType("Rejection")
+	query = (
+		frappe.qb.from_(rejection)
+		.select(rejection.scope_item, Sum(rejection.rejected_amount).as_("amount"))
+		.where(rejection.scope_item.isin(scopes))
+		.where(rejection.status == REJECTION_OPEN)
 	)
-	return {row.scope: flt(row.amount) for row in rows}
+	if company:
+		query = query.where(rejection.company == company)
+
+	rows = query.groupby(rejection.scope_item).run(as_dict=True)
+	return {row.scope_item: flt(row.amount) for row in rows}
 
 
 def _sum_by_scope(child_doctype, parent_doctype, scopes, company=None):
