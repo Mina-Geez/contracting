@@ -4,13 +4,14 @@ from __future__ import annotations
 
 import frappe
 from frappe import _
+from frappe.rate_limiter import rate_limit
 from frappe.utils import flt
 
 from insite.calc.measures import evaluate_formula
 
 
 @frappe.whitelist(methods=["POST"])
-@frappe.rate_limit(limit=60, seconds=60)
+@rate_limit(limit=60, seconds=60)
 def preview_formula(formula: str, values: str | dict | None = None):
 	"""Work out one quantity from sample numbers.
 
