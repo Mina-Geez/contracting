@@ -174,7 +174,7 @@ Insite asks a Sales Order, a Delivery Note and a Sales Invoice for a Project on
 the header. It also asks for a Scope on each line that a Measurement Rule
 matched. Insite does not check a line that no rule matched, so ordinary sales
 still work. To switch the whole check off, clear **Require Project and Scope on
-Sales Documents** in **Insite Settings**. That is the only setting Insite has.
+Sales Documents** in **Insite Settings**.
 
 ## 7. Handle a change of scope
 
@@ -197,7 +197,45 @@ Step 6 is optional. It moves the baseline to the new contract value, so
 Scope Item. Leave the Planned Amount alone to keep the original baseline in
 view.
 
-## 8. Read the progress
+## 8. Handle a rejection
+
+The consultant rejects six of the panels you installed. Record it, so nobody
+invoices them and nobody forgets to redo them.
+
+1. Open the **Delivery Note** the work went out on and click **Report a
+   Rejection**.
+2. Choose the line and enter how much of it was rejected. The project, scope,
+   item and rate come across with it.
+3. Write **What Was Wrong**, and who rejected it. Set **Fix By** if there is a
+   date. Save.
+
+If the rejection spans several deliveries, create the **Rejection** directly
+instead and fill in the project, scope and item yourself.
+
+While it is **Open**:
+
+- Invoicing that scope warns you and names the rejection. To make that a refusal
+  instead, tick **Refuse to Submit Invoices for a Scope With Open Rejections** in
+  **Insite Settings**. The refusal lands on submit — a draft can always be saved.
+  Credit notes are always allowed.
+- The value shows as **Rejected (Open)** in Contract Progress.
+
+Close it by setting the status:
+
+| Status | When | Then |
+| --- | --- | --- |
+| **Reworked** | you redid the work | optionally link the delivery that redid it |
+| **Credited** | the client will not take it | raise the credit note in ERPNext, then link it here — Insite asks for it |
+| **Accepted** | they took it after all | nothing else |
+
+Insite does not raise the credit note. It records the one you raised, so there is
+only ever one set of books.
+
+**Rejecting a supplier's delivery is different.** Use the **Rejected Qty** on the
+Purchase Receipt, which ERPNext already has. The Scope on the line still carries
+the cost to the right place.
+
+## 9. Read the progress
 
 Open **Contract Progress**. Filter by company, project or status.
 
@@ -209,9 +247,15 @@ Open **Contract Progress**. Filter by company, project or status.
 | Ordered | value on submitted Sales Orders for this scope |
 | Variance to Plan | Ordered − Planned |
 | Delivered | value on submitted Delivery Notes |
+| Rejected (Open) | value of Rejections still open against this scope |
 | Invoiced | value on submitted Sales Invoices |
 | Left to Invoice | the committed value − Invoiced |
 | % Invoiced | Invoiced as a percentage of the committed value |
+
+**Rejected (Open)** is not netted off any other column. It is a claim against
+work already delivered, not a ledger entry, so Delivered still says what went out
+and Left to Invoice still says what is owed to you — reworked work is work you
+will be paid for.
 
 The committed value is Ordered. Before the first Sales Order, Ordered is zero, so
 Contract Progress uses Planned as the committed value instead.
@@ -220,7 +264,7 @@ A change of scope is another Sales Order, so **Ordered** is the current committe
 value of the work. **Variance to Plan** is how a change reads in the report. Work
 ordered beyond the original plan shows as a positive number.
 
-## 9. A worked example
+## 10. A worked example
 
 A client orders six glass units. Each unit is 2.4 m high and 1.8 m wide. The
 rate is 900 per square meter. The workshop also wants to know how much sheet the
@@ -262,7 +306,7 @@ Change the formula to `height * width * count * cutting_allowance`. **Worked out
 as** then reads `Height × Width × Count × 1.12`, and the quantity of the first
 line becomes 29.03.
 
-## 10. Change a Measurement Rule later
+## 11. Change a Measurement Rule later
 
 A change to a Work Item Type or a Measurement Rule does not touch the documents
 you already have. Insite calculates a quantity only when a person saves a
@@ -271,13 +315,13 @@ they hold. Submitted documents do not move.
 
 To apply a new rule to an open draft, open the draft and save it again.
 
-## 11. Who does what
+## 12. Who does what
 
 | Role | What they do |
 | --- | --- |
-| Contracting Manager | Sets up Work Item Types, Measurement Rules and Measurement Fields. Creates and edits Scope Items, and sets the Planned Amount. Edits Insite Settings. Reads Contract Progress. |
-| Sales User | Reads Scope Items. Enters the measurements and the Scope on quotations, sales orders and delivery notes. Reads Contract Progress. |
-| Accounts User | Reads Scope Items. Enters the measurements and the Scope on invoices. Reads Contract Progress. |
+| Contracting Manager | Sets up Work Item Types, Measurement Rules and Measurement Fields. Creates and edits Scope Items, and sets the Planned Amount. Raises and closes Rejections. Edits Insite Settings. Reads Contract Progress. |
+| Sales User | Reads Scope Items and Rejections. Enters the measurements and the Scope on quotations, sales orders and delivery notes. Reads Contract Progress. |
+| Accounts User | Reads Scope Items and Rejections. Enters the measurements and the Scope on invoices. Reads Contract Progress. |
 | Purchase User | Reads Scope Items. Sets the Scope on purchase documents. |
 
 ## Troubleshooting
@@ -308,6 +352,20 @@ number of your own, add a Measurement Field first. See section 4.
 
 **I cannot delete a Measurement Field.** A rule reads it. **Used by rules** names
 the rules. Change those rules first, or tick **Hide on documents** instead.
+
+**Insite warns about rejected work when I save an invoice.** That scope has
+Rejections still open, and the message names them. Close each one as Reworked,
+Credited or Accepted, or invoice only the work that was accepted. A credit note
+never triggers the warning.
+
+**Insite will not let me submit an invoice over a rejection.** Someone has ticked
+**Refuse to Submit Invoices for a Scope With Open Rejections** in **Insite
+Settings**. Close the rejection, or clear that setting to get a warning instead.
+The draft still saves.
+
+**Insite will not let me close a rejection as Credited.** It wants the credit
+note. Raise it in ERPNext, then link it in the **Credit Note** field. Insite
+records the credit note you raised; it does not raise one for you.
 
 **I cannot save a Sales Order.** Add the Project, and add a Scope on each line
 that a rule matched. The Scope must belong to the same project and the same

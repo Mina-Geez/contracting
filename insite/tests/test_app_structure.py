@@ -102,6 +102,17 @@ def test_input_source_options_match_the_code():
 	assert field["default"] in INPUT_SOURCES
 
 
+def test_rejection_status_options_match_the_code():
+	"""The guard and the report compare against these strings; the field offers them."""
+	from insite.constants import REJECTION_OPEN, REJECTION_STATUSES
+
+	with open("insite/insite/doctype/rejection/rejection.json", encoding="utf-8") as fh:
+		doc = json.load(fh)
+	field = next(f for f in doc["fields"] if f["fieldname"] == "status")
+	assert field["options"].splitlines() == list(REJECTION_STATUSES)
+	assert field["default"] == REJECTION_OPEN
+
+
 def test_doctype_timestamps_have_been_bumped():
 	"""Frappe skips a DocType whose file is not newer than the database row.
 

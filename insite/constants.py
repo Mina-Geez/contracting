@@ -34,3 +34,20 @@ INPUT_FROM_LINE = "Line"
 INPUT_FROM_ITEM = "Item"
 INPUT_CONSTANT = "Constant"
 INPUT_SOURCES = (INPUT_FROM_LINE, INPUT_FROM_ITEM, INPUT_CONSTANT)
+
+#: A Rejection's life. `Open` is the only state that still holds work back;
+#: the rest are ways of being finished with it. Here for the same reason as
+#: the input sources: the Select offers these, the guard and the report
+#: compare against them, and a silent disagreement is unsaveable documents.
+REJECTION_OPEN = "Open"
+REJECTION_REWORKED = "Reworked"
+REJECTION_CREDITED = "Credited"
+REJECTION_ACCEPTED = "Accepted"
+REJECTION_CANCELLED = "Cancelled"
+REJECTION_STATUSES = (
+	REJECTION_OPEN,
+	REJECTION_REWORKED,
+	REJECTION_CREDITED,
+	REJECTION_ACCEPTED,
+	REJECTION_CANCELLED,
+)

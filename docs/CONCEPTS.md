@@ -186,6 +186,43 @@ Order against the same Scope Item. Many contractors already work this way.
 Step 5 is optional. Leave the Planned Amount alone to keep the original baseline
 in view.
 
+## Rejection
+
+Work you delivered that the client would not accept. The consultant rejects six
+panels on the third floor: that is a Rejection.
+
+A Rejection is a **claim, not an accounting entry**. Nothing about it posts to a
+ledger. It says some of what you delivered has to be redone, credited or argued
+about, and it stays **Open** until one of those happens. Report it from the
+Delivery Note it came from — the button asks which line and how much, and fills
+in the rest — or create one directly when it spans several deliveries.
+
+Closing it takes one of three shapes:
+
+| Status | What happened | What Insite wants |
+| --- | --- | --- |
+| **Reworked** | You redid the work. | Nothing. Link the delivery that redid it if you want the trail. |
+| **Credited** | The client will not take it. | The credit note you raised. Insite records it; it does not raise it. |
+| **Accepted** | They took it after all. | Nothing. |
+
+That division is deliberate. ERPNext already knows how to move stock and money
+with a return and a credit note, and a second set of books that drifts from the
+first would be worse than no record at all.
+
+An open Rejection does two things for you:
+
+- **It speaks up at billing time.** Invoicing a scope that still has rejected
+  work on it warns you and names the rejections. Turn on *Refuse to Submit
+  Invoices for a Scope With Open Rejections* in Insite Settings to make that a
+  hard stop on submit; a draft can always be saved. A credit note is always
+  allowed — raising one is how a rejection is settled.
+- **It shows in Contract Progress**, as **Rejected (Open)** beside Delivered, so
+  the delivered figure never reads better than the site does.
+
+**Buying is not here, on purpose.** A Purchase Receipt already has a rejected
+quantity and a rejected warehouse of its own, and Insite's Scope field is on
+those lines, so a supplier's bad batch already lands against the right scope.
+
 ## How the pieces work together
 
 1. You set up the Work Item Types and their Measurement Rules once. You add a
@@ -195,6 +232,7 @@ in view.
    the quantity of a measured line, writes any other numbers the rule produces,
    and keeps the line tied to its Scope.
 4. When the scope changes, you raise another Sales Order against the same Scope
-   Item.
+   Item. When work comes back rejected, you raise a Rejection against it.
 5. **Contract Progress** shows, for each scope: planned, ordered, the variance
-   to plan, delivered, invoiced, and what is left to invoice.
+   to plan, delivered, what is rejected and still open, invoiced, and what is
+   left to invoice.

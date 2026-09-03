@@ -6,14 +6,16 @@
   "editable_grid": 1,
   "engine": "InnoDB",
   "creation": "2026-09-03 00:00:00.000000",
-  "modified": "2026-09-04 01:50:00.000000",
+  "modified": "2026-09-04 02:00:00.000000",
   "owner": "Administrator",
   "modified_by": "Administrator",
   "sort_field": "modified",
   "sort_order": "DESC",
   "field_order": [
     "enforcement_section",
-    "enforce_project_and_scope"
+    "enforce_project_and_scope",
+    "rejections_section",
+    "block_invoicing_with_open_rejections"
   ],
   "fields": [
     {
@@ -27,6 +29,18 @@
       "label": "Require Project and Scope on Sales Documents",
       "default": "1",
       "description": "Sales Orders, Delivery Notes and Sales Invoices must carry a Project, and a Scope on every measured line. Insite only checks lines that a Measurement Rule matched, so ordinary sales are not affected."
+    },
+    {
+      "fieldname": "rejections_section",
+      "fieldtype": "Section Break",
+      "label": "Rejections"
+    },
+    {
+      "fieldname": "block_invoicing_with_open_rejections",
+      "fieldtype": "Check",
+      "label": "Refuse to Submit Invoices for a Scope With Open Rejections",
+      "default": "0",
+      "description": "Off, Insite warns and names the open rejections but lets the invoice through. On, it refuses to submit the invoice until each one is reworked, credited or accepted. A draft can always be saved either way, and credit notes are always allowed — raising one is how a rejection is settled."
     }
   ],
   "permissions": [

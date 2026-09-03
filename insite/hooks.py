@@ -41,8 +41,11 @@ doc_events = {
 }
 
 for _doctype in _c.ENFORCED_DOCTYPES:
-	doc_events.setdefault(_doctype, {})["validate"] = "insite.overrides.transaction.enforce_project_scope"
+	doc_events.setdefault(_doctype, {})["validate"] = ["insite.overrides.transaction.enforce_project_scope"]
 
 del _doctype
+
+# Billing is where rejected work costs money, so that is where Insite speaks up.
+doc_events["Sales Invoice"]["validate"].append("insite.overrides.transaction.warn_open_rejections")
 
 fixtures = []

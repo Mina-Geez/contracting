@@ -12,6 +12,10 @@ aggregates would scan every sales line ever written.
 
 Amounts are summed in company currency (`base_amount`), because a scope's
 planned figure is a single number and documents may be raised in any currency.
+
+**Rejected (Open)** sits beside Delivered so the delivered figure cannot read
+better than the site does. It is the value of Rejections still open against the
+scope — a claim, not a ledger entry.
 """
 
 from __future__ import annotations
@@ -21,6 +25,7 @@ from frappe import _
 from frappe.utils import flt
 
 from insite.config.accounting_dimension import DIMENSION_FIELDNAME as SCOPE_FIELD
+from insite.constants import REJECTION_OPEN
 
 
 def execute(filters=None):
@@ -47,6 +52,12 @@ def get_columns():
 			"width": 130,
 		},
 		{"label": _("Delivered"), "fieldname": "delivered", "fieldtype": "Currency", "width": 120},
+		{
+			"label": _("Rejected (Open)"),
+			"fieldname": "rejected_open",
+			"fieldtype": "Currency",
+			"width": 130,
+		},
 		{"label": _("Invoiced"), "fieldname": "invoiced", "fieldtype": "Currency", "width": 120},
 		{"label": _("Left to Invoice"), "fieldname": "variance", "fieldtype": "Currency", "width": 130},
 		{"label": _("% Invoiced"), "fieldname": "pct_invoiced", "fieldtype": "Percent", "width": 100},
@@ -62,6 +73,7 @@ def get_data(filters):
 	ordered = _sum_by_scope("Sales Order Item", "Sales Order", names, filters.get("company"))
 	delivered = _sum_by_scope("Delivery Note Item", "Delivery Note", names, filters.get("company"))
 	invoiced = _sum_by_scope("Sales Invoice Item", "Sales Invoice", names, filters.get("company"))
+	rejected = _open_rejections(names, filters.get("company"))
 
 	data = []
 	for scope in scopes:
@@ -78,6 +90,7 @@ def get_data(filters):
 				"ordered": ordered_amount,
 				"variance_to_plan": ordered_amount - planned,
 				"delivered": flt(delivered.get(scope.name)),
+				"rejected_open": flt(rejected.get(scope.name)),
 				"invoiced": invoiced_amount,
 				"variance": committed - invoiced_amount,
 				"pct_invoiced": (invoiced_amount / committed * 100.0) if committed else 0.0,
@@ -99,6 +112,26 @@ def _scopes(filters):
 		order_by="name asc",
 		limit_page_length=0,
 	)
+
+
+def _open_rejections(scopes, company=None):
+	"""Value of the rejections still open, per scope.
+
+	A management figure, not a ledger one: an open rejection is a claim against
+	work already delivered, and nothing has been credited yet. That is why it
+	sits beside Delivered rather than being netted off it, and why Left to
+	Invoice is untouched — reworked work is still owed to you.
+	"""
+	conditions = {"scope_item": ["in", scopes], "status": REJECTION_OPEN}
+	if company:
+		conditions["company"] = company
+	rows = frappe.get_all(
+		"Rejection",
+		filters=conditions,
+		fields=["scope_item as scope", "sum(rejected_amount) as amount"],
+		group_by="scope_item",
+	)
+	return {row.scope: flt(row.amount) for row in rows}
 
 
 def _sum_by_scope(child_doctype, parent_doctype, scopes, company=None):
