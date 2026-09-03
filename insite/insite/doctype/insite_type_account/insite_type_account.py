@@ -1,0 +1,12 @@
+"""Insite Type Account — default accounts for a Work Item Type, per company.
+
+No logic of its own. The controller still has to exist — Frappe imports a
+module for every DocType, child tables included.
+"""
+from __future__ import annotations
+
+from frappe.model.document import Document
+
+
+class InsiteTypeAccount(Document):
+	pass
