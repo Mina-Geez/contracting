@@ -7,7 +7,7 @@
   "public": 1,
   "icon": "project",
   "is_hidden": 0,
-  "content": "[{\"type\": \"header\", \"data\": {\"text\": \"Setup\", \"level\": 4}}, {\"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Work Item Type\"}}, {\"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Measurement Rule\"}}, {\"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Contracting Settings\"}}, {\"type\": \"header\", \"data\": {\"text\": \"Contracts\", \"level\": 4}}, {\"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Scope Item\"}}, {\"type\": \"header\", \"data\": {\"text\": \"Reports\", \"level\": 4}}, {\"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Contract Progress\"}}]",
+  "content": "[{\"type\": \"header\", \"data\": {\"text\": \"Setup\", \"level\": 4}}, {\"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Work Item Type\"}}, {\"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Measurement Rule\"}}, {\"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Measurement Field\"}}, {\"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Contracting Settings\"}}, {\"type\": \"header\", \"data\": {\"text\": \"Contracts\", \"level\": 4}}, {\"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Scope Item\"}}, {\"type\": \"header\", \"data\": {\"text\": \"Reports\", \"level\": 4}}, {\"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Contract Progress\"}}]",
   "shortcuts": [
     {
       "type": "DocType",
@@ -18,6 +18,11 @@
       "type": "DocType",
       "link_to": "Measurement Rule",
       "label": "Measurement Rule"
+    },
+    {
+      "type": "DocType",
+      "link_to": "Measurement Field",
+      "label": "Measurement Field"
     },
     {
       "type": "DocType",
@@ -36,6 +41,6 @@
     }
   ],
   "app": "insite",
-  "modified": "2026-09-03 23:05:00.000000",
+  "modified": "2026-09-03 23:45:00.000000",
   "sequence_id": 1.0
 }

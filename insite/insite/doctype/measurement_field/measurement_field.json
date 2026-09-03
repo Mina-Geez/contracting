@@ -1,0 +1,37 @@
+{
+  "doctype": "DocType",
+  "name": "Measurement Field",
+  "module": "Insite",
+  "engine": "InnoDB",
+  "editable_grid": 1,
+  "autoname": "field:field_label",
+  "naming_rule": "By fieldname",
+  "allow_rename": 0,
+  "track_changes": 1,
+  "creation": "2026-09-03 00:00:00.000000",
+  "modified": "2026-09-03 23:40:00.000000",
+  "owner": "Administrator",
+  "modified_by": "Administrator",
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "field_order": ["field_label", "help_text", "column_break_head", "field_name", "hidden",
+                  "info_section", "used_by"],
+  "fields": [
+    {"fieldname": "field_label", "fieldtype": "Data", "label": "Label", "reqd": 1, "unique": 1, "in_list_view": 1,
+     "description": "What the person filling in the document sees, for example Number of Panels."},
+    {"fieldname": "help_text", "fieldtype": "Small Text", "label": "Help Text",
+     "description": "Shown under the box on the line. Say what to type."},
+    {"fieldname": "column_break_head", "fieldtype": "Column Break"},
+    {"fieldname": "field_name", "fieldtype": "Data", "label": "Field Name", "read_only": 1, "in_list_view": 1,
+     "description": "Insite derives this from the label. A formula never uses it; rules give the field their own short name."},
+    {"fieldname": "hidden", "fieldtype": "Check", "label": "Hide on documents",
+     "description": "Keeps the field and everything already entered in it, but takes the box off the line."},
+    {"fieldname": "info_section", "fieldtype": "Section Break", "label": "Where it is used"},
+    {"fieldname": "used_by", "fieldtype": "Small Text", "label": "Used by rules", "read_only": 1,
+     "description": "Insite fills this in. A field used by a rule cannot be deleted."}
+  ],
+  "permissions": [
+    {"role": "System Manager", "read": 1, "write": 1, "create": 1, "delete": 1, "report": 1, "export": 1, "share": 1, "print": 1, "email": 1},
+    {"role": "Contracting Manager", "read": 1, "write": 1, "create": 1, "delete": 1, "report": 1, "export": 1, "share": 1, "print": 1, "email": 1}
+  ]
+}

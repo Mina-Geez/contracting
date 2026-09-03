@@ -11,6 +11,7 @@ import frappe
 from insite.config.accounting_dimension import ensure_scope_dimension
 from insite.config.custom_fields import ensure_custom_fields
 from insite.config.price_visibility import apply_from_settings
+from insite.insite.doctype.measurement_field.measurement_field import apply_all as apply_site_fields
 
 #: Roles Insite needs. Frappe's Role doctype carries no description field, so
 #: what each role is for lives in docs/SETUP.md, not on the record.
@@ -29,6 +30,7 @@ def setup():
 	"""Everything the app needs on a site. Runs on install and every migrate."""
 	create_roles()
 	ensure_custom_fields()
+	apply_site_fields()  # after Insite's own: these are inserted after them
 	ensure_settings_singleton()
 	ensure_scope_dimension()
 	apply_from_settings()
