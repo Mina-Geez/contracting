@@ -38,8 +38,13 @@ def ensure_scope_dimension():
 
 
 def _get_or_create_dimension():
-	if frappe.db.exists("Accounting Dimension", DIMENSION_DOCTYPE):
-		return frappe.get_doc("Accounting Dimension", DIMENSION_DOCTYPE)
+	# ERPNext names the record after the dimension's label, not the doctype it
+	# points at, so "Scope Item" is filed under "Scope". Look it up by what it
+	# actually points at — searching by name would miss it and try to add a
+	# second dimension for the same doctype, which ERPNext refuses.
+	existing = frappe.db.get_value("Accounting Dimension", {"document_type": DIMENSION_DOCTYPE}, "name")
+	if existing:
+		return frappe.get_doc("Accounting Dimension", existing)
 	doc = frappe.new_doc("Accounting Dimension")
 	doc.document_type = DIMENSION_DOCTYPE
 	doc.label = DIMENSION_LABEL
