@@ -91,6 +91,25 @@ def test_preset_options_match_the_presets_in_code():
 	assert field["default"] in options, "the default must be one of the options"
 
 
+def test_doctype_timestamps_have_been_bumped():
+	"""Frappe skips a DocType whose file is not newer than the database row.
+
+	Every JSON here is written by hand, so the timestamp has to be bumped by
+	hand too. Leaving it equal to `creation` means the scaffolded value was
+	never touched, and every change after the first install is silently
+	ignored by `bench migrate` — the field is simply never updated on the site.
+	"""
+	for d in _doctype_dirs() + _dirs(REPORT_GLOB):
+		slug = os.path.basename(d)
+		with open(f"{d}/{slug}.json", encoding="utf-8") as fh:
+			doc = json.load(fh)
+		if "modified" not in doc:
+			continue
+		assert doc["modified"] > doc.get("creation", ""), (
+			f"{d}/{slug}.json: bump 'modified' past 'creation' so migrate picks the change up"
+		)
+
+
 def test_every_report_has_py_and_init():
 	for d in _dirs(REPORT_GLOB):
 		slug = os.path.basename(d)
