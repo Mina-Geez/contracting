@@ -110,9 +110,6 @@ msgstr "ملغى"
 msgid "Description"
 msgstr "الوصف"
 
-msgid "Tolerance %"
-msgstr "نسبة التفاوت %"
-
 msgid "How is this measured?"
 msgstr "كيف يُقاس هذا؟"
 
@@ -286,11 +283,6 @@ msgstr "إلزام المشروع والنطاق في مستندات المبي�
 
 msgid "Defaults"
 msgstr "القيم الافتراضية"
-
-msgid "Default Tolerance %"
-msgstr "نسبة التفاوت الافتراضية %"
-
-# Workspace
 
 msgid "Setup"
 msgstr "الإعداد"

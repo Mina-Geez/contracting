@@ -6,18 +6,14 @@
   "editable_grid": 1,
   "engine": "InnoDB",
   "creation": "2026-09-03 00:00:00.000000",
-  "modified": "2026-09-04 01:35:00.000000",
+  "modified": "2026-09-04 01:50:00.000000",
   "owner": "Administrator",
   "modified_by": "Administrator",
   "sort_field": "modified",
   "sort_order": "DESC",
   "field_order": [
     "enforcement_section",
-    "enforce_project_and_scope",
-    "roadmap_section",
-    "default_tolerance_percentage",
-    "enable_price_visibility",
-    "price_visibility_roles"
+    "enforce_project_and_scope"
   ],
   "fields": [
     {
@@ -31,37 +27,6 @@
       "label": "Require Project and Scope on Sales Documents",
       "default": "1",
       "description": "Sales Orders, Delivery Notes and Sales Invoices must carry a Project, and a Scope on every measured line. Insite only checks lines that a Measurement Rule matched, so ordinary sales are not affected."
-    },
-    {
-      "fieldname": "roadmap_section",
-      "fieldtype": "Section Break",
-      "label": "On the roadmap",
-      "collapsible": 1,
-      "description": "Insite stores these settings, but nothing acts on them yet."
-    },
-    {
-      "fieldname": "default_tolerance_percentage",
-      "fieldtype": "Percent",
-      "label": "Default Tolerance %",
-      "default": "0",
-      "read_only": 1,
-      "description": "Planned for a later release. It will act as the fallback when a Work Item Type sets no tolerance."
-    },
-    {
-      "fieldname": "enable_price_visibility",
-      "fieldtype": "Check",
-      "label": "Enable Role-Based Price Visibility",
-      "default": "0",
-      "read_only": 1,
-      "description": "Planned for a later release. Prices stay visible to anyone who can read the document."
-    },
-    {
-      "fieldname": "price_visibility_roles",
-      "fieldtype": "Table",
-      "options": "Insite Price Role",
-      "label": "Price-Visible Roles",
-      "read_only": 1,
-      "depends_on": "enable_price_visibility"
     }
   ],
   "permissions": [
