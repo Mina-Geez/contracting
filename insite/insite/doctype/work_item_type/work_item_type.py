@@ -25,19 +25,22 @@ _SCOPE_FIELDS = {
 class WorkItemType(Document):
 	def validate(self):
 		for row in self.measurement_rules or []:
-			row.measure = measures.normalize_measure(row.measure)
 			self._validate_measure(row)
 			self._validate_scope(row)
 
 	def _validate_measure(self, row):
-		if row.measure not in measures.MEASURE_KEYS:
+		# The row stores the name a person picked; the engine works in keys.
+		# Normalise a copy only — writing the key back onto the row would fail
+		# the Select validation that Frappe runs after this method.
+		measure = measures.normalize_measure(row.measure)
+		if measure not in measures.MEASURE_KEYS:
 			frappe.throw(
 				_(
 					"Row {0}: '{1}' is not a measure Insite knows. Choose a value from the Measured By list."
 				).format(row.idx, row.measure),
 				title=_("Unknown Measure"),
 			)
-		if row.measure != measures.FORMULA:
+		if measure != measures.FORMULA:
 			return
 		if not (row.formula or "").strip():
 			frappe.throw(

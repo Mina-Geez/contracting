@@ -71,6 +71,26 @@ def test_every_doctype_field_order_matches_its_fields():
 		)
 
 
+def test_measure_options_match_the_labels_in_code():
+	"""The Select stores what the engine reads back, so the two must agree.
+
+	A mismatch is invisible offline and fatal on a site: Frappe validates a
+	Select against its options after the controller runs, so a value the code
+	produces but the field does not offer makes the document unsaveable.
+	"""
+	from insite.calc.measures import MEASURE_LABELS
+
+	with open("insite/insite/doctype/measurement_rule/measurement_rule.json", encoding="utf-8") as fh:
+		doc = json.load(fh)
+	field = next(f for f in doc["fields"] if f["fieldname"] == "measure")
+	options = field["options"].split("\n")
+
+	assert options == list(MEASURE_LABELS.values()), (
+		"measurement_rule.json 'measure' options must match MEASURE_LABELS exactly"
+	)
+	assert field["default"] in options, "the default must be one of the options"
+
+
 def test_every_report_has_py_and_init():
 	for d in _dirs(REPORT_GLOB):
 		slug = os.path.basename(d)
