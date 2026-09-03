@@ -13,10 +13,11 @@ bench --site <your-site> migrate
 
 Install adds these items, and adds them again on every migrate:
 
-- the measurement fields on the sales and purchase item rows
+- the measurement boxes on the sales and purchase item rows
 - the **Scope** accounting dimension
 - the **Contracting Manager** role
-- the **Insite Settings** single doctype
+- the **Insite Settings** record
+- every **Measurement Field** your site has added
 
 Give the **Contracting Manager** role to the people who set up the work and run
 the contracts.
@@ -40,28 +41,23 @@ Repeat this for each kind of work.
 Open the Work Item Type. Under **Measurement**, create a **Measurement Rule**.
 
 1. Set **Applies To** to `Item Group`, then choose your glass item group.
-2. Set **Start from** to **Area**. Insite fills in the Inputs and the Formula.
-3. Read the **Inputs**. Each row names a field on the transaction line, and the
-   name that field has in the formula.
-4. Change a row when the rule needs another field. You pick the field from a
-   list, and you never type a fieldname.
-5. Change the **Formula** when the arithmetic differs.
-6. Save. Insite names the rule for you.
-7. Choose **Try it**. Enter sample numbers, then read the quantity.
+2. Set **Start from** to **Area**.
+3. Read **Worked out as**. It says `Height × Width × Count`.
+4. Save. Insite names the rule for you.
+5. Choose **Try it**. Enter sample numbers, then read the quantity.
+
+Most rules need nothing more than those five steps.
 
 **Start from** offers these starting points.
 
-| Start from | Formula it fills in |
+| Start from | What it works out |
 | --- | --- |
-| Area | `height * width * count` |
-| Perimeter | `(height + width) * 2 * count` |
-| Linear | `length * count` |
-| Count | `count` |
-| Piece × Wastage | `count * wastage` |
-| Volume | `height * width * length * count` |
-
-A starting point is a start, not a fixed choice. Edit the Inputs, the Formula,
-or both.
+| Area | Height × Width × Count |
+| Perimeter | (Height + Width) × 2 × Count |
+| Linear | Length × Count |
+| Count | Count |
+| Piece × Wastage | Count × Wastage |
+| Volume | Height × Width × Length × Count |
 
 Two more choices sit in the same list. **Manual** tells Insite never to
 calculate the line, and to keep the quantity you typed. **Custom** is for a
@@ -69,50 +65,118 @@ formula you write from scratch.
 
 Add a rule for each item group, item, template or attribute value you measure.
 
-### Measure by a field of your own
+### Adjust the measurement
 
-A rule reads any number field on the transaction line, not only the five fields
-Insite adds. A site that already records "Number of Panels" points a rule
-straight at that field.
+**Adjust the measurement** is folded away on the form. Open it only when the
+ready-made answer is not what you measure. It holds the **Inputs** and the
+**Formula** behind the **Worked out as** line.
+
+Each row of **Inputs** is one number the formula reads. **Comes from** says
+where that number is.
+
+| Comes from | Where the number is | Example |
+| --- | --- | --- |
+| Line | measured on the document | the height of this unit |
+| Item | held on the material | the sheet the part is cut from |
+| Constant | carried by the rule | a cutting allowance of 1.12 |
+
+For **Line** and **Item**, pick the field from the list. You never type a field
+name. For **Constant**, type the number in **Value**.
+
+Each row also gives the number a short name for the formula. Insite suggests the
+name from the label of the field. Keep it, or type a shorter one.
+
+To read a sheet size from the material rather than from the line:
 
 1. Add a row to **Inputs**.
-2. Pick **Number of Panels** from the field list.
-3. Keep the name Insite suggests, `number_of_panels`, or type a shorter one.
-4. Write the formula `height * width * number_of_panels`.
-5. Save, then choose **Try it** to check the result.
+2. Set **Comes from** to `Item`.
+3. Pick the field, for example **Sheet Length**, from the list.
+4. Use the name of that row in the **Formula**.
+5. Save, then choose **Try it**.
 
-The site keeps the field and the label its people already know. Insite fits the
+Section 4 says how to add a number such as **Sheet Length** to the Item.
+
+### What else these measurements give you
+
+A rule can produce more than one number. Open this second folded-away section to
+write further numbers onto the line from the same measurements. For a door: the
+board it consumes, the edging round it, the fittings that go on it.
+
+1. Add a row.
+2. Pick the field the number is written to.
+3. Write a **Formula** over the same input names.
+4. Save.
+
+The quantity stays what you bill. Insite writes the other numbers beside it when
+someone saves the document.
+
+A rule may not write to a field it reads. A rule may not write to the same field
+twice. Insite refuses both when you save the rule.
+
+## 4. Add a number of your own
+
+Insite ships five measurement boxes: Count, Height, Width, Length and Wastage.
+Add a **Measurement Field** for any other number your site measures.
+
+Open **Insite > Measurement Field > New**.
+
+1. Type the **Label**, for example `Number of Panels`.
+2. Set **Where it belongs**.
+3. Write **Help Text** if the box needs it.
+4. Save.
+
+| Where it belongs | Use it for | Example |
+| --- | --- | --- |
+| Transaction line | a number measured each time | a panel count |
+| Item | a number that is true of the material | the sheet it is cut from |
+
+Insite adds the field everywhere it is needed, and adds it again on every
+migrate. A rule then reads it like any other number. To measure by panels, point
+a rule at **Number of Panels** and write `height * width * number_of_panels`.
+
+**Used by rules** lists the rules that read the field. A field a rule uses cannot
+be deleted. To take the box off the documents and keep everything already entered
+in it, tick **Hide on documents**.
+
+The site keeps the number and the label its people already know. Insite fits the
 site, and the site does not fit Insite.
 
-## 4. Create the job
+## 5. Create the job
 
 1. Create a **Project** for the job.
 2. Create a **Scope Item** for each scope of work.
 3. Give each Scope Item a **Title**, the **Project** and the **Planned Amount**.
    Insite assigns the code for you.
 
-## 5. Quote, order, deliver, invoice
+## 6. Quote, order, deliver, invoice
 
-Work as usual in ERPNext. On each item row, open **Measurements** and
-enter what you measured on site. A rule reads the fields its Inputs name.
+Work as usual in ERPNext. On each item row, open **Measurements** and enter what
+you measured on site. The row shows only the boxes its rule reads.
 
 - **Height**, **Width** and **Length** — the site dimensions.
 - **Count** — the number of units or pieces.
 - **Wastage** — a multiplier, not a percentage. Type 1.1 to add 10 percent.
   Leave blank for none. A value of 10 gives ten times the quantity.
-- **Scope** — the Scope Item that pays for this line.
+- **Scope** — the Scope Item that pays for this line. The list offers only the
+  scopes on the project of this document. A new line takes the Scope from the
+  line above it.
 
-Insite calculates the quantity when you save. The server does the calculation
-and replaces the quantity you typed. When every field the rule reads is empty,
-Insite leaves your quantity alone.
+The quantity and the amount follow the numbers as you type them. Insite works the
+quantity out again on the server when you save, and that answer is the one you
+keep. When every field the rule reads is empty, Insite leaves your quantity
+alone.
+
+Insite calculates on the Quotation, the Sales Order, the Delivery Note and the
+Sales Invoice. Purchase documents carry the **Scope** for cost. Insite does not
+calculate their quantities.
 
 Insite asks a Sales Order, a Delivery Note and a Sales Invoice for a Project on
 the header. It also asks for a Scope on each line that a Measurement Rule
 matched. Insite does not check a line that no rule matched, so ordinary sales
 still work. To switch the whole check off, clear **Require Project and Scope on
-Sales Documents** in **Insite Settings**.
+Sales Documents** in **Insite Settings**. That is the only setting Insite has.
 
-## 6. Handle a change of scope
+## 7. Handle a change of scope
 
 Insite has no change document. You raise another Sales Order against the same
 scope, the way many contractors already work.
@@ -133,7 +197,7 @@ Step 6 is optional. It moves the baseline to the new contract value, so
 Scope Item. Leave the Planned Amount alone to keep the original baseline in
 view.
 
-## 7. Read the progress
+## 8. Read the progress
 
 Open **Contract Progress**. Filter by company, project or status.
 
@@ -146,47 +210,59 @@ Open **Contract Progress**. Filter by company, project or status.
 | Variance to Plan | Ordered − Planned |
 | Delivered | value on submitted Delivery Notes |
 | Invoiced | value on submitted Sales Invoices |
-| Left to Invoice | Ordered − Invoiced |
-| % Invoiced | Invoiced as a percentage of Ordered |
+| Left to Invoice | the committed value − Invoiced |
+| % Invoiced | Invoiced as a percentage of the committed value |
 
-A change of scope is another Sales Order, so **Ordered** is the current
-committed value of the work. **Variance to Plan** is how a change reads in the
-report. Work ordered beyond the original plan shows as a positive number.
+The committed value is Ordered. Before the first Sales Order, Ordered is zero, so
+Contract Progress uses Planned as the committed value instead.
 
-## 8. A worked example
+A change of scope is another Sales Order, so **Ordered** is the current committed
+value of the work. **Variance to Plan** is how a change reads in the report. Work
+ordered beyond the original plan shows as a positive number.
+
+## 9. A worked example
 
 A client orders six glass units. Each unit is 2.4 m high and 1.8 m wide. The
-rate is 900 per square meter.
+rate is 900 per square meter. The workshop also wants to know how much sheet the
+order eats, at a 12 percent cutting allowance.
 
-1. The Work Item Type `Glass` holds one rule on the glass item group. The rule
-   starts from **Area**. It reads Height, Width and Count, and its formula is
-   `height * width * count`.
-2. Create the Scope Item `Curtain wall glazing` on the project. Set its
+1. Add a **Measurement Field** called `Sheet Area`. Set **Where it belongs** to
+   `Transaction line`.
+2. On the Work Item Type `Glass`, add one rule on the glass item group. Set
+   **Start from** to **Area**. **Worked out as** reads
+   `Height × Width × Count`.
+3. Open **What else these measurements give you**. Add a row that writes to
+   **Sheet Area**, with the formula `height * width * count * 1.12`.
+4. Save the rule.
+5. Create the Scope Item `Curtain wall glazing` on the project. Set its
    **Planned Amount** to 25,000.
-3. On the Sales Order line, enter Height 2.4, Width 1.8 and Count 6. Leave
-   **Wastage** blank. Choose the Scope `Curtain wall glazing`.
-4. Save. Insite writes a quantity of 25.92, because 2.4 × 1.8 × 6 = 25.92.
-5. The line amount is 25.92 × 900 = 23,328.
-6. Submit the Sales Order. **Contract Progress** shows Planned 25,000, Ordered
+6. On the Sales Order line, enter Height 2.4, Width 1.8 and Count 6. Choose the
+   Scope `Curtain wall glazing`.
+7. Save. Insite writes a quantity of 25.92, because 2.4 × 1.8 × 6 = 25.92. It
+   writes **Sheet Area** from the same measurements: 25.92 × 1.12 = 29.0304.
+8. The line amount is 25.92 × 900 = 23,328. The sheet area is not billed.
+9. Submit the Sales Order. **Contract Progress** shows Planned 25,000, Ordered
    23,328, Variance to Plan −1,672 and Left to Invoice 23,328.
-7. Invoice the whole order. Invoiced becomes 23,328, % Invoiced reads 100, and
-   Left to Invoice becomes 0.
-8. The client now asks for two more units. Raise a second Sales Order on the
-   same Project, and set the same Scope on the line.
-9. Enter Height 2.4, Width 1.8 and Count 2. The quantity is 8.64, and the
-   amount is 8.64 × 900 = 7,776.
-10. Submit the second order. Ordered becomes 31,104, and Variance to Plan
+10. Invoice the whole order. Invoiced becomes 23,328, % Invoiced reads 100, and
+    Left to Invoice becomes 0.
+11. The client now asks for two more units. Raise a second Sales Order on the
+    same Project, and set the same Scope on the line.
+12. Enter Height 2.4, Width 1.8 and Count 2. The quantity is 8.64, and the
+    amount is 8.64 × 900 = 7,776.
+13. Submit the second order. Ordered becomes 31,104, and Variance to Plan
     becomes +6,104. Left to Invoice becomes 7,776. That positive variance is
     the change of scope.
-11. When the client signs the change, set the **Planned Amount** of the scope to
+14. When the client signs the change, set the **Planned Amount** of the scope to
     31,104. Variance to Plan returns to zero.
 
-To bill a 10 percent cutting allowance on the same line, open the rule. Add
-**Wastage** as a fourth input, and change the formula to
-`height * width * count * wastage`. Type 1.1 in **Wastage** on the line. The
-quantity becomes 28.512.
+To bill the cutting allowance instead of only recording it, move it into the
+quantity. Open **Adjust the measurement** on the rule. Add an input, set **Comes
+from** to `Constant`, type 1.12 in **Value**, and name it `cutting_allowance`.
+Change the formula to `height * width * count * cutting_allowance`. **Worked out
+as** then reads `Height × Width × Count × 1.12`, and the quantity of the first
+line becomes 29.03.
 
-## 9. Change a Measurement Rule later
+## 10. Change a Measurement Rule later
 
 A change to a Work Item Type or a Measurement Rule does not touch the documents
 you already have. Insite calculates a quantity only when a person saves a
@@ -195,14 +271,14 @@ they hold. Submitted documents do not move.
 
 To apply a new rule to an open draft, open the draft and save it again.
 
-## 10. Who does what
+## 11. Who does what
 
 | Role | What they do |
 | --- | --- |
-| Contracting Manager | Sets up Work Item Types and Measurement Rules. Creates and edits Scope Items, and sets the Planned Amount. Reads Contract Progress. |
+| Contracting Manager | Sets up Work Item Types, Measurement Rules and Measurement Fields. Creates and edits Scope Items, and sets the Planned Amount. Edits Insite Settings. Reads Contract Progress. |
 | Sales User | Reads Scope Items. Enters the measurements and the Scope on quotations, sales orders and delivery notes. Reads Contract Progress. |
-| Purchase User | Enters the measurements and the Scope on purchase documents. |
 | Accounts User | Reads Scope Items. Enters the measurements and the Scope on invoices. Reads Contract Progress. |
+| Purchase User | Reads Scope Items. Sets the Scope on purchase documents. |
 
 ## Troubleshooting
 
@@ -216,13 +292,24 @@ is a multiplier. Type 1.1 to add 10 percent, and leave the field blank for none.
 
 **The quantity is not what I expect.** Open the row and read **Rule Used** and
 **Work Item Type** under **Calculated**. They name the rule that ran and the
-kind of work. Open that rule to read its Inputs and its Formula.
+kind of work. Open that rule and read **Worked out as**.
 
-**The field I want is not in the list.** The list holds Insite's own measurement
-fields, and the number fields your site added to its sales lines. Insite leaves
+**Insite says a line is no longer measured.** No rule matches that item any
+more. Insite cleared what it wrote and left the quantity as it is. Check the
+quantity, then add a rule for the item or type the quantity you want.
+
+**A box I expect is missing from the line.** A line shows only the measurement
+boxes its rule reads. Open the rule and read its **Inputs**.
+
+**The field I want is not in the rule's list.** The list holds Insite's five
+measurement boxes and every Measurement Field your site has added. Insite leaves
 out the standard ERPNext numbers, such as rate and amount. To measure by a
-number of your own, add a custom number field to the item rows first.
+number of your own, add a Measurement Field first. See section 4.
+
+**I cannot delete a Measurement Field.** A rule reads it. **Used by rules** names
+the rules. Change those rules first, or tick **Hide on documents** instead.
 
 **I cannot save a Sales Order.** Add the Project, and add a Scope on each line
-that a rule matched. To switch the check off, clear **Require Project and Scope
-on Sales Documents** in Insite Settings.
+that a rule matched. The Scope must belong to the same project and the same
+company as the document. To switch the check off, clear **Require Project and
+Scope on Sales Documents** in Insite Settings.

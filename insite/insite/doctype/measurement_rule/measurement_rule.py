@@ -115,7 +115,10 @@ class MeasurementRule(Document):
 		except ValueError as e:
 			frappe.throw(str(e), title=_("Formula Problem"))
 
-		unused = {row.token for row in self.inputs} - measures.formula_tokens(self.formula)
+		used = measures.formula_tokens(self.formula)
+		for row in self.outputs or []:
+			used |= measures.formula_tokens(row.formula)
+		unused = {row.token for row in self.inputs} - used
 		if unused:
 			frappe.msgprint(
 				_("The formula does not use: {0}. Remove the input, or use it in the formula.").format(

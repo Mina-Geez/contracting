@@ -171,9 +171,10 @@ function insite_try_dialog(frm) {
 		return;
 	}
 
-	// Only ask for what a person would actually measure. Item numbers and
-	// constants are filled in for them, so the dialog stays short.
-	const asked = inputs.filter((row) => (row.source || "Line") === "Line");
+	// Constants are filled in from the rule. Everything else is asked for,
+	// including Item numbers: there is no item here to read them from, and
+	// quietly assuming 1 would give an answer that means nothing.
+	const asked = inputs.filter((row) => (row.source || "Line") !== "Constant");
 	const given = {};
 	inputs.forEach((row) => {
 		if ((row.source || "Line") === "Constant") given[row.token] = row.constant_value || 0;
@@ -183,7 +184,9 @@ function insite_try_dialog(frm) {
 		title: __("Try this rule"),
 		fields: asked.map((row) => ({
 			fieldname: row.token,
-			label: `${row.field_label || row.field_name} (${row.token})`,
+			label:
+				(row.source === "Item" ? `${row.field_label || row.field_name} — on the Item` : row.field_label || row.field_name) +
+				` (${row.token})`,
 			fieldtype: "Float",
 		})),
 		primary_action_label: __("Work it out"),

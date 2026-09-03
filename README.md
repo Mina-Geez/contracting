@@ -8,30 +8,41 @@ ordered, delivered and invoiced.
 ## What it adds
 
 - **Work Item Type** — a kind of work, for example `Glass`. It holds a
-  description, the default accounts per company and the options. Its Measurement
-  Rules are listed on the form under **Measurement**.
-- **Measurement Rule** — a record of its own. Pick the fields the rule reads
-  from the line, then write the formula that combines them. Ready-made starting
-  points fill in both: Area, Perimeter, Linear, Count, Piece × Wastage and
-  Volume. Edit what a starting point gives you. A rule reads any number field on
-  the line, including a field your site added itself. Insite writes the quantity
-  when you save the document.
-- **Measurement fields on the item rows** — Count, Height, Width, Length and
-  Wastage. Wastage is a multiplier, not a percentage. Type 1.1 to add 10
-  percent. Leave blank for none.
+  description and the default accounts per company. Its Measurement Rules are
+  listed on the form under **Measurement**.
+- **Measurement Rule** — how a kind of work is measured. Say what the rule
+  **Applies To**, pick a **Start from**, and read **Worked out as**. That line
+  states the calculation in words, for example Height × Width × Count. Ready-made
+  starting points: Area, Perimeter, Linear, Count, Piece × Wastage and Volume.
+  **Manual** keeps the quantity you typed. **Custom** is for a formula of your
+  own.
+- **Inputs from three places** — a rule reads a number from the **Line**,
+  measured on the document. Or from the **Item**, a number held on the material,
+  such as the sheet it is cut from. Or from a **Constant**, a fixed number the
+  rule carries, such as a cutting allowance. Nobody retypes a sheet size on every
+  line.
+- **More numbers from the same measurements** — under **What else these
+  measurements give you**, a rule writes further numbers onto the line. For a
+  door: the board it consumes, the edging round it, the fittings that go on it.
+  The quantity stays what you bill.
+- **Measurement Field** — a number Insite does not ship. Give it a label, and say
+  whether it belongs on the transaction line or on the Item. Insite adds it
+  everywhere it is needed, and adds it again on every migrate.
+- **Measurement boxes on the item rows** — Count, Height, Width, Length and
+  Wastage. A line shows only the boxes its rule reads. Wastage is a multiplier,
+  not a percentage. Type 1.1 to add 10 percent. Leave blank for none.
 - **Scope Item** — a scope of work inside a project. It carries a Planned
   Amount, and it acts as an accounting dimension named **Scope**.
 - **Project and Scope on sales documents** — Insite asks for a Project on the
   header, and a Scope on each line that a Measurement Rule matched. Insite does
-  not check the other lines. You can switch the whole check off in
-  **Insite Settings**.
+  not check the other lines. You can switch the check off in **Insite Settings**.
 - **Contract Progress report** — scope, status, planned, ordered, variance to
   plan, delivered, invoiced, left to invoice and percent invoiced, for each
   scope.
 
 Insite uses standard ERPNext documents on purpose. The Project, the Quotation,
 the Sales Order, the Delivery Note, the Sales Invoice and the purchase documents
-stay untouched. Insite adds the measurement fields on the item rows, the Scope
+stay untouched. Insite adds the measurement boxes on the item rows, the Scope
 dimension, and its own configuration. It adds nothing else. Everything reports
 against two axes: the **Project** and the **Scope Item**.
 
@@ -41,13 +52,13 @@ then reads the change as **Variance to Plan**.
 
 ## Documentation
 
-- [docs/CONCEPTS.md](docs/CONCEPTS.md) — the three ideas Insite adds.
+- [docs/CONCEPTS.md](docs/CONCEPTS.md) — the ideas Insite adds.
 - [docs/SETUP.md](docs/SETUP.md) — install, first job, worked example.
 
 ## Install
 
 ```bash
-bench get-app https://github.com/Mina-Geez/contracting --branch insite
+bench get-app insite https://github.com/Mina-Geez/contracting --branch insite
 bench --site <your-site> install-app insite
 bench --site <your-site> migrate
 ```
@@ -66,14 +77,17 @@ starting points, the formula reader and the rule match. The rule match picks the
 most specific rule: item, then template, then attribute value, then item group.
 Priority breaks a tie.
 
-A document hook calls the calculation on the server before each save. The server
-writes the quantity, so a typed quantity cannot replace a calculated one. A line
-whose inputs are all empty keeps the quantity the user typed.
+A document hook calls the calculation on the server before each save of a
+Quotation, a Sales Order, a Delivery Note or a Sales Invoice. The server writes
+the quantity, so a typed quantity cannot replace a calculated one. A line whose
+inputs are all empty keeps the quantity the user typed. Purchase documents carry
+the Scope for cost. Insite does not calculate their quantities.
 
-Code creates the custom fields on the item rows, the Scope accounting dimension,
-the Contracting Manager role and the Insite Settings record. This code runs
-after install and after every migrate, and it is safe to run again. Insite does
-not ship exported customizations of standard doctypes.
+Code creates the measurement boxes on the item rows, the Scope accounting
+dimension, the Contracting Manager role and the Insite Settings record. The same
+code adds every Measurement Field the site has defined. It runs after install and
+after every migrate, and it is safe to run again. Insite does not ship exported
+customizations of standard doctypes.
 
 Run the tests:
 

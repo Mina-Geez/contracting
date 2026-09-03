@@ -14,17 +14,19 @@ const INSITE_MEASUREMENT_FIELDS = [
 	"custom_waste_factor",
 ];
 
-const INSITE_PARENT_DOCTYPES = [
-	"Quotation",
-	"Sales Order",
-	"Delivery Note",
-	"Sales Invoice",
+// Quantities are derived on these. A purchase line carries the Scope for cost,
+// but its quantity is what was ordered, so nothing here may touch it.
+const INSITE_MEASURED_DOCTYPES = ["Quotation", "Sales Order", "Delivery Note", "Sales Invoice"];
+
+const INSITE_BUYING_DOCTYPES = [
 	"Material Request",
 	"Supplier Quotation",
 	"Purchase Order",
 	"Purchase Receipt",
 	"Purchase Invoice",
 ];
+
+const INSITE_PARENT_DOCTYPES = INSITE_MEASURED_DOCTYPES.concat(INSITE_BUYING_DOCTYPES);
 
 function insite_refresh_line(frm, cdt, cdn) {
 	const row = locals[cdt][cdn];
@@ -62,9 +64,11 @@ INSITE_PARENT_DOCTYPES.forEach((parent) => {
 		},
 	});
 
+	const measured = INSITE_MEASURED_DOCTYPES.includes(parent);
+
 	const handlers = {
 		item_code(frm, cdt, cdn) {
-			insite_refresh_line(frm, cdt, cdn);
+			if (measured) insite_refresh_line(frm, cdt, cdn);
 		},
 		items_add(frm, cdt, cdn) {
 			// Most lines on a document belong to the same scope. Carry it down
@@ -77,9 +81,11 @@ INSITE_PARENT_DOCTYPES.forEach((parent) => {
 		},
 	};
 
-	INSITE_MEASUREMENT_FIELDS.forEach((fieldname) => {
-		handlers[fieldname] = (frm, cdt, cdn) => insite_refresh_line(frm, cdt, cdn);
-	});
+	if (measured) {
+		INSITE_MEASUREMENT_FIELDS.forEach((fieldname) => {
+			handlers[fieldname] = (frm, cdt, cdn) => insite_refresh_line(frm, cdt, cdn);
+		});
+	}
 
 	frappe.ui.form.on(child, handlers);
 });

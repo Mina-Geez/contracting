@@ -80,6 +80,13 @@ class MeasurementField(Document):
 			"description": self.help_text or "",
 			"hidden": 1 if self.hidden else 0,
 		}
+		if self.applies_to != "Item":
+			# Show it only on lines whose rule reads it, exactly as Insite's own
+			# measurement boxes behave.
+			definition["depends_on"] = (
+				"eval:!doc.custom_measurement_inputs "
+				f"|| doc.custom_measurement_inputs.includes('{self.field_name}')"
+			)
 		create_custom_fields(
 			{doctype: [definition] for doctype in self.target_doctypes}, ignore_validate=True
 		)
