@@ -26,6 +26,7 @@ def _fields():
 		},
 		{
 			"fieldname": "custom_base_qty",
+			"depends_on": "eval:!doc.custom_measurement_inputs || doc.custom_measurement_inputs.includes('custom_base_qty')",
 			"label": "Count",
 			"fieldtype": "Float",
 			"insert_after": "custom_insite_dim_sb",
@@ -33,12 +34,14 @@ def _fields():
 		},
 		{
 			"fieldname": "custom_height",
+			"depends_on": "eval:!doc.custom_measurement_inputs || doc.custom_measurement_inputs.includes('custom_height')",
 			"label": "Height",
 			"fieldtype": "Float",
 			"insert_after": "custom_base_qty",
 		},
 		{
 			"fieldname": "custom_width",
+			"depends_on": "eval:!doc.custom_measurement_inputs || doc.custom_measurement_inputs.includes('custom_width')",
 			"label": "Width",
 			"fieldtype": "Float",
 			"insert_after": "custom_height",
@@ -46,12 +49,14 @@ def _fields():
 		{"fieldname": "custom_insite_dim_cb", "fieldtype": "Column Break", "insert_after": "custom_width"},
 		{
 			"fieldname": "custom_length",
+			"depends_on": "eval:!doc.custom_measurement_inputs || doc.custom_measurement_inputs.includes('custom_length')",
 			"label": "Length",
 			"fieldtype": "Float",
 			"insert_after": "custom_insite_dim_cb",
 		},
 		{
 			"fieldname": "custom_waste_factor",
+			"depends_on": "eval:!doc.custom_measurement_inputs || doc.custom_measurement_inputs.includes('custom_waste_factor')",
 			"label": "Wastage",
 			"fieldtype": "Float",
 			"insert_after": "custom_length",
@@ -66,6 +71,7 @@ def _fields():
 		},
 		{
 			"fieldname": "custom_calculated_qty",
+			"depends_on": "eval:doc.custom_calc_source",
 			"label": "Calculated Quantity",
 			"fieldtype": "Float",
 			"insert_after": "custom_insite_calc_sb",
@@ -74,6 +80,7 @@ def _fields():
 		},
 		{
 			"fieldname": "custom_calc_measure",
+			"depends_on": "eval:doc.custom_calc_source",
 			"label": "Rule Used",
 			"fieldtype": "Data",
 			"insert_after": "custom_calculated_qty",
@@ -87,11 +94,22 @@ def _fields():
 		},
 		{
 			"fieldname": "custom_calc_source",
+			"depends_on": "eval:doc.custom_calc_source",
 			"label": "Work Item Type",
 			"fieldtype": "Data",
 			"insert_after": "custom_insite_calc_cb",
 			"read_only": 1,
 			"no_copy": 1,
+		},
+		{
+			"fieldname": "custom_measurement_inputs",
+			"label": "Measurement Inputs",
+			"fieldtype": "Data",
+			"insert_after": "custom_calc_dimensions",
+			"read_only": 1,
+			"hidden": 1,
+			"no_copy": 1,
+			"description": "Insite records which boxes this line's rule reads, so the rest stay out of the way.",
 		},
 		{
 			"fieldname": "custom_calc_dimensions",

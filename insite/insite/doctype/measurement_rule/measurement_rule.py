@@ -12,7 +12,7 @@ from frappe import _
 from frappe.model.document import Document
 
 from insite.calc import measures
-from insite.config.available_fields import field_label, measurable_fields
+from insite.config.available_fields import field_label, measurable_fields, measurable_item_fields
 
 _SCOPE_FIELDS = {
 	"Item Code": ("item_code", "Item"),
@@ -50,21 +50,28 @@ class MeasurementRule(Document):
 		if self.preset == measures.MANUAL:
 			return
 
-		allowed = measurable_fields()
+		from_line = measurable_fields()
+		from_item = measurable_item_fields()
 		seen = set()
 		for row in self.inputs or []:
-			if row.field_name not in allowed:
-				frappe.throw(
-					_(
-						"Row {0}: '{1}' is not a number field on the transaction line. "
-						"Pick one from the list."
-					).format(row.idx, row.field_name),
-					title=_("Unknown Field"),
-				)
-			row.field_label = allowed[row.field_name]
+			row.source = row.source or "Line"
+			if row.source == "Constant":
+				row.field_name = None
+				row.field_label = None
+			else:
+				allowed = from_line if row.source == "Line" else from_item
+				where = _("the transaction line") if row.source == "Line" else _("the Item")
+				if row.field_name not in allowed:
+					frappe.throw(
+						_("Row {0}: '{1}' is not a number field on {2}. Pick one from the list.").format(
+							row.idx, row.field_name, where
+						),
+						title=_("Unknown Field"),
+					)
+				row.field_label = allowed[row.field_name]
 
 			if not row.token:
-				row.token = measures.suggest_token(row.field_label)
+				row.token = measures.suggest_token(row.field_label or "value")
 			if not measures.is_valid_token(row.token):
 				frappe.throw(
 					_(
@@ -124,10 +131,11 @@ class MeasurementRule(Document):
 
 
 @frappe.whitelist()
-def get_measurable_fields():
-	"""Fields the Inputs grid may choose from, newest-friendly first."""
+def get_measurable_fields(source: str = "Line"):
+	"""Fields the Inputs grid may choose from, for the chosen source."""
 	frappe.only_for(["Contracting Manager", "System Manager"])
-	return [{"value": name, "label": label} for name, label in measurable_fields().items()]
+	fields = measurable_item_fields() if source == "Item" else measurable_fields()
+	return [{"value": name, "label": label} for name, label in fields.items()]
 
 
 @frappe.whitelist()

@@ -1,9 +1,16 @@
-"""Which fields a Measurement Rule may read from a transaction line.
+"""Which fields a Measurement Rule may read.
 
-The list is Insite's own measurement fields, plus any other number field the
-site has added to its sales lines. ERPNext's built-in numbers — rate, amount,
-discounts, stock levels — are deliberately left out: they are results, not
-measurements, and offering them would invite circular rules.
+A rule reads three kinds of number:
+
+* **Line** — what someone measured on site: height, width, a panel count.
+* **Item** — what is true of the material itself: the sheet it is cut from,
+  its standard thickness. This belongs on the Item, not retyped on every line.
+* **Constant** — a number the rule itself carries, such as a cutting allowance.
+
+Only Insite's own fields and the ones a site added are offered. ERPNext's
+built-in numbers — rate, amount, discounts, stock levels — are deliberately
+left out: they are results, not measurements, and a rule that read them would
+be circular.
 """
 
 from __future__ import annotations
@@ -12,9 +19,10 @@ import frappe
 
 from insite.constants import ITEM_DOCTYPES
 
-#: The line the field list is read from. Insite applies the same fields to every
-#: item table, so one is representative.
+#: Insite applies the same fields to every item table, so one is representative.
 REFERENCE_DOCTYPE = ITEM_DOCTYPES[1]  # Sales Order Item
+
+ITEM_DOCTYPE = "Item"
 
 NUMERIC_FIELDTYPES = ("Float", "Int", "Currency", "Percent")
 
@@ -32,7 +40,7 @@ _EXCLUDED = {"custom_calculated_qty"}
 
 
 def measurable_fields(doctype: str | None = None) -> dict[str, str]:
-	"""{fieldname: label} a rule may use, Insite's own fields first."""
+	"""{fieldname: label} a rule may read off a transaction line."""
 	meta = frappe.get_meta(doctype or REFERENCE_DOCTYPE)
 	found = {}
 
@@ -51,6 +59,16 @@ def measurable_fields(doctype: str | None = None) -> dict[str, str]:
 		found[df.fieldname] = _label_of(df)
 
 	return found
+
+
+def measurable_item_fields() -> dict[str, str]:
+	"""{fieldname: label} a rule may read off the Item itself."""
+	meta = frappe.get_meta(ITEM_DOCTYPE)
+	return {
+		df.fieldname: _label_of(df)
+		for df in meta.fields
+		if df.fieldtype in NUMERIC_FIELDTYPES and df.fieldname.startswith("custom_")
+	}
 
 
 def field_label(fieldname: str, doctype: str | None = None) -> str:

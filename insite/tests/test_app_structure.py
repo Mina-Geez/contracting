@@ -91,6 +91,17 @@ def test_preset_options_match_the_presets_in_code():
 	assert field["default"] in options, "the default must be one of the options"
 
 
+def test_input_source_options_match_the_code():
+	"""The engine compares against these strings; the field offers them."""
+	from insite.constants import INPUT_SOURCES
+
+	with open("insite/insite/doctype/measurement_input/measurement_input.json", encoding="utf-8") as fh:
+		doc = json.load(fh)
+	field = next(f for f in doc["fields"] if f["fieldname"] == "source")
+	assert field["options"].splitlines() == list(INPUT_SOURCES)
+	assert field["default"] in INPUT_SOURCES
+
+
 def test_doctype_timestamps_have_been_bumped():
 	"""Frappe skips a DocType whose file is not newer than the database row.
 

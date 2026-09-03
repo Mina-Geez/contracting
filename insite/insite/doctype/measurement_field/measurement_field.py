@@ -36,7 +36,7 @@ class MeasurementField(Document):
 
 	def on_trash(self):
 		self._block_if_used()
-		remove_field(self.field_name)
+		remove_field(self.field_name, self.target_doctypes)
 
 	# --- naming --------------------------------------------------------------
 
@@ -65,17 +65,24 @@ class MeasurementField(Document):
 
 	# --- the fields themselves ------------------------------------------------
 
+	@property
+	def target_doctypes(self):
+		"""Item-level numbers live on the material; the rest live on every line."""
+		return ("Item",) if self.applies_to == "Item" else ITEM_DOCTYPES
+
 	def apply(self):
-		"""Create or update this field on every transaction line."""
+		"""Create or update this field where it belongs."""
 		definition = {
 			"fieldname": self.field_name,
 			"label": self.field_label,
 			"fieldtype": "Float",
-			"insert_after": INSERT_AFTER,
+			"insert_after": INSERT_AFTER if self.applies_to != "Item" else "stock_uom",
 			"description": self.help_text or "",
 			"hidden": 1 if self.hidden else 0,
 		}
-		create_custom_fields({doctype: [definition] for doctype in ITEM_DOCTYPES}, ignore_validate=True)
+		create_custom_fields(
+			{doctype: [definition] for doctype in self.target_doctypes}, ignore_validate=True
+		)
 
 	# --- deletion -------------------------------------------------------------
 
@@ -100,9 +107,9 @@ def using_field(field_name):
 	return frappe.get_all("Measurement Rule", filters={"name": ("in", set(rules))}, pluck="rule_title")
 
 
-def remove_field(field_name):
-	"""Take the field off every transaction line."""
-	for doctype in ITEM_DOCTYPES:
+def remove_field(field_name, doctypes=ITEM_DOCTYPES):
+	"""Take the field off wherever it was added."""
+	for doctype in doctypes:
 		name = frappe.db.exists("Custom Field", {"dt": doctype, "fieldname": field_name})
 		if name:
 			frappe.delete_doc("Custom Field", name, force=True, ignore_permissions=True)

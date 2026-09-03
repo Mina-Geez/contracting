@@ -6,21 +6,32 @@
   "editable_grid": 1,
   "engine": "InnoDB",
   "creation": "2026-09-03 00:00:00.000000",
-  "modified": "2026-09-03 22:40:00.000000",
+  "modified": "2026-09-04 00:20:00.000000",
   "owner": "Administrator",
   "modified_by": "Administrator",
   "sort_field": "modified",
   "sort_order": "DESC",
-  "field_order": ["field_label", "token", "field_name"],
+  "field_order": ["source", "field_label", "token", "field_name", "constant_value"],
   "fields": [
+    {
+      "fieldname": "source",
+      "fieldtype": "Select",
+      "label": "Comes from",
+      "options": "Line\nItem\nConstant",
+      "default": "Line",
+      "reqd": 1,
+      "in_list_view": 1,
+      "columns": 2,
+      "description": "Line: measured on the document. Item: a number held on the material. Constant: a fixed number this rule carries."
+    },
     {
       "fieldname": "field_label",
       "fieldtype": "Data",
-      "label": "Field on the line",
+      "label": "Field",
       "in_list_view": 1,
       "read_only": 1,
-      "columns": 4,
-      "description": "Chosen below. This is what the person filling in the document sees."
+      "columns": 3,
+      "depends_on": "eval:doc.source!='Constant'"
     },
     {
       "fieldname": "token",
@@ -29,16 +40,26 @@
       "in_list_view": 1,
       "reqd": 1,
       "columns": 3,
-      "description": "Lower case letters, digits and underscores, for example number_of_panels."
+      "description": "Lower case letters, digits and underscores, for example sheet_length."
     },
     {
       "fieldname": "field_name",
       "fieldtype": "Autocomplete",
-      "label": "Field",
-      "reqd": 1,
+      "label": "Pick the field",
       "in_list_view": 1,
-      "columns": 3,
-      "description": "Pick a number field from the transaction line."
+      "columns": 2,
+      "depends_on": "eval:doc.source!='Constant'",
+      "mandatory_depends_on": "eval:doc.source!='Constant'"
+    },
+    {
+      "fieldname": "constant_value",
+      "fieldtype": "Float",
+      "label": "Value",
+      "in_list_view": 1,
+      "columns": 2,
+      "depends_on": "eval:doc.source=='Constant'",
+      "mandatory_depends_on": "eval:doc.source=='Constant'",
+      "description": "For example 1.12 for a 12 percent cutting allowance."
     }
   ],
   "permissions": []

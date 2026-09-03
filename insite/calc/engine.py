@@ -17,6 +17,7 @@ from frappe.utils import cint, flt
 
 from insite.calc import measures
 from insite.calc.resolve import resolve_rule
+from insite.constants import INPUT_CONSTANT, INPUT_FROM_ITEM, INPUT_FROM_LINE
 
 TARGET_FIELD = "qty"
 DEFAULT_PRECISION = 3
@@ -28,6 +29,11 @@ _AUDIT_FIELDS = (
 	"custom_calc_source",
 	"custom_calc_dimensions",
 )
+
+#: Names the boxes this line's rule reads, so the form shows only those. A
+#: single dash means "a rule looked and reads nothing from the line".
+VISIBILITY_FIELD = "custom_measurement_inputs"
+NOTHING_MEASURED = "-"
 
 
 def load_rules():
@@ -52,8 +58,16 @@ def load_rules():
 				"title": doc.rule_title or doc.name,
 				"preset": doc.preset,
 				"formula": doc.formula,
-				# token -> the field on the line that supplies it
-				"inputs": {row.token: row.field_name for row in doc.inputs},
+				# each input says where its number comes from
+				"inputs": [
+					{
+						"token": row.token,
+						"source": row.source or "Line",
+						"field_name": row.field_name,
+						"constant_value": row.constant_value,
+					}
+					for row in doc.inputs
+				],
 				"apply_on": doc.apply_on,
 				"item_code": doc.item_code,
 				"item_template": doc.item_template,
@@ -67,13 +81,39 @@ def load_rules():
 	return rules
 
 
-def read_inputs(row, rule):
-	"""{token: value} for a rule, read off the transaction line."""
-	return {token: flt(row.get(fieldname)) for token, fieldname in rule["inputs"].items()}
+def read_inputs(row, rule, item_values=None):
+	"""{token: value} for a rule, from the line, the Item, or the rule itself."""
+	values = {}
+	for spec in rule["inputs"]:
+		if spec["source"] == INPUT_CONSTANT:
+			values[spec["token"]] = flt(spec["constant_value"])
+		elif spec["source"] == INPUT_FROM_ITEM:
+			values[spec["token"]] = flt((item_values or {}).get(spec["field_name"]))
+		else:
+			values[spec["token"]] = flt(row.get(spec["field_name"]))
+	return values
 
 
-def apply_rule_to_row(row, rule):
+def line_fields_used(rule):
+	"""The boxes on the line this rule reads, so the form can show only those."""
+	return [
+		spec["field_name"]
+		for spec in rule["inputs"]
+		if spec["source"] == INPUT_FROM_LINE and spec["field_name"]
+	]
+
+
+def item_fields_used(rule):
+	return [
+		spec["field_name"]
+		for spec in rule["inputs"]
+		if spec["source"] == INPUT_FROM_ITEM and spec["field_name"]
+	]
+
+
+def apply_rule_to_row(row, rule, item_values=None):
 	"""Write the measured quantity and the audit trail onto `row`."""
+	row.set(VISIBILITY_FIELD, ",".join(line_fields_used(rule)) or NOTHING_MEASURED)
 	if rule["preset"] == measures.MANUAL:
 		# The rule exists to say "do not calculate this". Record that, and leave
 		# the typed quantity exactly as it is.
@@ -81,7 +121,7 @@ def apply_rule_to_row(row, rule):
 		row.set("custom_calculated_qty", None)
 		return None
 
-	values = read_inputs(row, rule)
+	values = read_inputs(row, rule, item_values)
 	if not any(values.values()):
 		# Nothing was measured on this line — leave the user's quantity alone
 		# and do not claim the line was measured.
@@ -129,7 +169,7 @@ def recalculate_document(doc):
 			if item:
 				rule = resolve_rule(item, rules)
 		if rule:
-			change = apply_rule_to_row(row, rule)
+			change = apply_rule_to_row(row, rule, _item_values_for(row.item_code, rule))
 			if change:
 				changes.append((row.idx, change[0], change[1], rule["source"]))
 		else:
@@ -202,6 +242,14 @@ def _precision(row):
 
 def _describe(values):
 	return ", ".join(f"{name} {value:g}" for name, value in values.items() if value)
+
+
+def _item_values_for(item_code, rule):
+	"""Read the numbers a rule takes from the Item itself, such as a sheet size."""
+	fields = item_fields_used(rule)
+	if not fields:
+		return {}
+	return frappe.get_cached_value("Item", item_code, fields, as_dict=True) or {}
 
 
 def _item_context(item_code, attributes):

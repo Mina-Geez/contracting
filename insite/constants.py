@@ -27,3 +27,10 @@ ENFORCED_DOCTYPES = ("Sales Order", "Delivery Note", "Sales Invoice")
 
 #: The item child tables that receive the measurement and audit fields.
 ITEM_DOCTYPES = tuple(f"{doctype} Item" for doctype in TAGGED_DOCTYPES)
+
+#: Where a Measurement Rule input gets its number. Kept here so the doctype's
+#: options and the engine's comparisons cannot drift apart.
+INPUT_FROM_LINE = "Line"
+INPUT_FROM_ITEM = "Item"
+INPUT_CONSTANT = "Constant"
+INPUT_SOURCES = (INPUT_FROM_LINE, INPUT_FROM_ITEM, INPUT_CONSTANT)
