@@ -26,6 +26,10 @@ frappe.ui.form.on("Measurement Rule", {
 	preset(frm) {
 		insite_apply_preset(frm);
 	},
+
+	formula(frm) {
+		insite_show_summary(frm);
+	},
 });
 
 frappe.ui.form.on("Measurement Output", {
@@ -38,6 +42,14 @@ frappe.ui.form.on("Measurement Output", {
 });
 
 frappe.ui.form.on("Measurement Input", {
+	inputs_remove(frm) {
+		insite_show_summary(frm);
+	},
+
+	token(frm) {
+		insite_show_summary(frm);
+	},
+
 	source(frm, cdt, cdn) {
 		// The field list differs per source, so start the row over.
 		frappe.model.set_value(cdt, cdn, "field_name", null);
@@ -54,8 +66,26 @@ frappe.ui.form.on("Measurement Input", {
 		if (!row.token) {
 			frappe.model.set_value(cdt, cdn, "token", insite_suggest_token(match.label));
 		}
+		insite_show_summary(frm);
 	},
 });
+
+// Say the formula in the words on the form, so nobody has to read code.
+function insite_show_summary(frm) {
+	let text = frm.doc.formula || "";
+	const rows = (frm.doc.inputs || []).slice();
+	// Longest names first, so "count" inside "panel_count" is not replaced.
+	rows.sort((a, b) => (b.token || "").length - (a.token || "").length);
+	rows.forEach((row) => {
+		if (!row.token) return;
+		const label =
+			row.source === "Constant"
+				? String(row.constant_value || "")
+				: row.field_label || row.token;
+		text = text.replace(new RegExp(`\\b${row.token}\\b`, "g"), label);
+	});
+	frm.set_value("measurement_summary", text.replace(/\*/g, "×").trim());
+}
 
 function insite_apply_preset(frm) {
 	if (!frm.doc.preset || frm.doc.preset === "Custom") return;
@@ -82,6 +112,7 @@ function insite_apply_preset(frm) {
 			});
 			frm.refresh_field("inputs");
 			frm.set_value("formula", r.message.formula || "");
+			insite_show_summary(frm);
 		},
 	});
 }

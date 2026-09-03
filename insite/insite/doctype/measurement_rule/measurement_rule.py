@@ -7,6 +7,8 @@ failing later on somebody else's Sales Order.
 
 from __future__ import annotations
 
+import re
+
 import frappe
 from frappe import _
 from frappe.model.document import Document
@@ -29,6 +31,7 @@ class MeasurementRule(Document):
 		self._validate_formula()
 		self._validate_outputs()
 		self._set_title()
+		self._set_summary()
 
 	# --- scope ---------------------------------------------------------------
 
@@ -165,6 +168,12 @@ class MeasurementRule(Document):
 			except ValueError as e:
 				frappe.throw(_("Row {0}: {1}").format(row.idx, str(e)), title=_("Formula Problem"))
 
+	# --- how it reads to a person ---------------------------------------------
+
+	def _set_summary(self):
+		"""Say the formula in the words on the form, so nobody has to read code."""
+		self.measurement_summary = in_plain_words(self.formula, self.inputs)
+
 	# --- naming --------------------------------------------------------------
 
 	def _set_title(self):
@@ -172,6 +181,20 @@ class MeasurementRule(Document):
 		if self.apply_on == "Item Attribute Value":
 			target = f"{self.item_attribute} = {self.attribute_value}"
 		self.rule_title = f"{self.work_item_type} · {target}" if target else self.work_item_type
+
+
+def in_plain_words(formula, inputs):
+	"""'height * width * count' -> 'Height × Width × Count'."""
+	if not formula:
+		return ""
+	text = str(formula)
+	# Longest names first, so 'count' inside 'panel_count' is not replaced.
+	for row in sorted(inputs or [], key=lambda r: len(r.token or ""), reverse=True):
+		if not row.token:
+			continue
+		label = row.field_label or (str(row.constant_value or "") if row.source == "Constant" else row.token)
+		text = re.sub(rf"{re.escape(row.token)}", str(label), text)
+	return text.replace("*", "×").replace("  ", " ").strip()
 
 
 @frappe.whitelist()

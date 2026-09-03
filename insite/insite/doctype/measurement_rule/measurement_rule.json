@@ -10,7 +10,7 @@
   "show_title_field_in_link": 1,
   "track_changes": 1,
   "creation": "2026-09-03 00:00:00.000000",
-  "modified": "2026-09-04 01:00:00.000000",
+  "modified": "2026-09-04 01:20:00.000000",
   "owner": "Administrator",
   "modified_by": "Administrator",
   "sort_field": "modified",
@@ -28,6 +28,8 @@
     "attribute_value",
     "measure_section",
     "preset",
+    "measurement_summary",
+    "adjust_section",
     "inputs",
     "formula",
     "outputs_section",
@@ -122,7 +124,23 @@
       "options": "Area\nPerimeter\nLinear\nCount\nPiece × Wastage\nVolume\nManual\nCustom",
       "default": "Area",
       "reqd": 1,
-      "description": "Fills in the inputs and the formula below. Change either afterwards and the rule becomes Custom."
+      "description": "Pick the one that matches how you price this work."
+    },
+    {
+      "fieldname": "measurement_summary",
+      "fieldtype": "Data",
+      "label": "Worked out as",
+      "read_only": 1,
+      "depends_on": "eval:doc.preset!='Manual'",
+      "description": "Change this under Adjust the measurement, if you need to."
+    },
+    {
+      "fieldname": "adjust_section",
+      "fieldtype": "Section Break",
+      "label": "Adjust the measurement",
+      "collapsible": 1,
+      "depends_on": "eval:doc.preset!='Manual'",
+      "description": "Only open this if the ready-made answer is not what you measure. Add a field, name it, and use that name in the formula."
     },
     {
       "fieldname": "inputs",
@@ -130,7 +148,7 @@
       "options": "Measurement Input",
       "label": "Inputs",
       "depends_on": "eval:doc.preset!='Manual'",
-      "description": "The fields this rule reads from the line, and the name each one has in the formula."
+      "description": ""
     },
     {
       "fieldname": "formula",

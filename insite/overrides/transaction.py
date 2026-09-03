@@ -8,7 +8,7 @@ Two responsibilities, both server-authoritative:
    measurement.
 2. `enforce_project_scope` — keep contracting work traceable. It applies ONLY
    to lines the measurement engine matched, so ordinary sales on the same site
-   are unaffected, and it can be switched off in Contracting Settings.
+   are unaffected, and it can be switched off in Insite Settings.
 
 The document lists live in `insite.constants`, which hooks.py reads too, so the
 hooks and the handlers can never drift apart.
@@ -45,7 +45,7 @@ def enforce_project_scope(doc, method=None):
 	"""
 	if doc.doctype not in ENFORCED_DOCTYPES:
 		return
-	if not frappe.db.get_single_value("Contracting Settings", "enforce_project_and_scope"):
+	if not frappe.db.get_single_value("Insite Settings", "enforce_project_and_scope"):
 		return
 
 	rows = [row for row in (doc.get("items") or []) if row.get("custom_calc_source")]

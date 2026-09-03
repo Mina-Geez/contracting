@@ -1,17 +1,28 @@
 {
   "doctype": "DocType",
-  "name": "Contracting Price Role",
+  "name": "Insite Price Role",
   "module": "Insite",
   "istable": 1,
   "editable_grid": 1,
   "engine": "InnoDB",
   "creation": "2026-09-03 00:00:00.000000",
-  "modified": "2026-09-03 22:40:00.000000",
+  "modified": "2026-09-04 01:35:00.000000",
   "owner": "Administrator",
   "modified_by": "Administrator",
   "sort_field": "modified",
   "sort_order": "DESC",
-  "field_order": ["role"],
-  "fields": [{"fieldname": "role", "fieldtype": "Link", "options": "Role", "label": "Role", "in_list_view": 1, "reqd": 1}],
+  "field_order": [
+    "role"
+  ],
+  "fields": [
+    {
+      "fieldname": "role",
+      "fieldtype": "Link",
+      "options": "Role",
+      "label": "Role",
+      "in_list_view": 1,
+      "reqd": 1
+    }
+  ],
   "permissions": []
 }

@@ -24,7 +24,7 @@ ordered, delivered and invoiced.
 - **Project and Scope on sales documents** — Insite asks for a Project on the
   header, and a Scope on each line that a Measurement Rule matched. Insite does
   not check the other lines. You can switch the whole check off in
-  **Contracting Settings**.
+  **Insite Settings**.
 - **Contract Progress report** — scope, status, planned, ordered, variance to
   plan, delivered, invoiced, left to invoice and percent invoiced, for each
   scope.
@@ -71,7 +71,7 @@ writes the quantity, so a typed quantity cannot replace a calculated one. A line
 whose inputs are all empty keeps the quantity the user typed.
 
 Code creates the custom fields on the item rows, the Scope accounting dimension,
-the Contracting Manager role and the Contracting Settings record. This code runs
+the Contracting Manager role and the Insite Settings record. This code runs
 after install and after every migrate, and it is safe to run again. Insite does
 not ship exported customizations of standard doctypes.
 

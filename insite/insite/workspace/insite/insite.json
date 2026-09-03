@@ -7,7 +7,7 @@
   "public": 1,
   "icon": "project",
   "is_hidden": 0,
-  "content": "[{\"type\": \"paragraph\", \"data\": {\"text\": \"Set up in this order: <b>1.</b> a <b>Work Item Type</b> for each kind of work &nbsp;<b>2.</b> a <b>Measurement Rule</b> on it saying how that work is measured &nbsp;<b>3.</b> a <b>Scope Item</b> on a Project for each scope of work you will report on. Add a <b>Measurement Field</b> first if you measure something Insite does not already ask for.\"}}, {\"type\": \"header\", \"data\": {\"text\": \"Setup\", \"level\": 4}}, {\"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Work Item Type\"}}, {\"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Measurement Rule\"}}, {\"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Measurement Field\"}}, {\"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Contracting Settings\"}}, {\"type\": \"header\", \"data\": {\"text\": \"Contracts\", \"level\": 4}}, {\"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Scope Item\"}}, {\"type\": \"header\", \"data\": {\"text\": \"Reports\", \"level\": 4}}, {\"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Contract Progress\"}}]",
+  "content": "[{\"type\": \"paragraph\", \"data\": {\"text\": \"<b>Set up once:</b> a <b>Work Item Type</b> for each kind of work, then a <b>Measurement Rule</b> saying how it is measured. <b>Then per job:</b> a <b>Scope Item</b> on the Project for each scope you report on.\"}}, {\"type\": \"header\", \"data\": {\"text\": \"Set up\", \"level\": 4}}, {\"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Work Item Type\"}}, {\"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Measurement Rule\"}}, {\"type\": \"header\", \"data\": {\"text\": \"Every job\", \"level\": 4}}, {\"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Scope Item\"}}, {\"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Contract Progress\"}}, {\"type\": \"header\", \"data\": {\"text\": \"Now and then\", \"level\": 4}}, {\"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Measurement Field\"}}, {\"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Insite Settings\"}}]",
   "shortcuts": [
     {
       "type": "DocType",
@@ -21,16 +21,6 @@
     },
     {
       "type": "DocType",
-      "link_to": "Measurement Field",
-      "label": "Measurement Field"
-    },
-    {
-      "type": "DocType",
-      "link_to": "Contracting Settings",
-      "label": "Contracting Settings"
-    },
-    {
-      "type": "DocType",
       "link_to": "Scope Item",
       "label": "Scope Item"
     },
@@ -38,9 +28,19 @@
       "type": "Report",
       "link_to": "Contract Progress",
       "label": "Contract Progress"
+    },
+    {
+      "type": "DocType",
+      "link_to": "Measurement Field",
+      "label": "Measurement Field"
+    },
+    {
+      "type": "DocType",
+      "link_to": "Insite Settings",
+      "label": "Insite Settings"
     }
   ],
   "app": "insite",
-  "modified": "2026-09-04 00:45:00.000000",
+  "modified": "2026-09-04 01:30:00.000000",
   "sequence_id": 1.0
 }

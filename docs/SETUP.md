@@ -16,7 +16,7 @@ Install adds these items, and adds them again on every migrate:
 - the measurement fields on the sales and purchase item rows
 - the **Scope** accounting dimension
 - the **Contracting Manager** role
-- the **Contracting Settings** single doctype
+- the **Insite Settings** single doctype
 
 Give the **Contracting Manager** role to the people who set up the work and run
 the contracts.
@@ -110,7 +110,7 @@ Insite asks a Sales Order, a Delivery Note and a Sales Invoice for a Project on
 the header. It also asks for a Scope on each line that a Measurement Rule
 matched. Insite does not check a line that no rule matched, so ordinary sales
 still work. To switch the whole check off, clear **Require Project and Scope on
-Sales Documents** in **Contracting Settings**.
+Sales Documents** in **Insite Settings**.
 
 ## 6. Handle a change of scope
 
@@ -225,4 +225,4 @@ number of your own, add a custom number field to the item rows first.
 
 **I cannot save a Sales Order.** Add the Project, and add a Scope on each line
 that a rule matched. To switch the check off, clear **Require Project and Scope
-on Sales Documents** in Contracting Settings.
+on Sales Documents** in Insite Settings.

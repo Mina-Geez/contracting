@@ -26,7 +26,7 @@ msgstr "أمر تغيير"
 msgid "Variation Lines"
 msgstr "بنود أمر التغيير"
 
-msgid "Contracting Settings"
+msgid "Insite Settings"
 msgstr "إعدادات المقاولات"
 
 msgid "Contracting Manager"
@@ -276,7 +276,7 @@ msgstr "تجاوز"
 msgid "Yes"
 msgstr "نعم"
 
-# Contracting Settings
+# Insite Settings
 
 msgid "Project and Scope Tracking"
 msgstr "تتبع المشروع والنطاق"

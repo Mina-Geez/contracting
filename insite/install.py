@@ -57,8 +57,8 @@ def ensure_settings_singleton():
 	have the document — the JSON `default` only applies to a fresh one. Left
 	alone, enforcement would read as "off" after an upgrade.
 	"""
-	settings = frappe.get_single("Contracting Settings")
-	if frappe.db.get_single_value("Contracting Settings", "enforce_project_and_scope") is None:
+	settings = frappe.get_single("Insite Settings")
+	if frappe.db.get_single_value("Insite Settings", "enforce_project_and_scope") is None:
 		settings.enforce_project_and_scope = 1
 	# Saving unconditionally also materialises the document on a fresh site.
 	settings.save(ignore_permissions=True)
