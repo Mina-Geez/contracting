@@ -68,6 +68,14 @@ def load_rules():
 					}
 					for row in doc.inputs
 				],
+				"outputs": [
+					{
+						"field_name": row.field_name,
+						"formula": row.formula,
+						"label": row.field_label or row.field_name,
+					}
+					for row in doc.outputs
+				],
 				"apply_on": doc.apply_on,
 				"item_code": doc.item_code,
 				"item_template": doc.item_template,
@@ -125,6 +133,7 @@ def apply_rule_to_row(row, rule, item_values=None):
 	if not any(values.values()):
 		# Nothing was measured on this line — leave the user's quantity alone
 		# and do not claim the line was measured.
+		_clear_outputs(row, rule)
 		_clear_calc_fields(row)
 		return None
 
@@ -141,6 +150,7 @@ def apply_rule_to_row(row, rule, item_values=None):
 		)
 
 	_stamp(row, rule, values)
+	_write_outputs(row, rule, values)
 
 	precision = _precision(row)
 	rounded = flt(qty, precision)
@@ -218,6 +228,30 @@ def _report_no_longer_measured(rows):
 		title=_("These lines are no longer measured — check the quantity"),
 		indicator="orange",
 	)
+
+
+def _write_outputs(row, rule, values):
+	"""Write the other numbers the same measurements give: board, edging, fittings."""
+	for output in rule.get("outputs") or []:
+		try:
+			row.set(output["field_name"], measures.evaluate_formula(output["formula"], values))
+		except ValueError as e:
+			frappe.throw(
+				_("Row {0}: {1} — {2}").format(row.idx, output["label"], str(e)),
+				title=_("Measurement Problem"),
+			)
+		except ArithmeticError:
+			frappe.throw(
+				_("Row {0}: {1} cannot be worked out with these measurements ({2}).").format(
+					row.idx, output["label"], _describe(values)
+				),
+				title=_("Measurement Problem"),
+			)
+
+
+def _clear_outputs(row, rule):
+	for output in rule.get("outputs") or []:
+		row.set(output["field_name"], None)
 
 
 def _stamp(row, rule, values):

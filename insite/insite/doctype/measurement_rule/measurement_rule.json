@@ -10,57 +10,193 @@
   "show_title_field_in_link": 1,
   "track_changes": 1,
   "creation": "2026-09-03 00:00:00.000000",
-  "modified": "2026-09-03 22:40:00.000000",
+  "modified": "2026-09-04 01:00:00.000000",
   "owner": "Administrator",
   "modified_by": "Administrator",
   "sort_field": "modified",
   "sort_order": "DESC",
-  "field_order": ["naming_series", "rule_title", "work_item_type", "column_break_head",
-                  "apply_on", "item_code", "item_group", "item_template",
-                  "item_attribute", "attribute_value",
-                  "measure_section", "preset", "inputs", "formula",
-                  "options_section", "priority", "disabled"],
+  "field_order": [
+    "naming_series",
+    "rule_title",
+    "work_item_type",
+    "column_break_head",
+    "apply_on",
+    "item_code",
+    "item_group",
+    "item_template",
+    "item_attribute",
+    "attribute_value",
+    "measure_section",
+    "preset",
+    "inputs",
+    "formula",
+    "outputs_section",
+    "outputs",
+    "options_section",
+    "priority",
+    "disabled"
+  ],
   "fields": [
-    {"fieldname": "naming_series", "fieldtype": "Select", "label": "Series", "options": "MR-.#####", "default": "MR-.#####", "hidden": 1},
-    {"fieldname": "rule_title", "fieldtype": "Data", "label": "Rule", "read_only": 1, "in_list_view": 1,
-     "description": "Insite names the rule after the work and what it applies to."},
-    {"fieldname": "work_item_type", "fieldtype": "Link", "options": "Work Item Type", "label": "Work Item Type",
-     "reqd": 1, "in_standard_filter": 1, "in_list_view": 1},
-    {"fieldname": "column_break_head", "fieldtype": "Column Break"},
-    {"fieldname": "apply_on", "fieldtype": "Select", "label": "Applies To",
-     "options": "Item Group\nItem Code\nItem Template\nItem Attribute Value",
-     "default": "Item Group", "reqd": 1, "in_list_view": 1,
-     "description": "What this rule covers."},
-    {"fieldname": "item_code", "fieldtype": "Link", "options": "Item", "label": "Item",
-     "depends_on": "eval:doc.apply_on=='Item Code'"},
-    {"fieldname": "item_group", "fieldtype": "Link", "options": "Item Group", "label": "Item Group",
-     "depends_on": "eval:doc.apply_on=='Item Group'"},
-    {"fieldname": "item_template", "fieldtype": "Link", "options": "Item", "label": "Item Template",
-     "depends_on": "eval:doc.apply_on=='Item Template'"},
-    {"fieldname": "item_attribute", "fieldtype": "Link", "options": "Item Attribute", "label": "Attribute",
-     "depends_on": "eval:doc.apply_on=='Item Attribute Value'"},
-    {"fieldname": "attribute_value", "fieldtype": "Data", "label": "Attribute Value",
-     "depends_on": "eval:doc.apply_on=='Item Attribute Value'"},
-
-    {"fieldname": "measure_section", "fieldtype": "Section Break", "label": "How is this measured?"},
-    {"fieldname": "preset", "fieldtype": "Select", "label": "Start from",
-     "options": "Area\nPerimeter\nLinear\nCount\nPiece × Wastage\nVolume\nManual\nCustom",
-     "default": "Area", "reqd": 1,
-     "description": "Fills in the inputs and the formula below. Change either afterwards and the rule becomes Custom."},
-    {"fieldname": "inputs", "fieldtype": "Table", "options": "Measurement Input", "label": "Inputs",
-     "depends_on": "eval:doc.preset!='Manual'",
-     "description": "The fields this rule reads from the line, and the name each one has in the formula."},
-    {"fieldname": "formula", "fieldtype": "Small Text", "label": "Formula",
-     "depends_on": "eval:doc.preset!='Manual'",
-     "description": "Combine the names above with + - * / % and abs, round, min, max, pow, sqrt, ceil, floor, pi."},
-
-    {"fieldname": "options_section", "fieldtype": "Section Break", "label": "Options", "collapsible": 1},
-    {"fieldname": "priority", "fieldtype": "Int", "label": "Priority", "default": "0",
-     "description": "Breaks a tie between two rules that are equally specific. A more specific rule always wins, whatever the priority."},
-    {"fieldname": "disabled", "fieldtype": "Check", "label": "Disabled"}
+    {
+      "fieldname": "naming_series",
+      "fieldtype": "Select",
+      "label": "Series",
+      "options": "MR-.#####",
+      "default": "MR-.#####",
+      "hidden": 1
+    },
+    {
+      "fieldname": "rule_title",
+      "fieldtype": "Data",
+      "label": "Rule",
+      "read_only": 1,
+      "in_list_view": 1,
+      "description": "Insite names the rule after the work and what it applies to."
+    },
+    {
+      "fieldname": "work_item_type",
+      "fieldtype": "Link",
+      "options": "Work Item Type",
+      "label": "Work Item Type",
+      "reqd": 1,
+      "in_standard_filter": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "column_break_head",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "apply_on",
+      "fieldtype": "Select",
+      "label": "Applies To",
+      "options": "Item Group\nItem Code\nItem Template\nItem Attribute Value",
+      "default": "Item Group",
+      "reqd": 1,
+      "in_list_view": 1,
+      "description": "What this rule covers."
+    },
+    {
+      "fieldname": "item_code",
+      "fieldtype": "Link",
+      "options": "Item",
+      "label": "Item",
+      "depends_on": "eval:doc.apply_on=='Item Code'"
+    },
+    {
+      "fieldname": "item_group",
+      "fieldtype": "Link",
+      "options": "Item Group",
+      "label": "Item Group",
+      "depends_on": "eval:doc.apply_on=='Item Group'"
+    },
+    {
+      "fieldname": "item_template",
+      "fieldtype": "Link",
+      "options": "Item",
+      "label": "Item Template",
+      "depends_on": "eval:doc.apply_on=='Item Template'"
+    },
+    {
+      "fieldname": "item_attribute",
+      "fieldtype": "Link",
+      "options": "Item Attribute",
+      "label": "Attribute",
+      "depends_on": "eval:doc.apply_on=='Item Attribute Value'"
+    },
+    {
+      "fieldname": "attribute_value",
+      "fieldtype": "Data",
+      "label": "Attribute Value",
+      "depends_on": "eval:doc.apply_on=='Item Attribute Value'"
+    },
+    {
+      "fieldname": "measure_section",
+      "fieldtype": "Section Break",
+      "label": "How is this measured?"
+    },
+    {
+      "fieldname": "preset",
+      "fieldtype": "Select",
+      "label": "Start from",
+      "options": "Area\nPerimeter\nLinear\nCount\nPiece × Wastage\nVolume\nManual\nCustom",
+      "default": "Area",
+      "reqd": 1,
+      "description": "Fills in the inputs and the formula below. Change either afterwards and the rule becomes Custom."
+    },
+    {
+      "fieldname": "inputs",
+      "fieldtype": "Table",
+      "options": "Measurement Input",
+      "label": "Inputs",
+      "depends_on": "eval:doc.preset!='Manual'",
+      "description": "The fields this rule reads from the line, and the name each one has in the formula."
+    },
+    {
+      "fieldname": "formula",
+      "fieldtype": "Small Text",
+      "label": "Formula",
+      "depends_on": "eval:doc.preset!='Manual'",
+      "description": "Combine the names above with + - * / % and abs, round, min, max, pow, sqrt, ceil, floor, pi."
+    },
+    {
+      "fieldname": "outputs_section",
+      "fieldtype": "Section Break",
+      "label": "What else these measurements give you",
+      "collapsible": 1,
+      "depends_on": "eval:doc.preset!='Manual'",
+      "description": "The quantity above is what you bill. Add anything else the same measurements produce — the board a panel uses, the edging round it, the fittings that go on it."
+    },
+    {
+      "fieldname": "outputs",
+      "fieldtype": "Table",
+      "options": "Measurement Output",
+      "label": "",
+      "depends_on": "eval:doc.preset!='Manual'"
+    },
+    {
+      "fieldname": "options_section",
+      "fieldtype": "Section Break",
+      "label": "Options",
+      "collapsible": 1
+    },
+    {
+      "fieldname": "priority",
+      "fieldtype": "Int",
+      "label": "Priority",
+      "default": "0",
+      "description": "Breaks a tie between two rules that are equally specific. A more specific rule always wins, whatever the priority."
+    },
+    {
+      "fieldname": "disabled",
+      "fieldtype": "Check",
+      "label": "Disabled"
+    }
   ],
   "permissions": [
-    {"role": "System Manager", "read": 1, "write": 1, "create": 1, "delete": 1, "report": 1, "export": 1, "share": 1, "print": 1, "email": 1},
-    {"role": "Contracting Manager", "read": 1, "write": 1, "create": 1, "delete": 1, "report": 1, "export": 1, "share": 1, "print": 1, "email": 1}
+    {
+      "role": "System Manager",
+      "read": 1,
+      "write": 1,
+      "create": 1,
+      "delete": 1,
+      "report": 1,
+      "export": 1,
+      "share": 1,
+      "print": 1,
+      "email": 1
+    },
+    {
+      "role": "Contracting Manager",
+      "read": 1,
+      "write": 1,
+      "create": 1,
+      "delete": 1,
+      "report": 1,
+      "export": 1,
+      "share": 1,
+      "print": 1,
+      "email": 1
+    }
   ]
 }

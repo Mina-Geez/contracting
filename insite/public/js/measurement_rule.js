@@ -28,6 +28,15 @@ frappe.ui.form.on("Measurement Rule", {
 	},
 });
 
+frappe.ui.form.on("Measurement Output", {
+	field_name(frm, cdt, cdn) {
+		const row = locals[cdt][cdn];
+		const known = (frm.__insite_fields || {}).Line || [];
+		const match = known.find((f) => f.value === row.field_name);
+		if (match) frappe.model.set_value(cdt, cdn, "field_label", match.label);
+	},
+});
+
 frappe.ui.form.on("Measurement Input", {
 	source(frm, cdt, cdn) {
 		// The field list differs per source, so start the row over.
@@ -97,14 +106,23 @@ function insite_load_fields(frm) {
 }
 
 function insite_apply_field_options(frm) {
-	const grid = frm.fields_dict.inputs && frm.fields_dict.inputs.grid;
-	if (!grid) return;
-	const df = grid.get_docfield("field_name");
-	if (!df) return;
-	df.get_data = (txt, row) => {
-		const source = (row && row.source) || "Line";
-		return (frm.__insite_fields || {})[source] || [];
-	};
+	const inputs = frm.fields_dict.inputs && frm.fields_dict.inputs.grid;
+	if (inputs) {
+		const df = inputs.get_docfield("field_name");
+		if (df) {
+			df.get_data = (txt, row) => {
+				const source = (row && row.source) || "Line";
+				return (frm.__insite_fields || {})[source] || [];
+			};
+		}
+	}
+
+	// An output is always written onto the line.
+	const outputs = frm.fields_dict.outputs && frm.fields_dict.outputs.grid;
+	if (outputs) {
+		const df = outputs.get_docfield("field_name");
+		if (df) df.get_data = () => (frm.__insite_fields || {}).Line || [];
+	}
 }
 
 function insite_suggest_token(label) {

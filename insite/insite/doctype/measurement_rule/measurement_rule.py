@@ -27,6 +27,7 @@ class MeasurementRule(Document):
 		self._validate_scope()
 		self._validate_inputs()
 		self._validate_formula()
+		self._validate_outputs()
 		self._set_title()
 
 	# --- scope ---------------------------------------------------------------
@@ -120,6 +121,49 @@ class MeasurementRule(Document):
 				title=_("Unused Input"),
 				indicator="orange",
 			)
+
+	# --- outputs --------------------------------------------------------------
+
+	def _validate_outputs(self):
+		if self.preset == measures.MANUAL:
+			self.outputs = []
+			return
+		if not self.outputs:
+			return
+
+		on_the_line = measurable_fields()
+		tokens = {row.token for row in self.inputs}
+		reads = {row.field_name for row in self.inputs if row.source == "Line"}
+		written = set()
+
+		for row in self.outputs:
+			if row.field_name not in on_the_line:
+				frappe.throw(
+					_("Row {0}: '{1}' is not a number field on the transaction line.").format(
+						row.idx, row.field_name
+					),
+					title=_("Unknown Field"),
+				)
+			if row.field_name in reads:
+				frappe.throw(
+					_(
+						"Row {0}: this rule reads {1}, so it cannot also write to it. "
+						"Write the answer to a different field."
+					).format(row.idx, on_the_line[row.field_name]),
+					title=_("Field Already an Input"),
+				)
+			if row.field_name in written:
+				frappe.throw(
+					_("Row {0}: {1} is written to twice.").format(row.idx, on_the_line[row.field_name]),
+					title=_("Written Twice"),
+				)
+			written.add(row.field_name)
+			row.field_label = on_the_line[row.field_name]
+
+			try:
+				measures.validate_formula(row.formula, tokens)
+			except ValueError as e:
+				frappe.throw(_("Row {0}: {1}").format(row.idx, str(e)), title=_("Formula Problem"))
 
 	# --- naming --------------------------------------------------------------
 

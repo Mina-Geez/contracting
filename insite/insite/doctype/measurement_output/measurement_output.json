@@ -1,0 +1,44 @@
+{
+  "doctype": "DocType",
+  "name": "Measurement Output",
+  "module": "Insite",
+  "istable": 1,
+  "editable_grid": 1,
+  "engine": "InnoDB",
+  "creation": "2026-09-04 00:00:00.000000",
+  "modified": "2026-09-04 01:00:00.000000",
+  "owner": "Administrator",
+  "modified_by": "Administrator",
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "field_order": ["field_label", "formula", "field_name"],
+  "fields": [
+    {
+      "fieldname": "field_label",
+      "fieldtype": "Data",
+      "label": "Writes to",
+      "in_list_view": 1,
+      "read_only": 1,
+      "columns": 3
+    },
+    {
+      "fieldname": "formula",
+      "fieldtype": "Data",
+      "label": "Formula",
+      "reqd": 1,
+      "in_list_view": 1,
+      "columns": 5,
+      "description": "Uses the same input names as the rule, for example height * width * count."
+    },
+    {
+      "fieldname": "field_name",
+      "fieldtype": "Autocomplete",
+      "label": "Field",
+      "reqd": 1,
+      "in_list_view": 1,
+      "columns": 3,
+      "description": "The field on the line this number is written to."
+    }
+  ],
+  "permissions": []
+}
