@@ -37,5 +37,14 @@ def create_roles():
 
 
 def ensure_settings_singleton():
-    if not frappe.db.exists("Contracting Settings", "Contracting Settings"):
-        frappe.get_single("Contracting Settings").save(ignore_permissions=True)
+    """Create the single, and seed defaults that a Single will not backfill.
+
+    A new field on an existing Single keeps a NULL value on sites that already
+    have the doc — the JSON `default` only applies to a fresh one. Enforcement
+    would then read as "off" after an upgrade, so seed it explicitly. Runs on
+    every migrate and only fills a value that was never set.
+    """
+    settings = frappe.get_single("Contracting Settings")
+    if frappe.db.get_single_value("Contracting Settings", "enforce_project_and_scope") is None:
+        settings.enforce_project_and_scope = 1
+    settings.save(ignore_permissions=True)

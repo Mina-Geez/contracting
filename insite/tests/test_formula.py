@@ -1,5 +1,5 @@
 import pytest
-from insite.calc.measures import evaluate_formula, compute
+from insite.calc.measures import evaluate_formula, compute, validate_formula
 
 T = {"height": 1.5, "width": 2.8, "length": 3.0, "count": 40.0, "wastage": 1.1}
 
@@ -31,6 +31,36 @@ def test_attribute_access_blocked():
 def test_call_of_non_whitelisted_blocked():
     with pytest.raises(ValueError):
         evaluate_formula("__import__('os')", T)
+
+# --- validate_formula: save-time structural check ----------------------------
+
+def test_validate_accepts_good_formula():
+    validate_formula("height * width * count * 1.1")  # must not raise
+
+def test_validate_accepts_formula_that_would_divide_by_zero_on_samples():
+    # Regression: validation must not evaluate the maths. This formula is legal
+    # but blows up against all-ones sample values.
+    validate_formula("count / (width - height)")
+
+def test_validate_rejects_empty():
+    with pytest.raises(ValueError):
+        validate_formula("")
+
+def test_validate_rejects_unknown_name():
+    with pytest.raises(ValueError):
+        validate_formula("height * price")
+
+def test_validate_rejects_attribute_access():
+    with pytest.raises(ValueError):
+        validate_formula("height.__class__")
+
+def test_validate_rejects_non_whitelisted_call():
+    with pytest.raises(ValueError):
+        validate_formula("__import__('os')")
+
+def test_validate_rejects_bad_syntax():
+    with pytest.raises(ValueError):
+        validate_formula("height *")
 
 if __name__ == "__main__":
     import sys

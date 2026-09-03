@@ -11,14 +11,17 @@
   "modified_by": "Administrator",
   "sort_field": "modified",
   "sort_order": "DESC",
-  "field_order": ["price_visibility_section", "enable_price_visibility", "price_visibility_roles",
-                  "calc_section", "default_tolerance_percentage"],
+  "field_order": ["enforcement_section", "enforce_project_and_scope",
+                  "calc_section", "default_tolerance_percentage",
+                  "price_visibility_section", "enable_price_visibility", "price_visibility_roles"],
   "fields": [
-    {"fieldname": "price_visibility_section", "fieldtype": "Section Break", "label": "Role-Based Price Visibility"},
-    {"fieldname": "enable_price_visibility", "fieldtype": "Check", "label": "Enable Role-Based Price Visibility", "default": "0", "description": "Restricts selling price/amount visibility to the roles below (applied on save)."},
-    {"fieldname": "price_visibility_roles", "fieldtype": "Table", "options": "Contracting Price Role", "label": "Price-Visible Roles", "depends_on": "enable_price_visibility"},
+    {"fieldname": "enforcement_section", "fieldtype": "Section Break", "label": "Project & Scope Tracking"},
+    {"fieldname": "enforce_project_and_scope", "fieldtype": "Check", "label": "Require Project and Scope on Sales Documents", "default": "1", "description": "Sales Orders, Delivery Notes and Sales Invoices must carry a Project, and a Scope on every measured line. Only lines matched by a Work Item Type are checked, so ordinary sales are unaffected."},
     {"fieldname": "calc_section", "fieldtype": "Section Break", "label": "Defaults"},
-    {"fieldname": "default_tolerance_percentage", "fieldtype": "Percent", "label": "Default Tolerance %", "default": "0", "description": "Fallback tolerance when a Work Item Type does not set one."}
+    {"fieldname": "default_tolerance_percentage", "fieldtype": "Percent", "label": "Default Tolerance %", "default": "0", "description": "Fallback tolerance when a Work Item Type does not set one."},
+    {"fieldname": "price_visibility_section", "fieldtype": "Section Break", "label": "Role-Based Price Visibility", "collapsible": 1},
+    {"fieldname": "enable_price_visibility", "fieldtype": "Check", "label": "Enable Role-Based Price Visibility", "default": "0", "read_only": 1, "description": "Coming in a later release. This setting is not enforced yet — prices stay visible to anyone with permission to read the document."},
+    {"fieldname": "price_visibility_roles", "fieldtype": "Table", "options": "Contracting Price Role", "label": "Price-Visible Roles", "read_only": 1, "depends_on": "enable_price_visibility"}
   ],
   "permissions": [
     {"role": "System Manager", "read": 1, "write": 1, "create": 1, "delete": 1, "print": 1, "email": 1, "share": 1},

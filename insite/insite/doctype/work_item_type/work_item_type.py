@@ -3,9 +3,7 @@ from __future__ import annotations
 import frappe
 from frappe import _
 from frappe.model.document import Document
-from insite.calc.measures import MEASURE_KEYS, evaluate_formula
-
-_SAMPLE = {"height": 1.0, "width": 1.0, "length": 1.0, "count": 1.0, "wastage": 1.0}
+from insite.calc.measures import MEASURE_KEYS, validate_formula
 
 
 class WorkItemType(Document):
@@ -17,8 +15,8 @@ class WorkItemType(Document):
                 if not (row.formula or "").strip():
                     frappe.throw(_("Row {0}: choose a formula or a ready-made measure.").format(row.idx))
                 try:
-                    evaluate_formula(row.formula, _SAMPLE)
-                except Exception as e:  # noqa: BLE001
+                    validate_formula(row.formula)
+                except ValueError as e:
                     frappe.throw(_("Row {0}: invalid formula — {1}").format(row.idx, str(e)))
             self._validate_scope(row)
 

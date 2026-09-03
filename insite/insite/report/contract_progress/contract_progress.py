@@ -41,7 +41,13 @@ def _sum_by_scope(child_dt, parent_dt, company=None):
                 where {' and '.join(conditions)} group by c.`{FIELD}`""",
             params, as_dict=True)
         return {r.scope: flt(r.amt) for r in rows}
-    except Exception:  # noqa: BLE001
+    except Exception:  # noqa: BLE001 - the Scope dimension column may be absent on this table
+        # Report zero rather than break the whole report, but leave a trace:
+        # a silent 0 here would read as "nothing delivered/invoiced".
+        frappe.log_error(
+            title=f"Insite: Contract Progress could not read {child_dt}",
+            message=frappe.get_traceback(),
+        )
         return {}
 
 
