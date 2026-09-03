@@ -75,15 +75,3 @@ def test_every_report_has_py_and_init():
         slug = os.path.basename(d)
         for required in (f"{slug}.json", f"{slug}.py", "__init__.py"):
             assert os.path.isfile(f"{d}/{required}"), f"{d} is missing {required}"
-
-
-if __name__ == "__main__":
-    import sys
-    fns = [v for k, v in sorted(globals().items()) if k.startswith("test_")]
-    failed = 0
-    for fn in fns:
-        try:
-            fn(); print("PASS", fn.__name__)
-        except BaseException as e:  # noqa
-            failed += 1; print("FAIL", fn.__name__, "->", repr(e))
-    sys.exit(1 if failed else 0)

@@ -11,13 +11,16 @@
   "modified_by": "Administrator",
   "sort_field": "modified",
   "sort_order": "DESC",
-  "field_order": ["scope_item", "change_type", "delta_qty", "delta_amount", "note"],
+  "field_order": ["scope_item", "change_type", "delta_amount", "delta_qty", "note"],
   "fields": [
     {"fieldname": "scope_item", "fieldtype": "Link", "options": "Scope Item", "label": "Scope", "reqd": 1, "in_list_view": 1},
-    {"fieldname": "change_type", "fieldtype": "Select", "options": "Add\nOmit\nModify", "default": "Add", "label": "Type", "in_list_view": 1},
-    {"fieldname": "delta_qty", "fieldtype": "Float", "label": "Qty Change", "in_list_view": 1},
-    {"fieldname": "delta_amount", "fieldtype": "Currency", "label": "Amount Change", "in_list_view": 1},
-    {"fieldname": "note", "fieldtype": "Data", "label": "Note"}
+    {"fieldname": "change_type", "fieldtype": "Select", "options": "Add\nOmit\nModify", "default": "Add", "label": "Type", "in_list_view": 1, "reqd": 1,
+     "description": "Add and Modify raise the scope. Omit lowers it."},
+    {"fieldname": "delta_amount", "fieldtype": "Currency", "label": "Amount Change", "in_list_view": 1,
+     "description": "Type a positive amount. The Type sets the direction."},
+    {"fieldname": "delta_qty", "fieldtype": "Float", "label": "Qty Change",
+     "description": "For your own reference. Insite reports on the amount."},
+    {"fieldname": "note", "fieldtype": "Data", "label": "Note", "in_list_view": 1}
   ],
   "permissions": []
 }

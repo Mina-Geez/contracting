@@ -1,28 +1,34 @@
 # Insite
 
-**Insite** (insight + on-site) is a configuration-driven contracting vertical for
-Frappe / ERPNext v16. It turns real-world measurements into billable quantities
-automatically, forces every line of work to be tagged to a **Project** and a
-**Scope**, and shows planned-vs-actual progress and variance as clients change
-scope mid-project.
+Insite is an app for contractors, built on Frappe and ERPNext v16. It turns the
+measurements you take on site into billable quantities. It ties the work to a
+project and to a scope, and it reports the planned value against the value you
+ordered, delivered and invoiced.
 
 ## What it adds
 
-- **Work Item Type** — the config aggregate root that answers *"how is this
-  measured?"* via ready-made measures (Area, Perimeter, Linear, Count,
-  Piece × Wastage) or a plain-words **Custom formula**.
-- **Measurement engine** — a pure, framework-free calc core (measures +
-  sandboxed formula evaluator + most-specific-wins rule resolution) wrapped by
-  a server-authoritative `before_validate` hook.
-- **Scope Item** — Project-anchored, backs the `scope_item` Accounting
-  Dimension, with a stored, auto-recomputed Revised Amount.
-- **Variation Order** — submittable; recomputes each referenced Scope Item's
-  net variations and revised amount on submit/cancel.
-- **Project + Scope enforcement** — a Sales Order (and Delivery Note / Sales
-  Invoice) cannot be saved without a Project on the header and a Scope on every
-  line.
-- **Contract Progress report** — planned → ordered → delivered → invoiced →
-  variance, per scope.
+- **Work Item Type** — a kind of work, and how you measure it. One Work Item
+  Type holds the measurement rules for a group of items, for example `Glass`.
+- **Measurement engine** — Insite reads the Height, Width, Length, Count and
+  Wastage on a line. It writes the quantity when you save the document. Wastage
+  is a multiplier, not a percentage. Type 1.1 to add 10 percent. Leave blank for
+  none.
+- **Scope Item** — a scope of work inside a project. It carries a Planned
+  Amount and a Revised Amount, and it acts as an accounting dimension named
+  **Scope**.
+- **Variation Order** — an approved change to a scope. Submit it, and Insite
+  updates the Revised Amount of every scope it names.
+- **Project and Scope on sales documents** — Insite asks for a Project on the
+  header, and a Scope on each line that a Measurement Rule matched. Insite does
+  not check the other lines. You can switch the whole check off in
+  **Contracting Settings**.
+- **Contract Progress report** — planned, net variations, revised, ordered,
+  delivered, invoiced and variance, for each scope.
+
+## Documentation
+
+- [docs/CONCEPTS.md](docs/CONCEPTS.md) — the four ideas Insite adds.
+- [docs/SETUP.md](docs/SETUP.md) — install, first job, worked example.
 
 ## Install
 
@@ -32,19 +38,30 @@ bench --site <your-site> install-app insite
 bench --site <your-site> migrate
 ```
 
-## Architecture
+## License
 
-A Frappe app `insite` (module `Insite`) layered on ERPNext's transactions, GL,
-and Accounting Dimensions. Custom fields, the Scope dimension, roles, and the
-Settings singleton are all created idempotently from code — no `db_set`, no
-fixtures of standard doctypes, no Export-Customizations sync.
+MIT
 
-## Tests
+## For developers
+
+The app is `insite` and the module is `Insite`. It sits on ERPNext transactions,
+the general ledger and accounting dimensions.
+
+The calculation code is plain Python and does not import Frappe. It holds the
+measures, the formula reader and the rule match. The rule match picks the most
+specific rule: item, then template, then attribute value, then item group.
+Priority breaks a tie.
+
+A document hook calls the calculation on the server before each save. The server
+writes the quantity, so a typed quantity cannot replace the calculated one.
+
+Code creates the custom fields on the item rows, the Scope accounting dimension,
+the Contracting Manager role and the Contracting Settings record. This code runs
+after install and after every migrate, and it is safe to run again. Insite does
+not ship exported customizations of standard doctypes.
+
+Run the tests:
 
 ```bash
 python -m pytest insite/tests -v
 ```
-
-## License
-
-MIT

@@ -1,20 +1,198 @@
 msgid ""
-msgstr "Content-Type: text/plain; charset=UTF-8\nLanguage: ar\n"
+msgstr ""
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: ar\n"
+"Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);\n"
+
+# Doctypes and roles
 
 msgid "Work Item Type"
-msgstr "نوع بند العمل"
+msgstr "نوع بند الأعمال"
 
 msgid "Measurement Rule"
 msgstr "قاعدة القياس"
 
+msgid "Measurement Rules"
+msgstr "قواعد القياس"
+
 msgid "Scope Item"
-msgstr "بند الأعمال"
+msgstr "بند نطاق العمل"
 
 msgid "Variation Order"
 msgstr "أمر تغيير"
 
+msgid "Variation Lines"
+msgstr "بنود أمر التغيير"
+
+msgid "Contracting Settings"
+msgstr "إعدادات المقاولات"
+
+msgid "Contracting Manager"
+msgstr "مدير المقاولات"
+
 msgid "Contract Progress"
 msgstr "تقدم العقد"
+
+# Scope Item
+
+msgid "Scope"
+msgstr "النطاق"
+
+msgid "Title"
+msgstr "العنوان"
+
+msgid "Status"
+msgstr "الحالة"
+
+msgid "Series"
+msgstr "المسلسل"
+
+msgid "Disabled"
+msgstr "معطّل"
+
+msgid "Project"
+msgstr "المشروع"
+
+msgid "Customer"
+msgstr "العميل"
+
+msgid "Company"
+msgstr "الشركة"
+
+msgid "Currency"
+msgstr "العملة"
+
+msgid "Scope of Work"
+msgstr "نطاق العمل"
+
+msgid "Scope Description"
+msgstr "وصف نطاق العمل"
+
+msgid "Planned Values"
+msgstr "القيم المخططة"
+
+msgid "Planned Amount"
+msgstr "المبلغ المخطط"
+
+msgid "Planned Qty"
+msgstr "الكمية المخططة"
+
+msgid "UOM"
+msgstr "وحدة القياس"
+
+msgid "Net Variations"
+msgstr "صافي التغييرات"
+
+msgid "Revised Amount"
+msgstr "المبلغ المعدّل"
+
+# Scope Item status
+
+msgid "Draft"
+msgstr "مسودة"
+
+msgid "Active"
+msgstr "نشط"
+
+msgid "On Hold"
+msgstr "معلّق"
+
+msgid "Completed"
+msgstr "مكتمل"
+
+msgid "Cancelled"
+msgstr "ملغى"
+
+# Work Item Type
+
+msgid "Description"
+msgstr "الوصف"
+
+msgid "Tolerance %"
+msgstr "نسبة التفاوت %"
+
+msgid "How is this measured?"
+msgstr "كيف يُقاس هذا؟"
+
+msgid "Default Accounts (per company)"
+msgstr "الحسابات الافتراضية (لكل شركة)"
+
+msgid "Accounts"
+msgstr "الحسابات"
+
+msgid "Income Account"
+msgstr "حساب الإيراد"
+
+msgid "Expense Account"
+msgstr "حساب المصروف"
+
+msgid "Cost Center"
+msgstr "مركز التكلفة"
+
+# Measurement Rule
+
+msgid "Applies To"
+msgstr "ينطبق على"
+
+msgid "Item"
+msgstr "الصنف"
+
+msgid "Item Group"
+msgstr "مجموعة الأصناف"
+
+msgid "Item Template"
+msgstr "قالب الصنف"
+
+msgid "Attribute"
+msgstr "الخاصية"
+
+msgid "Attribute Value"
+msgstr "قيمة الخاصية"
+
+msgid "Measured By"
+msgstr "طريقة القياس"
+
+msgid "Formula"
+msgstr "المعادلة"
+
+msgid "Priority"
+msgstr "الأولوية"
+
+# Measures
+
+msgid "Area (Height × Width × Count)"
+msgstr "المساحة (الارتفاع × العرض × العدد)"
+
+msgid "Perimeter ((Height + Width) × 2 × Count)"
+msgstr "المحيط ((الارتفاع + العرض) × 2 × العدد)"
+
+msgid "Linear (Length × Count)"
+msgstr "الطولي (الطول × العدد)"
+
+msgid "Piece × Wastage (Count × Wastage)"
+msgstr "القطعة × الهدر (العدد × الهدر)"
+
+msgid "Manual (keep the typed quantity)"
+msgstr "يدوي (الاحتفاظ بالكمية المُدخلة)"
+
+msgid "Custom formula"
+msgstr "معادلة مخصصة"
+
+# Measurement fields on item rows
+
+msgid "Measurements"
+msgstr "إنسايت — القياسات"
+
+msgid "Height"
+msgstr "الارتفاع"
+
+msgid "Width"
+msgstr "العرض"
+
+msgid "Length"
+msgstr "الطول"
 
 msgid "Count"
 msgstr "العدد"
@@ -22,11 +200,103 @@ msgstr "العدد"
 msgid "Wastage"
 msgstr "الهدر"
 
-msgid "Planned Amount"
-msgstr "المبلغ المخطط"
+msgid "Calculated"
+msgstr "إنسايت — المحسوب"
 
-msgid "Revised Amount"
-msgstr "المبلغ المعدّل"
+msgid "Calculated Quantity"
+msgstr "الكمية المحسوبة"
 
-msgid "How is this measured?"
-msgstr "كيف يُقاس هذا؟"
+msgid "Measure Used"
+msgstr "طريقة القياس المستخدمة"
+
+# Variation Order
+
+msgid "Date"
+msgstr "التاريخ"
+
+msgid "Reason"
+msgstr "السبب"
+
+msgid "Scope Changes"
+msgstr "تغييرات النطاق"
+
+msgid "Type"
+msgstr "النوع"
+
+msgid "Qty Change"
+msgstr "تغيير الكمية"
+
+msgid "Amount Change"
+msgstr "تغيير المبلغ"
+
+msgid "Note"
+msgstr "ملاحظة"
+
+msgid "Amended From"
+msgstr "معدّل من"
+
+msgid "Add"
+msgstr "إضافة"
+
+msgid "Omit"
+msgstr "حذف"
+
+msgid "Modify"
+msgstr "تعديل"
+
+# Contract Progress report
+
+msgid "Planned"
+msgstr "المخطط"
+
+msgid "Revised"
+msgstr "المعدّل"
+
+msgid "Ordered"
+msgstr "المطلوب"
+
+msgid "Delivered"
+msgstr "المسلَّم"
+
+msgid "Invoiced"
+msgstr "المفوتر"
+
+msgid "Variance"
+msgstr "الفرق"
+
+msgid "Left to Invoice"
+msgstr "الفرق (المعدّل − المفوتر)"
+
+msgid "% Invoiced"
+msgstr "نسبة الفوترة %"
+
+msgid "Over-run"
+msgstr "تجاوز"
+
+msgid "Yes"
+msgstr "نعم"
+
+# Contracting Settings
+
+msgid "Project and Scope Tracking"
+msgstr "تتبع المشروع والنطاق"
+
+msgid "Require Project and Scope on Sales Documents"
+msgstr "إلزام المشروع والنطاق في مستندات المبيعات"
+
+msgid "Defaults"
+msgstr "القيم الافتراضية"
+
+msgid "Default Tolerance %"
+msgstr "نسبة التفاوت الافتراضية %"
+
+# Workspace
+
+msgid "Setup"
+msgstr "الإعداد"
+
+msgid "Work"
+msgstr "الأعمال"
+
+msgid "Reports"
+msgstr "التقارير"

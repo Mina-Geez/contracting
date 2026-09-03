@@ -1,10 +1,33 @@
-// Show the Insite dimension fields on item rows; recompute is server-side.
-const INSITE_DIMS = ["custom_base_qty", "custom_height", "custom_width",
-                     "custom_length", "custom_waste_factor"];
+// Insite — transaction lines.
+//
+// Quantities are worked out on the server when the document is saved, so this
+// script deliberately does no arithmetic. It only makes the form react when a
+// measurement changes, so the user can see there is something to save.
 
-frappe.ui.form.on("Sales Order Item", {
-  items_add(frm, cdt, cdn) {},
+const INSITE_MEASUREMENT_FIELDS = [
+	"custom_base_qty",
+	"custom_height",
+	"custom_width",
+	"custom_length",
+	"custom_waste_factor",
+];
+
+const INSITE_ITEM_DOCTYPES = [
+	"Quotation Item",
+	"Sales Order Item",
+	"Delivery Note Item",
+	"Sales Invoice Item",
+	"Material Request Item",
+	"Supplier Quotation Item",
+	"Purchase Order Item",
+	"Purchase Receipt Item",
+	"Purchase Invoice Item",
+];
+
+INSITE_ITEM_DOCTYPES.forEach((doctype) => {
+	const handlers = {};
+	INSITE_MEASUREMENT_FIELDS.forEach((fieldname) => {
+		handlers[fieldname] = (frm) => frm.dirty();
+	});
+	frappe.ui.form.on(doctype, handlers);
 });
-
-// Nudge users: after editing a dimension, save to recompute (server-authoritative).
-function insite_mark_dirty(frm) { frm.dirty(); }

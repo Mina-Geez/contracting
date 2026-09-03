@@ -1,5 +1,7 @@
 import pytest
+
 from insite.calc.measures import compute
+
 
 def test_area():
     assert compute("area", height=1.5, width=2.8, count=40) == pytest.approx(168.0)
@@ -27,17 +29,29 @@ def test_blank_inputs_coerced_to_zero():
     assert compute("area", height="", width=None, count=40) == 0.0
 
 def test_unknown_measure_raises():
-    import pytest
     with pytest.raises(ValueError):
         compute("nope", count=1)
 
-if __name__ == "__main__":
-    import sys
-    fns = [v for k, v in sorted(globals().items()) if k.startswith("test_")]
-    failed = 0
-    for fn in fns:
-        try:
-            fn(); print("PASS", fn.__name__)
-        except BaseException as e:  # noqa
-            failed += 1; print("FAIL", fn.__name__, "->", repr(e))
-    sys.exit(1 if failed else 0)
+# --- a zero count is a real zero where the count IS the quantity -------------
+
+def test_count_of_zero_stays_zero():
+    # A blank Float reads as 0. For `count` and `piece_waste` the count is the
+    # quantity, so inventing 1 would bill a unit nobody ordered.
+    assert compute("count", count=0) == 0.0
+    assert compute("piece_waste", count=0, wastage=1.1) == 0.0
+
+def test_zero_count_still_falls_back_where_it_is_only_a_multiplier():
+    assert compute("area", height=2, width=3, count=0) == 6.0
+    assert compute("linear", length=4, count=0) == 4.0
+
+# --- measures are stored and shown by label, resolved by key ----------------
+
+def test_labels_resolve_to_the_same_measure():
+    from insite.calc.measures import MEASURE_LABELS, normalize_measure
+    assert normalize_measure(MEASURE_LABELS["area"]) == "area"
+    assert compute(MEASURE_LABELS["area"], height=1.5, width=2.8, count=40) == pytest.approx(168.0)
+
+def test_every_measure_has_a_label():
+    from insite.calc.measures import MEASURE_KEYS, MEASURE_LABELS
+    assert set(MEASURE_LABELS) == MEASURE_KEYS
+    assert len(set(MEASURE_LABELS.values())) == len(MEASURE_KEYS)  # labels are unique

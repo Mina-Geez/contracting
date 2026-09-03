@@ -1,79 +1,118 @@
-"""Contract Progress — planned/ordered/delivered/invoiced per Scope Item."""
+"""Contract Progress — planned against ordered, delivered and invoiced, per scope.
+
+Scopes are read with `get_list` so the reader only ever sees the scopes their
+permissions allow, and the money is then totalled for those scopes alone. That
+keeps the report both correct and bounded: without the scope list the three
+aggregates would scan every sales line ever written.
+
+Amounts are summed in company currency (`base_amount`), because a scope's
+planned figure is a single number and documents may be raised in any currency.
+"""
+from __future__ import annotations
+
 import frappe
 from frappe import _
 from frappe.utils import flt
 
-FIELD = "scope_item"
+from insite.config.accounting_dimension import DIMENSION_FIELDNAME as SCOPE_FIELD
 
 
 def execute(filters=None):
-    filters = frappe._dict(filters or {})
-    return get_columns(), get_data(filters)
+	filters = frappe._dict(filters or {})
+	return get_columns(), get_data(filters)
 
 
 def get_columns():
-    return [
-        {"label": _("Scope"), "fieldname": "scope", "fieldtype": "Link", "options": "Scope Item", "width": 140},
-        {"label": _("Title"), "fieldname": "title", "fieldtype": "Data", "width": 200},
-        {"label": _("Status"), "fieldname": "status", "fieldtype": "Data", "width": 80},
-        {"label": _("Planned"), "fieldname": "planned", "fieldtype": "Currency", "width": 110},
-        {"label": _("Net Variations"), "fieldname": "net_variations", "fieldtype": "Currency", "width": 110},
-        {"label": _("Revised"), "fieldname": "revised", "fieldtype": "Currency", "width": 110},
-        {"label": _("Ordered"), "fieldname": "ordered", "fieldtype": "Currency", "width": 110},
-        {"label": _("Delivered"), "fieldname": "delivered", "fieldtype": "Currency", "width": 110},
-        {"label": _("Invoiced"), "fieldname": "invoiced", "fieldtype": "Currency", "width": 110},
-        {"label": _("Variance (Revised − Invoiced)"), "fieldname": "variance", "fieldtype": "Currency", "width": 150},
-        {"label": _("% Invoiced"), "fieldname": "pct_invoiced", "fieldtype": "Percent", "width": 90},
-        {"label": _("Over-run"), "fieldname": "overrun", "fieldtype": "Data", "width": 80},
-    ]
-
-
-def _sum_by_scope(child_dt, parent_dt, company=None):
-    conditions = ["p.docstatus = 1", f"c.`{FIELD}` is not null", f"c.`{FIELD}` != ''"]
-    params = {}
-    if company:
-        conditions.append("p.company = %(company)s")
-        params["company"] = company
-    try:
-        rows = frappe.db.sql(
-            f"""select c.`{FIELD}` as scope, sum(c.amount) as amt
-                from `tab{child_dt}` c join `tab{parent_dt}` p on c.parent = p.name
-                where {' and '.join(conditions)} group by c.`{FIELD}`""",
-            params, as_dict=True)
-        return {r.scope: flt(r.amt) for r in rows}
-    except Exception:  # noqa: BLE001 - the Scope dimension column may be absent on this table
-        # Report zero rather than break the whole report, but leave a trace:
-        # a silent 0 here would read as "nothing delivered/invoiced".
-        frappe.log_error(
-            title=f"Insite: Contract Progress could not read {child_dt}",
-            message=frappe.get_traceback(),
-        )
-        return {}
+	return [
+		{"label": _("Scope"), "fieldname": "scope", "fieldtype": "Link",
+		 "options": "Scope Item", "width": 220},
+		{"label": _("Status"), "fieldname": "status", "fieldtype": "Data", "width": 100},
+		{"label": _("Planned"), "fieldname": "planned", "fieldtype": "Currency", "width": 120},
+		{"label": _("Net Variations"), "fieldname": "net_variations", "fieldtype": "Currency", "width": 120},
+		{"label": _("Revised"), "fieldname": "revised", "fieldtype": "Currency", "width": 120},
+		{"label": _("Ordered"), "fieldname": "ordered", "fieldtype": "Currency", "width": 120},
+		{"label": _("Delivered"), "fieldname": "delivered", "fieldtype": "Currency", "width": 120},
+		{"label": _("Invoiced"), "fieldname": "invoiced", "fieldtype": "Currency", "width": 120},
+		{"label": _("Left to Invoice"), "fieldname": "variance", "fieldtype": "Currency", "width": 130},
+		{"label": _("% Invoiced"), "fieldname": "pct_invoiced", "fieldtype": "Percent", "width": 100},
+	]
 
 
 def get_data(filters):
-    scope_filters = {}
-    if filters.get("status"):
-        scope_filters["status"] = filters.status
-    if filters.get("project"):
-        scope_filters["project"] = filters.project
-    scopes = frappe.get_all("Scope Item", filters=scope_filters,
-                            fields=["name", "scope_title", "status", "original_planned_amount",
-                                    "net_variations_amount", "revised_planned_amount"],
-                            order_by="name asc")
-    ordered = _sum_by_scope("Sales Order Item", "Sales Order", filters.get("company"))
-    delivered = _sum_by_scope("Delivery Note Item", "Delivery Note", filters.get("company"))
-    invoiced = _sum_by_scope("Sales Invoice Item", "Sales Invoice", filters.get("company"))
-    data = []
-    for s in scopes:
-        revised = flt(s.revised_planned_amount) or flt(s.original_planned_amount)
-        o, d, i = flt(ordered.get(s.name)), flt(delivered.get(s.name)), flt(invoiced.get(s.name))
-        data.append({
-            "scope": s.name, "title": s.scope_title, "status": s.status,
-            "planned": flt(s.original_planned_amount), "net_variations": flt(s.net_variations_amount),
-            "revised": revised, "ordered": o, "delivered": d, "invoiced": i,
-            "variance": revised - i,
-            "pct_invoiced": (i / revised * 100.0) if revised else 0.0,
-            "overrun": _("Yes") if max(o, d, i) > revised and revised else "",
-        })
-    return data
+	scopes = _scopes(filters)
+	if not scopes:
+		return []
+
+	names = [scope.name for scope in scopes]
+	ordered = _sum_by_scope("Sales Order Item", "Sales Order", names, filters.get("company"))
+	delivered = _sum_by_scope("Delivery Note Item", "Delivery Note", names, filters.get("company"))
+	invoiced = _sum_by_scope("Sales Invoice Item", "Sales Invoice", names, filters.get("company"))
+
+	data = []
+	for scope in scopes:
+		revised = flt(scope.original_planned_amount) + flt(scope.net_variations_amount)
+		invoiced_amount = flt(invoiced.get(scope.name))
+		data.append({
+			"scope": scope.name,
+			"status": scope.status,
+			"planned": flt(scope.original_planned_amount),
+			"net_variations": flt(scope.net_variations_amount),
+			"revised": revised,
+			"ordered": flt(ordered.get(scope.name)),
+			"delivered": flt(delivered.get(scope.name)),
+			"invoiced": invoiced_amount,
+			"variance": revised - invoiced_amount,
+			"pct_invoiced": (invoiced_amount / revised * 100.0) if revised else 0.0,
+		})
+	return data
+
+
+def _scopes(filters):
+	"""Scopes the reader is allowed to see, narrowed by the report filters."""
+	conditions = {}
+	for field in ("status", "project", "company"):
+		if filters.get(field):
+			conditions[field] = filters.get(field)
+	return frappe.get_list(
+		"Scope Item",
+		filters=conditions,
+		fields=["name", "scope_title", "status", "original_planned_amount", "net_variations_amount"],
+		order_by="name asc",
+		limit_page_length=0,
+	)
+
+
+def _sum_by_scope(child_doctype, parent_doctype, scopes, company=None):
+	"""Total submitted line amounts per scope, in company currency."""
+	if SCOPE_FIELD not in _columns_of(child_doctype):
+		frappe.throw(
+			_("The Scope field is missing from {0}. Run 'bench migrate' to finish setting up Insite.")
+			.format(_(child_doctype)),
+			title=_("Setup Incomplete"),
+		)
+
+	conditions = ["parent.docstatus = 1", f"child.`{SCOPE_FIELD}` in %(scopes)s"]
+	values = {"scopes": scopes}
+	if company:
+		conditions.append("parent.company = %(company)s")
+		values["company"] = company
+
+	rows = frappe.db.sql(
+		f"""
+		select child.`{SCOPE_FIELD}` as scope, sum(child.base_amount) as amount
+		from `tab{child_doctype}` child
+		join `tab{parent_doctype}` parent on child.parent = parent.name
+		where {" and ".join(conditions)}
+		group by child.`{SCOPE_FIELD}`
+		""",
+		values,
+		as_dict=True,
+	)
+	return {row.scope: flt(row.amount) for row in rows}
+
+
+def _columns_of(doctype):
+	try:
+		return frappe.db.get_table_columns(doctype)
+	except Exception:
+		return []

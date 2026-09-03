@@ -1,5 +1,6 @@
 import pytest
-from insite.calc.measures import evaluate_formula, compute, validate_formula
+
+from insite.calc.measures import compute, evaluate_formula, validate_formula
 
 T = {"height": 1.5, "width": 2.8, "length": 3.0, "count": 40.0, "wastage": 1.1}
 
@@ -62,13 +63,39 @@ def test_validate_rejects_bad_syntax():
     with pytest.raises(ValueError):
         validate_formula("height *")
 
-if __name__ == "__main__":
-    import sys
-    fns = [v for k, v in sorted(globals().items()) if k.startswith("test_")]
-    failed = 0
-    for fn in fns:
-        try:
-            fn(); print("PASS", fn.__name__)
-        except BaseException as e:  # noqa
-            failed += 1; print("FAIL", fn.__name__, "->", repr(e))
-    sys.exit(1 if failed else 0)
+# --- resource guards: a valid formula must not be able to hang a worker ------
+
+def test_validate_rejects_huge_exponent():
+    # Planted by a manager, triggered by every user who saves a document.
+    with pytest.raises(ValueError):
+        validate_formula("2 ** 999999999")
+
+def test_validate_rejects_stacked_exponents():
+    with pytest.raises(ValueError):
+        validate_formula("9 ** 9 ** 9")
+
+def test_evaluate_rejects_huge_exponent():
+    with pytest.raises(ValueError):
+        evaluate_formula("count ** 9999", {"count": 9.0})
+
+def test_reasonable_powers_still_work():
+    assert evaluate_formula("width ** 2", {"width": 3.0}) == pytest.approx(9.0)
+
+def test_validate_rejects_an_over_long_formula():
+    with pytest.raises(ValueError):
+        validate_formula(" + ".join(["height"] * 300))
+
+# --- arity: catch a miscalled function at save time, not on an invoice -------
+
+def test_validate_rejects_wrong_argument_count():
+    for bad in ("abs()", "abs(1, 2)", "sqrt()", "pow(1)", "round(1.5, 2, 3)"):
+        with pytest.raises(ValueError):
+            validate_formula(bad)
+
+def test_correct_argument_counts_are_accepted():
+    for good in ("abs(height)", "round(height, 2)", "pow(height, 2)", "min(height, width)"):
+        validate_formula(good)
+
+def test_non_finite_result_is_rejected():
+    with pytest.raises(ValueError):
+        evaluate_formula("1e308 * 10", T)

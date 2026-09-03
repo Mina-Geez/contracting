@@ -16,10 +16,3 @@ def test_parity_matches_oracle():
     for measure, kw, expected in CASES:
         got = compute(measure, **kw)
         assert abs(got - expected) < 1e-9, f"{measure} {kw}: {got} != {expected}"
-
-if __name__ == "__main__":
-    import sys
-    try:
-        test_parity_matches_oracle(); print("PASS parity"); sys.exit(0)
-    except BaseException as e:  # noqa
-        print("FAIL parity ->", repr(e)); sys.exit(1)
