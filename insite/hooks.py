@@ -13,6 +13,16 @@ app_license = "MIT"
 # must have ERPNext before this app can install.
 required_apps = ["frappe", "erpnext"]
 
+# --- Where Insite appears ---------------------------------------------------
+add_to_apps_screen = [
+	{
+		"name": "insite",
+		"logo": "/assets/insite/images/logo.svg",
+		"title": "Insite",
+		"route": "/app/insite",
+	}
+]
+
 # --- Install / migrate ------------------------------------------------------
 after_install = "insite.install.after_install"
 after_migrate = "insite.install.after_migrate"

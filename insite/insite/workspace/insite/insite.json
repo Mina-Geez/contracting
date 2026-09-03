@@ -34,5 +34,8 @@
       "link_to": "Contract Progress",
       "label": "Contract Progress"
     }
-  ]
+  ],
+  "app": "insite",
+  "modified": "2026-09-03 23:05:00.000000",
+  "sequence_id": 1.0
 }
