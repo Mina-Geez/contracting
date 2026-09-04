@@ -122,15 +122,24 @@ def test_source_files_hold_no_stray_control_characters():
 		assert not found, f"{path} holds control character(s) {[hex(b) for b in found]}"
 
 
-def test_rejection_status_options_match_the_code():
-	"""The guard and the report compare against these strings; the field offers them."""
-	from insite.constants import REJECTION_OPEN, REJECTION_STATUSES
+def test_insite_owns_no_doctype_erpnext_already_ships():
+	"""Insite adds fields to standard doctypes; it does not clone them.
 
-	with open("insite/insite/doctype/rejection/rejection.json", encoding="utf-8") as fh:
-		doc = json.load(fh)
-	field = next(f for f in doc["fields"] if f["fieldname"] == "status")
-	assert field["options"].splitlines() == list(REJECTION_STATUSES)
-	assert field["default"] == REJECTION_OPEN
+	Rejected work was briefly a doctype of Insite's own before anyone checked
+	that ERPNext's Quality Inspection already carried the status, the inspector,
+	the verifier, the remarks and the readings, and that both Delivery Note Item
+	and Sales Invoice Item already linked to one.
+	"""
+	own = {os.path.basename(d) for d in _doctype_dirs()}
+	assert "rejection" not in own, "rejected work is a Quality Inspection, not a doctype of ours"
+
+	# And the fields that replaced it are the two ERPNext genuinely lacks. Read
+	# as source, because config/custom_fields.py imports Frappe and this suite
+	# runs without it.
+	source = open("insite/config/custom_fields.py", encoding="utf-8").read()
+	assert '"Quality Inspection"' in source
+	for fieldname in ("scope_item", "custom_rejected_qty", "custom_rejected_amount"):
+		assert f'"{fieldname}"' in source, f"{fieldname} should be added to Quality Inspection"
 
 
 def test_doctype_timestamps_have_been_bumped():

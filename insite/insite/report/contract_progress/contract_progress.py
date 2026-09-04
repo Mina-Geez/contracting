@@ -13,9 +13,9 @@ aggregates would scan every sales line ever written.
 Amounts are summed in company currency (`base_amount`), because a scope's
 planned figure is a single number and documents may be raised in any currency.
 
-**Rejected (Open)** sits beside Delivered so the delivered figure cannot read
-better than the site does. It is the value of Rejections still open against the
-scope — a claim, not a ledger entry.
+**Rejected** sits beside Delivered so the delivered figure cannot read better
+than the site does. It is the value of submitted Quality Inspections still
+marked Rejected against the scope — a claim, not a ledger entry.
 """
 
 from __future__ import annotations
@@ -26,7 +26,7 @@ from frappe.query_builder.functions import Sum
 from frappe.utils import flt
 
 from insite.config.accounting_dimension import DIMENSION_FIELDNAME as SCOPE_FIELD
-from insite.constants import REJECTION_OPEN
+from insite.constants import QI_REJECTED, QUALITY_INSPECTION
 
 
 def execute(filters=None):
@@ -53,12 +53,7 @@ def get_columns():
 			"width": 130,
 		},
 		{"label": _("Delivered"), "fieldname": "delivered", "fieldtype": "Currency", "width": 120},
-		{
-			"label": _("Rejected (Open)"),
-			"fieldname": "rejected_open",
-			"fieldtype": "Currency",
-			"width": 130,
-		},
+		{"label": _("Rejected"), "fieldname": "rejected_open", "fieldtype": "Currency", "width": 120},
 		{"label": _("Invoiced"), "fieldname": "invoiced", "fieldtype": "Currency", "width": 120},
 		{"label": _("Left to Invoice"), "fieldname": "variance", "fieldtype": "Currency", "width": 130},
 		{"label": _("% Invoiced"), "fieldname": "pct_invoiced", "fieldtype": "Percent", "width": 100},
@@ -116,29 +111,33 @@ def _scopes(filters):
 
 
 def _open_rejections(scopes, company=None):
-	"""Value of the rejections still open, per scope.
+	"""Value of the work still failing inspection, per scope.
 
-	A management figure, not a ledger one: an open rejection is a claim against
-	work already delivered, and nothing has been credited yet. That is why it
-	sits beside Delivered rather than being netted off it, and why Left to
-	Invoice is untouched — reworked work is still owed to you.
+	Rejected work is a submitted Quality Inspection still marked Rejected —
+	ERPNext's own document, to which Insite adds only a Scope and a quantity.
+
+	A management figure, not a ledger one: it is a claim against work already
+	delivered, and nothing has been credited yet. That is why it sits beside
+	Delivered rather than being netted off it, and why Left to Invoice is
+	untouched — work that gets redone is still owed to you.
 
 	Built with the query builder rather than `get_all`: Frappe refuses an
 	aggregate written as a field string ("SQL functions are not allowed as
 	strings in SELECT"), and that refusal would take the whole report down, not
 	just this column.
 	"""
-	rejection = frappe.qb.DocType("Rejection")
+	inspection = frappe.qb.DocType(QUALITY_INSPECTION)
 	query = (
-		frappe.qb.from_(rejection)
-		.select(rejection.scope_item, Sum(rejection.rejected_amount).as_("amount"))
-		.where(rejection.scope_item.isin(scopes))
-		.where(rejection.status == REJECTION_OPEN)
+		frappe.qb.from_(inspection)
+		.select(inspection.scope_item, Sum(inspection.custom_rejected_amount).as_("amount"))
+		.where(inspection.scope_item.isin(scopes))
+		.where(inspection.status == QI_REJECTED)
+		.where(inspection.docstatus == 1)
 	)
 	if company:
-		query = query.where(rejection.company == company)
+		query = query.where(inspection.company == company)
 
-	rows = query.groupby(rejection.scope_item).run(as_dict=True)
+	rows = query.groupby(inspection.scope_item).run(as_dict=True)
 	return {row.scope_item: flt(row.amount) for row in rows}
 
 

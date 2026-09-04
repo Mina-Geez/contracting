@@ -36,15 +36,15 @@ ordered, delivered and invoiced.
 - **Project and Scope on sales documents** — Insite asks for a Project on the
   header, and a Scope on each line that a Measurement Rule matched. Insite does
   not check the other lines. You can switch the check off in **Insite Settings**.
-- **Rejection** — work you delivered that the client would not accept. Report it
-  from the Delivery Note it came from. It stays open until it is reworked,
-  credited or accepted, it warns you when someone invoices that scope — a
-  setting turns that into a refusal to submit — and it shows in Contract
-  Progress so delivered never reads better than the site does.
-  Insite records the credit note you raised; it does not raise one.
+- **Rejected work on ERPNext's own Quality Inspection** — Insite adds a **Scope**
+  and a **Rejected Qty** to it, and works out what the refused work was worth
+  from the rate on the line it came off. A submitted inspection still marked
+  Rejected warns you when someone invoices that scope — a setting turns that
+  into a refusal to submit — and shows in Contract Progress. Insite writes no
+  statuses and posts nothing; settling it stays ERPNext's business.
 - **Contract Progress report** — scope, status, planned, ordered, variance to
-  plan, delivered, rejected and still open, invoiced, left to invoice and percent
-  invoiced, for each scope.
+  plan, delivered, rejected, invoiced, left to invoice and percent invoiced, for
+  each scope.
 
 Insite uses standard ERPNext documents on purpose. The Project, the Quotation,
 the Sales Order, the Delivery Note, the Sales Invoice and the purchase documents

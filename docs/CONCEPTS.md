@@ -186,42 +186,44 @@ Order against the same Scope Item. Many contractors already work this way.
 Step 5 is optional. Leave the Planned Amount alone to keep the original baseline
 in view.
 
-## Rejection
+## Rejected work
 
-Work you delivered that the client would not accept. The consultant rejects six
-panels on the third floor: that is a Rejection.
+The consultant rejects six panels on the third floor. That is a **Quality
+Inspection** — ERPNext's own document, not one of Insite's.
 
-A Rejection is a **claim, not an accounting entry**. Nothing about it posts to a
-ledger. It says some of what you delivered has to be redone, credited or argued
-about, and it stays **Open** until one of those happens. Report it from the
-Delivery Note it came from — the button asks which line and how much, and fills
-in the rest — or create one directly when it spans several deliveries.
+It already holds everything the event needs: a status of Accepted, Rejected or
+Cancelled, who inspected it, who verified it, the remarks and the readings. Both
+Delivery Note Item and Sales Invoice Item already link to one. Insite adds the
+two things it lacks for contracting:
 
-Closing it takes one of three shapes:
+| Field | Why |
+| --- | --- |
+| **Scope** | So the rejection reports against the right scope of work. It is filled in from the delivery line, so nobody types it twice. |
+| **Rejected Qty** | An inspection is otherwise pass-or-fail for a whole line. `rejected_qty` exists only on Purchase Receipt Item, so there is no way to say six of a hundred and sixty-eight. Leave it blank to mean the whole line. |
 
-| Status | What happened | What Insite wants |
-| --- | --- | --- |
-| **Reworked** | You redid the work. | Nothing. Link the delivery that redid it if you want the trail. |
-| **Credited** | The client will not take it. | The credit note you raised. Insite records it; it does not raise it. |
-| **Accepted** | They took it after all. | Nothing. |
+From those, Insite works out the **Rejected Amount** using the rate on the line
+the inspection came off. It is a management figure, not a ledger entry: nothing
+here posts to an account.
 
-That division is deliberate. ERPNext already knows how to move stock and money
-with a return and a credit note, and a second set of books that drifts from the
-first would be worse than no record at all.
+For the item to be inspectable on the way out, tick **Inspection Required before
+Delivery** on it. ERPNext refuses to create an outgoing inspection otherwise.
 
-An open Rejection does two things for you:
+A submitted inspection still marked **Rejected** does two things:
 
-- **It speaks up at billing time.** Invoicing a scope that still has rejected
-  work on it warns you and names the rejections. Turn on *Refuse to Submit
-  Invoices for a Scope With Open Rejections* in Insite Settings to make that a
-  hard stop on submit; a draft can always be saved. A credit note is always
-  allowed — raising one is how a rejection is settled.
-- **It shows in Contract Progress**, as **Rejected (Open)** beside Delivered, so
-  the delivered figure never reads better than the site does.
+- **It speaks up at billing time.** Invoicing that scope warns you and names the
+  inspections. Turn on *Refuse to Submit Invoices for a Scope With Rejected
+  Work* in Insite Settings to make that a hard stop on submit; a draft can
+  always be saved, and a credit note is always allowed.
+- **It shows in Contract Progress**, as **Rejected** beside Delivered, so the
+  delivered figure never reads better than the site does.
 
-**Buying is not here, on purpose.** A Purchase Receipt already has a rejected
-quantity and a rejected warehouse of its own, and Insite's Scope field is on
-those lines, so a supplier's bad batch already lands against the right scope.
+Settling it is ERPNext's business, not Insite's: mark the inspection Accepted
+once the work is redone, or raise a return and a credit note. Insite writes no
+statuses and posts nothing.
+
+**Buying needs nothing from us.** Purchase Receipt already has a rejected
+quantity and a rejected warehouse, and the Scope field is already on those
+lines, so a supplier's bad batch lands against the right scope on its own.
 
 ## How the pieces work together
 
@@ -232,7 +234,7 @@ those lines, so a supplier's bad batch already lands against the right scope.
    the quantity of a measured line, writes any other numbers the rule produces,
    and keeps the line tied to its Scope.
 4. When the scope changes, you raise another Sales Order against the same Scope
-   Item. When work comes back rejected, you raise a Rejection against it.
+   Item. When work comes back rejected, you raise a Quality Inspection on the
+   delivery line and Insite carries the Scope onto it.
 5. **Contract Progress** shows, for each scope: planned, ordered, the variance
-   to plan, delivered, what is rejected and still open, invoiced, and what is
-   left to invoice.
+   to plan, delivered, what is rejected, invoiced, and what is left to invoice.

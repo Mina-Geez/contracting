@@ -14,6 +14,11 @@ frappe.ui.form.on("Work Item Type", {
 		frappe.db
 			.count("Measurement Rule", { filters: { work_item_type: frm.doc.name } })
 			.then((count) => {
+				// Clear first: refresh runs again after every save, and the
+				// headline is added, not replaced — so without this the nudge
+				// stacks up, and it would still be there after the rule that
+				// answers it has been written.
+				frm.dashboard.clear_headline();
 				if (count) return;
 				frm.dashboard.set_headline(
 					__(

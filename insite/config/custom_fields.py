@@ -123,9 +123,61 @@ def _fields():
 	]
 
 
+def _quality_inspection_fields():
+	"""What ERPNext's Quality Inspection lacks for contracting, and nothing more.
+
+	Rejected work is a Quality Inspection: it already holds the status, the
+	inspector, the verifier, the remarks and the readings, and both Delivery
+	Note Item and Sales Invoice Item link to one. Two things are missing. It
+	does not know which scope of work it belongs to, and it has no quantity —
+	`rejected_qty` exists only on Purchase Receipt Item, so on the selling side
+	an inspection is pass or fail for a whole line with no way to say six of a
+	hundred and sixty-eight.
+	"""
+	return [
+		{
+			"fieldname": "custom_insite_sb",
+			"label": "Contracting",
+			"fieldtype": "Section Break",
+			"insert_after": "description",
+		},
+		{
+			"fieldname": "scope_item",
+			"label": "Scope",
+			"fieldtype": "Link",
+			"options": "Scope Item",
+			"insert_after": "custom_insite_sb",
+			"description": "Which scope of work this belongs to. Contract Progress reports rejected work against it.",
+		},
+		{
+			"fieldname": "custom_insite_cb",
+			"fieldtype": "Column Break",
+			"insert_after": "scope_item",
+		},
+		{
+			"fieldname": "custom_rejected_qty",
+			"label": "Rejected Qty",
+			"fieldtype": "Float",
+			"insert_after": "custom_insite_cb",
+			"depends_on": "eval:doc.status == 'Rejected'",
+			"description": "How much of the line was refused. Leave blank if the whole line was.",
+		},
+		{
+			"fieldname": "custom_rejected_amount",
+			"label": "Rejected Amount",
+			"fieldtype": "Currency",
+			"insert_after": "custom_rejected_qty",
+			"depends_on": "eval:doc.status == 'Rejected'",
+			"read_only": 1,
+			"description": "Worked out from the rate on the line this came off, in company currency.",
+		},
+	]
+
+
 def get_custom_fields():
-	fields = _fields()
-	return {doctype: fields for doctype in ITEM_DOCTYPES}
+	fields = {doctype: _fields() for doctype in ITEM_DOCTYPES}
+	fields["Quality Inspection"] = _quality_inspection_fields()
+	return fields
 
 
 def ensure_custom_fields():

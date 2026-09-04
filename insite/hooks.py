@@ -48,4 +48,8 @@ del _doctype
 # Billing is where rejected work costs money, so that is where Insite speaks up.
 doc_events["Sales Invoice"]["validate"].append("insite.overrides.transaction.warn_open_rejections")
 
+# Rejected work is ERPNext's Quality Inspection. Insite gives it a Scope and
+# works out what the refused quantity was worth.
+doc_events["Quality Inspection"] = {"validate": ["insite.overrides.quality_inspection.price_the_rejection"]}
+
 fixtures = []

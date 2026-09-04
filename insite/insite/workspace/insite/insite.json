@@ -7,7 +7,7 @@
   "public": 1,
   "icon": "project",
   "is_hidden": 0,
-  "content": "[{\"type\": \"paragraph\", \"data\": {\"text\": \"<b>Set up once:</b> a <b>Work Item Type</b> for each kind of work, then a <b>Measurement Rule</b> saying how it is measured. <b>Then per job:</b> a <b>Scope Item</b> on the Project for each scope you report on.\"}}, {\"type\": \"header\", \"data\": {\"text\": \"Set up\", \"level\": 4}}, {\"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Work Item Type\"}}, {\"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Measurement Rule\"}}, {\"type\": \"header\", \"data\": {\"text\": \"Every job\", \"level\": 4}}, {\"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Scope Item\"}}, {\"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Rejection\"}}, {\"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Contract Progress\"}}, {\"type\": \"header\", \"data\": {\"text\": \"Now and then\", \"level\": 4}}, {\"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Measurement Field\"}}, {\"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Insite Settings\"}}]",
+  "content": "[{\"type\": \"paragraph\", \"data\": {\"text\": \"<b>Set up once:</b> a <b>Work Item Type</b> for each kind of work, then a <b>Measurement Rule</b> saying how it is measured. <b>Then per job:</b> a <b>Scope Item</b> on the Project for each scope you report on.\"}}, {\"type\": \"header\", \"data\": {\"text\": \"Set up\", \"level\": 4}}, {\"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Work Item Type\"}}, {\"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Measurement Rule\"}}, {\"type\": \"header\", \"data\": {\"text\": \"Every job\", \"level\": 4}}, {\"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Scope Item\"}}, {\"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Quality Inspection\"}},{\"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Contract Progress\"}}, {\"type\": \"header\", \"data\": {\"text\": \"Now and then\", \"level\": 4}}, {\"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Measurement Field\"}}, {\"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Insite Settings\"}}]",
   "shortcuts": [
     {
       "type": "DocType",
@@ -26,8 +26,8 @@
     },
     {
       "type": "DocType",
-      "link_to": "Rejection",
-      "label": "Rejection"
+      "link_to": "Quality Inspection",
+      "label": "Quality Inspection"
     },
     {
       "type": "Report",

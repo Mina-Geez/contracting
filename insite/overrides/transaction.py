@@ -10,7 +10,8 @@ Three responsibilities, all server-authoritative:
    to lines the measurement engine matched, so ordinary sales on the same site
    are unaffected, and it can be switched off in Insite Settings.
 3. `warn_open_rejections` — say so when a Sales Invoice bills a scope that
-   still has rejected work on it.
+   still has rejected work on it. Rejected work is ERPNext's own Quality
+   Inspection; Insite adds a Scope to it and reads it back here.
 
 The document lists live in `insite.constants`, which hooks.py reads too, so the
 hooks and the handlers can never drift apart.
@@ -20,10 +21,15 @@ from __future__ import annotations
 
 import frappe
 from frappe import _
-from frappe.utils import escape_html
+from frappe.utils import escape_html, flt
 
 from insite.calc import engine
-from insite.constants import ENFORCED_DOCTYPES, MEASURED_DOCTYPES, REJECTION_OPEN
+from insite.constants import (
+	ENFORCED_DOCTYPES,
+	MEASURED_DOCTYPES,
+	QI_REJECTED,
+	QUALITY_INSPECTION,
+)
 
 #: How many rejections to name before the message just says there are more.
 REJECTIONS_NAMED = 5
@@ -81,15 +87,18 @@ def enforce_project_scope(doc, method=None):
 def warn_open_rejections(doc, method=None):
 	"""validate: don't let a Sales Invoice quietly bill work that was rejected.
 
+	Rejected work is a submitted Quality Inspection still marked Rejected.
+	Insite adds only the Scope to it; ERPNext owns the rest.
+
 	A draft is only ever warned about, even when the site is set to refuse:
 	someone has to be able to save the invoice they are looking at and sort the
-	rejection out afterwards. The refusal lands on submit, which is where the
-	money is. A credit note is exempt either way — raising one is how a
-	rejection gets closed.
+	inspection out afterwards. The refusal lands on submit, which is where the
+	money is. A credit note is exempt either way — raising one is a way of
+	settling the argument.
 
-	The rejections are read with `get_all` rather than `get_list` on purpose: a
-	sales user who cannot open a Rejection must still be told the work is
-	disputed. Only the names and summaries are shown, never anything the reader
+	The inspections are read with `get_all` rather than `get_list` on purpose: a
+	sales user who cannot open a Quality Inspection must still be told the work
+	is disputed. Only the name and item are shown, neither of which the reader
 	could not already see on the invoice in front of them.
 	"""
 	if doc.doctype != "Sales Invoice" or doc.get("is_return"):
@@ -100,17 +109,21 @@ def warn_open_rejections(doc, method=None):
 		return
 
 	# One query for the document, not one per row.
-	rejections = frappe.get_all(
-		"Rejection",
-		filters={"scope_item": ["in", sorted(scopes)], "status": REJECTION_OPEN},
-		fields=["name", "rejection_summary"],
-		order_by="reported_on asc",
+	rejected = frappe.get_all(
+		QUALITY_INSPECTION,
+		filters={
+			"scope_item": ["in", sorted(scopes)],
+			"status": QI_REJECTED,
+			"docstatus": 1,
+		},
+		fields=["name", "item_name", "item_code", "custom_rejected_qty"],
+		order_by="report_date asc",
 		limit_page_length=REJECTIONS_NAMED + 1,
 	)
-	if not rejections:
+	if not rejected:
 		return
 
-	message = _build_rejection_message(rejections)
+	message = _build_rejection_message(rejected)
 	title = _("Rejected Work on This Scope")
 	submitting = doc.docstatus == 1
 	if submitting and frappe.db.get_single_value("Insite Settings", "block_invoicing_with_open_rejections"):
@@ -118,16 +131,18 @@ def warn_open_rejections(doc, method=None):
 	frappe.msgprint(message, title=title, indicator="orange")
 
 
-def _build_rejection_message(rejections):
-	lines = [
-		f"<b>{escape_html(r.name)}</b> — {escape_html(r.rejection_summary or '')}"
-		for r in rejections[:REJECTIONS_NAMED]
-	]
-	if len(rejections) > REJECTIONS_NAMED:
+def _build_rejection_message(inspections):
+	lines = []
+	for inspection in inspections[:REJECTIONS_NAMED]:
+		what = inspection.item_name or inspection.item_code or ""
+		quantity = flt(inspection.custom_rejected_qty)
+		measure = f"{quantity:g} × " if quantity else ""
+		lines.append(f"<b>{escape_html(inspection.name)}</b> — {escape_html(measure + what)}")
+	if len(inspections) > REJECTIONS_NAMED:
 		lines.append(_("…and more."))
 
-	opening = _("This invoice covers work with rejections still open:")
-	closing = _("Close them, or invoice only the work that was accepted.")
+	opening = _("This invoice covers work that failed inspection and is still rejected:")
+	closing = _("Settle them, or invoice only the work that was accepted.")
 	body = "<br>".join(lines)
 	return f"{opening}<br><br>{body}<br><br>{closing}"
 

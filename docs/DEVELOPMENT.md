@@ -17,7 +17,7 @@ bench --site test.localhost run-tests --app insite
 ```
 
 Run both before pushing. The integration tests live beside the doctype they
-cover (`insite/insite/doctype/rejection/test_rejection.py`), which is where
+cover (`insite/insite/doctype/scope_item/test_scope_item.py`), which is where
 Frappe looks for them; `pytest` never collects them because it is pointed at
 `insite/tests`.
 
@@ -72,7 +72,7 @@ Two traps, both of which produced tests that passed alone and failed together:
 - **Clean up in `tearDown`.** Committing shared fixtures in `setUpClass` takes
   the class outside Frappe's per-test rollback, so anything a test creates
   survives into the next one. The report test then totals every leftover
-  rejection, and the invoice warning — which names five and then says "and
+  inspection, and the invoice warning — which names five and then says "and
   more" — stops naming the one the test just made.
 
 ## Getting a bench
@@ -180,11 +180,11 @@ is preferred over both `get_all` field-string aggregates and new raw SQL:
 ```python
 from frappe.query_builder.functions import Sum
 
-t = frappe.qb.DocType("Rejection")
+t = frappe.qb.DocType("Quality Inspection")
 rows = (
     frappe.qb.from_(t)
-    .select(t.scope_item, Sum(t.rejected_amount).as_("amount"))
-    .where(t.status == "Open")
+    .select(t.scope_item, Sum(t.custom_rejected_amount).as_("amount"))
+    .where(t.status == "Rejected")
     .groupby(t.scope_item)
     .run(as_dict=True)
 )

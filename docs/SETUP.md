@@ -197,43 +197,45 @@ Step 6 is optional. It moves the baseline to the new contract value, so
 Scope Item. Leave the Planned Amount alone to keep the original baseline in
 view.
 
-## 8. Handle a rejection
+## 8. Handle rejected work
 
 The consultant rejects six of the panels you installed. Record it, so nobody
 invoices them and nobody forgets to redo them.
 
-1. Open the **Delivery Note** the work went out on and click **Report a
-   Rejection**.
-2. Choose the line and enter how much of it was rejected. The project, scope,
-   item and rate come across with it.
-3. Write **What Was Wrong**, and who rejected it. Set **Fix By** if there is a
-   date. Save.
+Rejected work is ERPNext's **Quality Inspection**. Insite does not add a
+document of its own; it adds a Scope and a quantity to that one.
 
-If the rejection spans several deliveries, create the **Rejection** directly
-instead and fill in the project, scope and item yourself.
+**Once, on the item:** tick **Inspection Required before Delivery**. ERPNext
+refuses to create an outgoing inspection for an item that does not ask for one.
 
-While it is **Open**:
+Then, when work comes back:
 
-- Invoicing that scope warns you and names the rejection. To make that a refusal
-  instead, tick **Refuse to Submit Invoices for a Scope With Open Rejections** in
-  **Insite Settings**. The refusal lands on submit — a draft can always be saved.
-  Credit notes are always allowed.
-- The value shows as **Rejected (Open)** in Contract Progress.
+1. From the **Delivery Note** the work went out on, create a **Quality
+   Inspection** on the line — ERPNext offers this from the item row.
+2. Set **Status** to `Rejected` and write the **Remarks**.
+3. Enter **Rejected Qty** — how much of the line was refused. Leave it blank if
+   the whole line was.
+4. Submit it.
 
-Close it by setting the status:
+The **Scope** is filled in from the delivery line, and **Rejected Amount** is
+worked out from the rate on that line. Both are read-only to you; Insite fills
+them in so the two can never disagree.
 
-| Status | When | Then |
-| --- | --- | --- |
-| **Reworked** | you redid the work | optionally link the delivery that redid it |
-| **Credited** | the client will not take it | raise the credit note in ERPNext, then link it here — Insite asks for it |
-| **Accepted** | they took it after all | nothing else |
+While a submitted inspection is still `Rejected`:
 
-Insite does not raise the credit note. It records the one you raised, so there is
-only ever one set of books.
+- Invoicing that scope warns you and names the inspections. To make that a
+  refusal instead, tick **Refuse to Submit Invoices for a Scope With Rejected
+  Work** in **Insite Settings**. The refusal lands on submit — a draft can
+  always be saved. Credit notes are always allowed.
+- The value shows as **Rejected** in Contract Progress.
 
-**Rejecting a supplier's delivery is different.** Use the **Rejected Qty** on the
-Purchase Receipt, which ERPNext already has. The Scope on the line still carries
-the cost to the right place.
+**Settling it is ERPNext's business.** Mark the inspection `Accepted` once the
+work has been redone, or raise a return and a credit note the normal way. Insite
+writes no statuses and posts nothing to the ledger.
+
+**Rejecting a supplier's delivery needs none of this.** Use the **Rejected Qty**
+on the Purchase Receipt, which ERPNext already has. The Scope on the line carries
+the cost to the right place on its own.
 
 ## 9. Read the progress
 
@@ -247,12 +249,12 @@ Open **Contract Progress**. Filter by company, project or status.
 | Ordered | value on submitted Sales Orders for this scope |
 | Variance to Plan | Ordered − Planned |
 | Delivered | value on submitted Delivery Notes |
-| Rejected (Open) | value of Rejections still open against this scope |
+| Rejected | value of submitted Quality Inspections still marked Rejected on this scope |
 | Invoiced | value on submitted Sales Invoices |
 | Left to Invoice | the committed value − Invoiced |
 | % Invoiced | Invoiced as a percentage of the committed value |
 
-**Rejected (Open)** is not netted off any other column. It is a claim against
+**Rejected** is not netted off any other column. It is a claim against
 work already delivered, not a ledger entry, so Delivered still says what went out
 and Left to Invoice still says what is owed to you — reworked work is work you
 will be paid for.
@@ -319,9 +321,9 @@ To apply a new rule to an open draft, open the draft and save it again.
 
 | Role | What they do |
 | --- | --- |
-| Contracting Manager | Sets up Work Item Types, Measurement Rules and Measurement Fields. Creates and edits Scope Items, and sets the Planned Amount. Raises and closes Rejections. Edits Insite Settings. Reads Contract Progress. |
-| Sales User | Reads Scope Items and Rejections. Enters the measurements and the Scope on quotations, sales orders and delivery notes. Reads Contract Progress. |
-| Accounts User | Reads Scope Items and Rejections. Enters the measurements and the Scope on invoices. Reads Contract Progress. |
+| Contracting Manager | Sets up Work Item Types, Measurement Rules and Measurement Fields. Creates and edits Scope Items, and sets the Planned Amount. Edits Insite Settings. Reads Contract Progress. |
+| Sales User | Reads Scope Items. Enters the measurements and the Scope on quotations, sales orders and delivery notes. Reads Contract Progress. |
+| Accounts User | Reads Scope Items. Enters the measurements and the Scope on invoices. Reads Contract Progress. |
 | Purchase User | Reads Scope Items. Sets the Scope on purchase documents. |
 
 ## Troubleshooting
@@ -354,18 +356,21 @@ number of your own, add a Measurement Field first. See section 4.
 the rules. Change those rules first, or tick **Hide on documents** instead.
 
 **Insite warns about rejected work when I save an invoice.** That scope has
-Rejections still open, and the message names them. Close each one as Reworked,
-Credited or Accepted, or invoice only the work that was accepted. A credit note
-never triggers the warning.
+submitted Quality Inspections still marked Rejected, and the message names them.
+Mark each one Accepted once the work is redone, or invoice only what was
+accepted. A credit note never triggers the warning.
 
-**Insite will not let me submit an invoice over a rejection.** Someone has ticked
-**Refuse to Submit Invoices for a Scope With Open Rejections** in **Insite
-Settings**. Close the rejection, or clear that setting to get a warning instead.
-The draft still saves.
+**Insite will not let me submit an invoice over rejected work.** Someone has
+ticked **Refuse to Submit Invoices for a Scope With Rejected Work** in **Insite
+Settings**. Settle the inspection, or clear that setting to get a warning
+instead. The draft still saves.
 
-**Insite will not let me close a rejection as Credited.** It wants the credit
-note. Raise it in ERPNext, then link it in the **Credit Note** field. Insite
-records the credit note you raised; it does not raise one for you.
+**ERPNext will not let me create a Quality Inspection.** The item does not ask
+for one. Tick **Inspection Required before Delivery** on it.
+
+**A Quality Inspection has no Scope on it.** Insite copies the Scope from the
+delivery line it references. An inspection created without a reference to a line
+has nothing to copy from — set the Scope by hand, or make it from the line.
 
 **I cannot save a Sales Order.** Add the Project, and add a Scope on each line
 that a rule matched. The Scope must belong to the same project and the same

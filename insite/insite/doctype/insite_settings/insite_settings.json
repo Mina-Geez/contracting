@@ -6,7 +6,7 @@
   "editable_grid": 1,
   "engine": "InnoDB",
   "creation": "2026-09-03 00:00:00.000000",
-  "modified": "2026-09-04 02:00:00.000000",
+  "modified": "2026-09-04 12:30:00.000000",
   "owner": "Administrator",
   "modified_by": "Administrator",
   "sort_field": "modified",
@@ -33,14 +33,14 @@
     {
       "fieldname": "rejections_section",
       "fieldtype": "Section Break",
-      "label": "Rejections"
+      "label": "Rejected Work"
     },
     {
       "fieldname": "block_invoicing_with_open_rejections",
       "fieldtype": "Check",
-      "label": "Refuse to Submit Invoices for a Scope With Open Rejections",
+      "label": "Refuse to Submit Invoices for a Scope With Rejected Work",
       "default": "0",
-      "description": "Off, Insite warns and names the open rejections but lets the invoice through. On, it refuses to submit the invoice until each one is reworked, credited or accepted. A draft can always be saved either way, and credit notes are always allowed — raising one is how a rejection is settled."
+      "description": "Off, Insite warns and names the rejected work but lets the invoice through. On, it refuses to submit the invoice until each Quality Inspection is settled. A draft can always be saved either way, and credit notes are always allowed."
     }
   ],
   "permissions": [

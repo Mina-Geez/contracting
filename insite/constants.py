@@ -35,19 +35,18 @@ INPUT_FROM_ITEM = "Item"
 INPUT_CONSTANT = "Constant"
 INPUT_SOURCES = (INPUT_FROM_LINE, INPUT_FROM_ITEM, INPUT_CONSTANT)
 
-#: A Rejection's life. `Open` is the only state that still holds work back;
-#: the rest are ways of being finished with it. Here for the same reason as
-#: the input sources: the Select offers these, the guard and the report
-#: compare against them, and a silent disagreement is unsaveable documents.
-REJECTION_OPEN = "Open"
-REJECTION_REWORKED = "Reworked"
-REJECTION_CREDITED = "Credited"
-REJECTION_ACCEPTED = "Accepted"
-REJECTION_CANCELLED = "Cancelled"
-REJECTION_STATUSES = (
-	REJECTION_OPEN,
-	REJECTION_REWORKED,
-	REJECTION_CREDITED,
-	REJECTION_ACCEPTED,
-	REJECTION_CANCELLED,
-)
+#: Rejected work is ERPNext's **Quality Inspection**, not a doctype of our own.
+#: It already carries the status, who inspected it, who verified it, the
+#: remarks and the readings, and both Delivery Note Item and Sales Invoice Item
+#: already link to one. Insite only adds what it lacks: a Scope, and how much
+#: was rejected.
+QUALITY_INSPECTION = "Quality Inspection"
+
+#: The status that means the work is still refused. ERPNext's own options are
+#: Accepted / Rejected / Cancelled — compared against, never written by us.
+QI_REJECTED = "Rejected"
+QI_ACCEPTED = "Accepted"
+
+#: Where an outgoing inspection can hang. Insite reads these to price a
+#: rejection from the line it came off.
+QI_SELL_SIDE_REFERENCES = ("Delivery Note", "Sales Invoice")
