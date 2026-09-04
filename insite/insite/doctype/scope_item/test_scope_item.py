@@ -742,3 +742,170 @@ class TestContractorJourney(IntegrationTestCase):
 		self.assertAlmostEqual(row["delivered"], measured * 3500)
 		self.assertAlmostEqual(row["invoiced"], measured * 3500)
 		self.assertAlmostEqual(row["pct_invoiced"], 100.0)
+
+
+class TestScopeProfitability(IntegrationTestCase):
+	"""Money still to be spent is money already lost, and no ledger holds it.
+
+	ERPNext reports what has been posted. A Purchase Order has not been posted,
+	so a scope reads as profitable until the invoices arrive. These tests are
+	about that gap.
+	"""
+
+	@classmethod
+	def setUpClass(cls):
+		super().setUpClass()
+		cls.company = _a_company()
+		cls.customer = _ensure(
+			"Customer",
+			{"customer_name": "Insite Margin Customer"},
+			{"customer_name": "Insite Margin Customer", "customer_type": "Company"},
+		)
+		cls.supplier = _ensure(
+			"Supplier",
+			{"supplier_name": "Insite Margin Supplier"},
+			{"supplier_name": "Insite Margin Supplier", "supplier_group": "All Supplier Groups"},
+		)
+		cls.item = _ensure(
+			"Item",
+			{"item_code": "INSITE-MARGIN-ITEM"},
+			{
+				"item_code": "INSITE-MARGIN-ITEM",
+				"item_name": "Insite Margin Item",
+				"item_group": frappe.get_all("Item Group", filters={"is_group": 0}, pluck="name")[0],
+				"stock_uom": "Nos",
+				"is_stock_item": 0,
+			},
+		)
+		cls.project = _ensure(
+			"Project",
+			{"project_name": "Insite Margin Project"},
+			{"project_name": "Insite Margin Project", "company": cls.company, "status": "Open"},
+		)
+		frappe.db.commit()
+
+	def setUp(self):
+		self.scope = (
+			frappe.get_doc(
+				{
+					"doctype": "Scope Item",
+					"scope_title": f"Margin {frappe.generate_hash(length=8)}",
+					"project": self.project,
+					"status": "Active",
+				}
+			)
+			.insert()
+			.name
+		)
+
+	def _sold(self, rate, qty=1):
+		order = frappe.get_doc(
+			{
+				"doctype": "Sales Order",
+				"customer": self.customer,
+				"company": self.company,
+				"project": self.project,
+				"delivery_date": frappe.utils.add_days(frappe.utils.today(), 30),
+				"items": [{"item_code": self.item, "qty": qty, "rate": rate, "scope_item": self.scope}],
+			}
+		)
+		order.insert()
+		order.submit()
+		return order
+
+	def _bought(self, rate, qty=1):
+		order = frappe.get_doc(
+			{
+				"doctype": "Purchase Order",
+				"supplier": self.supplier,
+				"company": self.company,
+				"project": self.project,
+				"schedule_date": frappe.utils.add_days(frappe.utils.today(), 15),
+				"items": [{"item_code": self.item, "qty": qty, "rate": rate, "scope_item": self.scope}],
+			}
+		)
+		order.insert()
+		order.submit()
+		return order
+
+	def _row(self):
+		from insite.insite.report.scope_profitability.scope_profitability import execute
+
+		_, rows = execute({"company": self.company, "project": self.project})
+		return next(row for row in rows if row["scope"] == self.scope)
+
+	def test_a_purchase_order_is_a_cost_before_it_is_an_invoice(self):
+		self._sold(rate=10_000)
+		self._bought(rate=6_000)
+
+		row = self._row()
+		self.assertAlmostEqual(row["contract_value"], 10_000)
+		# Nothing is posted yet, so the ledger sees no cost at all.
+		self.assertAlmostEqual(row["cost"], 0)
+		self.assertAlmostEqual(row["committed"], 6_000)
+		self.assertAlmostEqual(row["expected_cost"], 6_000)
+		self.assertAlmostEqual(row["margin"], 4_000)
+		self.assertAlmostEqual(row["margin_pct"], 40.0)
+
+	def test_what_the_supplier_has_invoiced_stops_being_committed(self):
+		self._sold(rate=10_000)
+		order = self._bought(rate=6_000)
+
+		# What a Purchase Invoice against the order does to the line. Done
+		# directly so the test is about the arithmetic, not about ERPNext's
+		# billing flow, which has its own tests.
+		frappe.db.set_value("Purchase Order Item", order.items[0].name, "billed_amt", 2_500)
+
+		self.assertAlmostEqual(self._row()["committed"], 3_500)
+
+	def test_an_over_billed_line_is_not_a_negative_commitment(self):
+		self._sold(rate=10_000)
+		order = self._bought(rate=6_000)
+		frappe.db.set_value("Purchase Order Item", order.items[0].name, "billed_amt", 7_000)
+
+		self.assertAlmostEqual(self._row()["committed"], 0)
+
+	def test_a_closed_order_is_no_longer_money_we_are_going_to_spend(self):
+		self._sold(rate=10_000)
+		order = self._bought(rate=6_000)
+		self.assertAlmostEqual(self._row()["committed"], 6_000)
+
+		order.update_status("Closed")
+
+		self.assertAlmostEqual(self._row()["committed"], 0)
+		self.assertAlmostEqual(self._row()["margin"], 10_000)
+
+	def test_the_worst_scope_is_the_first_row(self):
+		from insite.insite.report.scope_profitability.scope_profitability import execute
+
+		self._sold(rate=10_000)
+		self._bought(rate=1_000)
+		healthy = self.scope
+
+		self.setUp()  # a second scope on the same project
+		self._sold(rate=10_000)
+		self._bought(rate=9_000)
+		thin = self.scope
+
+		_, rows = execute({"company": self.company, "project": self.project})
+		ours = [row["scope"] for row in rows if row["scope"] in (healthy, thin)]
+		self.assertEqual(ours, [thin, healthy])
+
+	def test_the_reports_insite_does_not_build_are_really_there(self):
+		"""The workspace points at these instead of Insite rebuilding them.
+
+		Both work per scope because Insite registers the Scope as an accounting
+		dimension. If ERPNext ever renames one, the workspace grows a dead tile
+		and the offline guard cannot see it.
+		"""
+		from insite.tests.test_app_structure import BORROWED_REPORTS
+
+		for report in BORROWED_REPORTS:
+			self.assertTrue(frappe.db.exists("Report", report), f"ERPNext no longer ships {report}")
+
+	def test_the_scope_is_an_accounting_dimension_the_ledger_keeps(self):
+		"""Everything above rests on the scope reaching the GL."""
+		self.assertTrue(frappe.db.has_column("GL Entry", "scope_item"))
+		self.assertTrue(
+			frappe.db.exists("Accounting Dimension", {"document_type": "Scope Item", "disabled": 0})
+		)

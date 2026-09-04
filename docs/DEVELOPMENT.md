@@ -11,7 +11,7 @@ ruff check insite
 ruff format --check insite
 node --check insite/public/js/insite_transaction.js
 
-# on a bench — 25 integration tests
+# on a bench — 34 integration tests
 bench --site test.localhost migrate
 bench --site test.localhost run-tests --app insite
 ```
@@ -208,6 +208,28 @@ rows = (
     .run(as_dict=True)
 )
 ```
+
+## What the accounting dimension already bought you
+
+Registering `Scope Item` as an accounting dimension is three lines of config, and
+it hands the app a set of reports for nothing. Before writing anything that
+totals money per scope, check whether one of these already says it:
+
+| You want | It already exists |
+| --- | --- |
+| income, expense and gross profit per scope | **Profitability Analysis**, *Based On* = `Accounting Dimension` |
+| a cost budget per scope, and warnings when it is passed | the **Budget** doctype — creating the dimension adds `Scope Item` to *Budget Against* |
+| actual against that budget | **Budget Variance Report** |
+| a P&L or Trial Balance for one scope | the financial statements take a dimension filter |
+| every entry behind a figure | **General Ledger**, filtered by scope |
+
+This was checked on a bench, not assumed: `GL Entry` carries a `scope_item`
+column and ERPNext stamps it from the item row. The second Insite report about
+money exists only because none of the above can see a **Purchase Order** — a
+commitment has not reached the ledger.
+
+The lesson generalises. Insite deleted a whole doctype once for the same reason
+(rejections, which are ERPNext's Quality Inspection). Search both apps first.
 
 ## Architecture
 

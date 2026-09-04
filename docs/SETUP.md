@@ -324,7 +324,53 @@ its own copy of the description from the moment it was raised, so editing the
 Item now cannot rewrite what a past delivery says it supplied. Nothing has to be
 switched on for this. The record was always there.
 
-## 12. A worked example
+## 12. See whether it is making money
+
+Open **Scope Profitability**. One row per scope, worst margin first.
+
+| Column | Meaning |
+| --- | --- |
+| Contract Value | value on submitted Sales Orders — the job as sold, variations included |
+| Revenue | posted to income accounts against this scope |
+| Cost | posted to expense accounts against this scope |
+| Committed | ordered from suppliers on submitted Purchase Orders, not yet invoiced |
+| Expected Cost | Cost + Committed |
+| Margin | Contract Value − Expected Cost |
+| Margin % | Margin as a percentage of Contract Value |
+
+**Committed is the column that earns this report.** A Purchase Order has not
+reached the ledger, so every financial report in ERPNext shows a scope as
+profitable until the supplier invoices arrive. A scope with 588,000 sold and
+260,000 already on order is running at 56%, not at 100%.
+
+Two things work differently from the accounting reports, on purpose:
+
+- **No date range.** A contract is not a fiscal year. Costing a scope over a
+  period while its contract value covers the whole job compares two different
+  things, so every figure is life-to-date.
+- **Worst first.** A report you open to control a job should open on the job that
+  needs controlling.
+
+### What ERPNext already does per scope
+
+Insite registers the Scope as an **accounting dimension**, so ERPNext's own
+reports work per scope with nothing more to install. Do not rebuild these:
+
+| Report | What it answers |
+| --- | --- |
+| **Profitability Analysis** | income, expense and gross profit per scope, from the ledger — set *Based On* to `Accounting Dimension` and *Accounting Dimension* to `Scope` |
+| **Budget Variance Report** | actual against a budget per scope |
+| **Profit and Loss Statement** | the full P&L, filtered to one scope |
+| **General Ledger** | every entry behind a scope's figures |
+
+To set a cost budget for a scope, create a **Budget** with *Budget Against* set
+to `Scope Item`. ERPNext will then warn or stop when spending runs past it,
+exactly as it does for a cost centre.
+
+Both **Profitability Analysis** and **Budget Variance Report** sit on the Insite
+workspace so nobody has to know they were already there.
+
+## 13. A worked example
 
 A client orders six glass units. Each unit is 2.4 m high and 1.8 m wide. The
 rate is 900 per square meter. The workshop also wants to know how much sheet the
@@ -366,7 +412,7 @@ Change the formula to `height * width * count * cutting_allowance`. **Worked out
 as** then reads `Height × Width × Count × 1.12`, and the quantity of the first
 line becomes 29.03.
 
-## 13. Change a Measurement Rule later
+## 14. Change a Measurement Rule later
 
 A change to a Work Item Type or a Measurement Rule does not touch the documents
 you already have. Insite calculates a quantity only when a person saves a
@@ -375,7 +421,7 @@ they hold. Submitted documents do not move.
 
 To apply a new rule to an open draft, open the draft and save it again.
 
-## 14. Who does what
+## 15. Who does what
 
 | Role | What they do |
 | --- | --- |

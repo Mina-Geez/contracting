@@ -49,6 +49,10 @@ ordered, delivered and invoiced.
   measurement behind its quantity, and the specification that was on the item at
   the time. When a standard changes mid-job, this is what says which deliveries
   were made to the old one.
+- **Scope Profitability report** — contract value against cost, including the
+  purchase orders raised but not yet invoiced. No ledger holds that number, so
+  every accounting report shows a scope as profitable until the supplier
+  invoices land. Worst margin first.
 - **Print formats that show the work** — the quotation, order, delivery note and
   invoice, with the lines grouped by Scope and a subtotal each, and the
   measurement printed under every line: `H 1.500 × W 2.800 × 40 off`. A client

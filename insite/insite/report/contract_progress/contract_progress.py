@@ -25,8 +25,8 @@ from frappe import _
 from frappe.query_builder.functions import Sum
 from frappe.utils import flt
 
-from insite.config.accounting_dimension import DIMENSION_FIELDNAME as SCOPE_FIELD
 from insite.constants import QI_REJECTED, QUALITY_INSPECTION
+from insite.scope_totals import sum_lines_by_scope
 
 
 def execute(filters=None):
@@ -66,9 +66,9 @@ def get_data(filters):
 		return []
 
 	names = [scope.name for scope in scopes]
-	ordered = _sum_by_scope("Sales Order Item", "Sales Order", names, filters.get("company"))
-	delivered = _sum_by_scope("Delivery Note Item", "Delivery Note", names, filters.get("company"))
-	invoiced = _sum_by_scope("Sales Invoice Item", "Sales Invoice", names, filters.get("company"))
+	ordered = sum_lines_by_scope("Sales Order Item", "Sales Order", names, filters.get("company"))
+	delivered = sum_lines_by_scope("Delivery Note Item", "Delivery Note", names, filters.get("company"))
+	invoiced = sum_lines_by_scope("Sales Invoice Item", "Sales Invoice", names, filters.get("company"))
 	rejected = _open_rejections(names, filters.get("company"))
 
 	data = []
@@ -139,40 +139,3 @@ def _open_rejections(scopes, company=None):
 
 	rows = query.groupby(inspection.scope_item).run(as_dict=True)
 	return {row.scope_item: flt(row.amount) for row in rows}
-
-
-def _sum_by_scope(child_doctype, parent_doctype, scopes, company=None):
-	"""Total submitted line amounts per scope, in company currency."""
-	if SCOPE_FIELD not in _columns_of(child_doctype):
-		frappe.throw(
-			_("The Scope field is missing from {0}. Run 'bench migrate' to finish setting up Insite.").format(
-				_(child_doctype)
-			),
-			title=_("Setup Incomplete"),
-		)
-
-	conditions = ["parent.docstatus = 1", f"child.`{SCOPE_FIELD}` in %(scopes)s"]
-	values = {"scopes": scopes}
-	if company:
-		conditions.append("parent.company = %(company)s")
-		values["company"] = company
-
-	rows = frappe.db.sql(
-		f"""
-		select child.`{SCOPE_FIELD}` as scope, sum(child.base_amount) as amount
-		from `tab{child_doctype}` child
-		join `tab{parent_doctype}` parent on child.parent = parent.name
-		where {" and ".join(conditions)}
-		group by child.`{SCOPE_FIELD}`
-		""",
-		values,
-		as_dict=True,
-	)
-	return {row.scope: flt(row.amount) for row in rows}
-
-
-def _columns_of(doctype):
-	try:
-		return frappe.db.get_table_columns(doctype)
-	except Exception:
-		return []

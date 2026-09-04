@@ -15,6 +15,11 @@ DOCTYPE_GLOB = "insite/insite/doctype/*/"
 REPORT_GLOB = "insite/insite/report/*/"
 PRINT_FORMAT_GLOB = "insite/insite/print_format/*/"
 
+#: ERPNext reports the workspace points at rather than Insite rebuilding them.
+#: Both work per scope because Insite registers the Scope as an accounting
+#: dimension. `test_the_borrowed_reports_are_really_there` proves they exist.
+BORROWED_REPORTS = {"Profitability Analysis", "Budget Variance Report"}
+
 
 def _dirs(pattern):
 	"""Real source folders under `pattern`, ignoring build artefacts."""
@@ -382,10 +387,14 @@ def test_the_workspace_agrees_with_itself():
 def test_the_workspace_only_points_at_records_that_exist():
 	"""A shortcut to a deleted doctype is a dead link in the app's own sidebar.
 
-	Only Insite's own doctypes can be checked here — a shortcut to one of
-	ERPNext's (Quality Inspection) is fine and cannot be verified without a
-	site. What this catches is the case that actually happened: a doctype
-	deleted from the app while its shortcut stayed behind.
+	Only Insite's own records can be checked here — a shortcut to one of
+	ERPNext's is fine and cannot be verified without a site. What this catches is
+	the case that actually happened: a doctype deleted from the app while its
+	shortcut stayed behind.
+
+	The reports Insite borrows rather than builds are listed rather than waved
+	through, so a typo in one is still caught here and the list itself says which
+	ERPNext reports the product depends on. A bench test proves they exist.
 	"""
 	with open("insite/insite/workspace/insite/insite.json", encoding="utf-8") as fh:
 		workspace = json.load(fh)
@@ -406,7 +415,9 @@ def test_the_workspace_only_points_at_records_that_exist():
 	for shortcut in workspace["shortcuts"]:
 		target = shortcut["link_to"]
 		if shortcut["type"] == "Report":
-			assert target in reports, f"workspace points at a report that does not exist: {target}"
+			assert target in reports | BORROWED_REPORTS, (
+				f"workspace points at a report that does not exist: {target}"
+			)
 		elif target.startswith(("Insite", "Measurement", "Work Item", "Scope")):
 			assert target in insite_names, f"workspace points at a deleted doctype: {target}"
 
