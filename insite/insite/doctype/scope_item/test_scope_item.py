@@ -182,6 +182,43 @@ class TestRejectedWork(IntegrationTestCase):
 		with self.assertRaises(frappe.ValidationError):
 			self._inspection(scope_item=other_scope).insert()
 
+	def test_the_same_item_under_two_scopes_is_not_settled_in_silence(self):
+		"""A door handle belongs to every scope that has doors.
+
+		When an inspection does not come off a line, ERPNext binds it to the
+		first row matching the item code and says nothing. The rejection is then
+		filed against one scope at that scope's rate when the other may have
+		been meant. Insite cannot tell a deliberate choice from ERPNext's
+		default, so it does not override — it says so.
+		"""
+		other_scope = _ensure(
+			"Scope Item",
+			{"scope_title": "Second floor glazing", "project": self.project},
+			{"scope_title": "Second floor glazing", "project": self.project, "status": "Active"},
+		)
+		two_scopes = frappe.get_doc(
+			{
+				"doctype": "Delivery Note",
+				"customer": self.customer,
+				"company": self.company,
+				"project": self.project,
+				"items": [
+					{"item_code": self.item, "qty": 10, "rate": RATE, "scope_item": self.scope},
+					{"item_code": self.item, "qty": 20, "rate": 1000, "scope_item": other_scope},
+				],
+			}
+		).insert()
+
+		before = len(frappe.message_log)
+		inspection = self._inspection(
+			reference_name=two_scopes.name, child_row_reference=None, custom_rejected_qty=2
+		)
+		inspection.insert()
+		raised = str(frappe.message_log[before:])
+
+		self.assertIn("Second floor glazing", raised)
+		self.assertIn(str(two_scopes.items[1].idx), raised)
+
 	# --- what rejected work does to the rest of the app ----------------------
 
 	def test_contract_progress_totals_rejected_work(self):

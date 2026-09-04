@@ -31,7 +31,29 @@ def setup():
 	ensure_custom_fields()
 	apply_site_fields()  # after Insite's own: these are inserted after them
 	ensure_settings_singleton()
+	allow_an_item_on_more_than_one_line()
 	ensure_scope_dimension()
+
+
+def allow_an_item_on_more_than_one_line():
+	"""Let the same item appear on several lines, under several scopes.
+
+	One item belongs to many scopes at once: a door handle belongs to every
+	scope that has doors, at a different rate and a different quantity in each.
+	Insite's whole model is a scope per line, so a document has to be able to
+	carry the same item more than once.
+
+	ERPNext refuses that by default — "Item entered multiple times" — and the
+	switch is in Selling Settings, off. A contracting site cannot work without
+	it, so Insite turns it on, once, the way it creates its roles and fields.
+	It is never turned back off: a site that has deliberately cleared it has
+	said something, and this runs on every migrate.
+	"""
+	if frappe.db.get_single_value("Selling Settings", "allow_multiple_items"):
+		return
+	settings = frappe.get_single("Selling Settings")
+	settings.allow_multiple_items = 1
+	settings.save(ignore_permissions=True)
 
 
 def create_roles():

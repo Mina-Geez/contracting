@@ -14,10 +14,19 @@ bench --site <your-site> migrate
 Install adds these items, and adds them again on every migrate:
 
 - the measurement boxes on the sales and purchase item rows
-- the **Scope** accounting dimension
+- the **Scope** accounting dimension, and an index on it wherever the report
+  reads it
 - the **Contracting Manager** role
 - the **Insite Settings** record
+- the four Insite print formats
 - every **Measurement Field** your site has added
+
+Install also turns on **Allow Item to Be Added Multiple Times in a
+Transaction** in Selling Settings. One item belongs to many scopes at once. A
+door handle belongs to every scope that has doors, at a different rate in each.
+Insite puts a scope on each line, so a document must be able to carry the same
+item more than once. ERPNext refuses that by default. Insite never turns the
+setting back off.
 
 Give the **Contracting Manager** role to the people who set up the work and run
 the contracts.

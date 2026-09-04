@@ -172,6 +172,13 @@ keeps the change history on the document.
 A Scope Item is also an **Accounting Dimension**. Every sales and purchase line
 can carry a Scope, so the cost and the revenue stay attached to the work.
 
+**The scope belongs to the line, not to the item.** One item belongs to many
+scopes at once. A door handle belongs to every scope that has doors, with a
+different quantity and a different rate in each. So a document carries the same
+item on several lines, each under its own scope. Install turns on ERPNext's
+**Allow Item to Be Added Multiple Times in a Transaction** for exactly this
+reason.
+
 ## A change of scope
 
 Insite has no change document. A mid-project change of scope is another Sales

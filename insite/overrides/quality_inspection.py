@@ -28,6 +28,7 @@ def price_the_rejection(doc, method=None):
 	if line and line.get("scope_item") and not doc.get("scope_item"):
 		doc.scope_item = line.scope_item
 
+	_warn_if_another_line_could_have_been_meant(doc, line)
 	_check_scope_company(doc)
 
 	if doc.status != QI_REJECTED:
@@ -47,20 +48,96 @@ def price_the_rejection(doc, method=None):
 	doc.custom_rejected_amount = quantity * flt(line.base_rate) if line else 0
 
 
+#: What the inspection needs from the line it came off.
+_LINE_FIELDS = ["name", "idx", "qty", "base_rate", "scope_item"]
+
+
 def _source_line(doc):
-	"""The sell-side line this inspection came off, if it came off one."""
+	"""The sell-side line this inspection came off, if it came off one.
+
+	One item can appear on several lines of the same document under different
+	scopes — a door handle belongs to every scope that has doors — and those
+	lines carry different rates. So when the inspection does not name its row,
+	matching by item code is a guess, and a wrong guess files the rejection
+	against the wrong scope at the wrong money with nothing to show for it.
+	Refuse instead.
+	"""
 	if doc.get("reference_type") not in QI_SELL_SIDE_REFERENCES or not doc.get("reference_name"):
 		return None
 
 	child_doctype = f"{doc.reference_type} Item"
-	# `child_row_reference` names the exact row; without it fall back to the
-	# item, which is right whenever an item appears once on the document.
 	if doc.get("child_row_reference"):
-		filters = {"name": doc.child_row_reference}
-	else:
-		filters = {"parent": doc.reference_name, "item_code": doc.item_code}
+		return frappe.db.get_value(
+			child_doctype, {"name": doc.child_row_reference}, _LINE_FIELDS, as_dict=True
+		)
 
-	return frappe.db.get_value(child_doctype, filters, ["qty", "base_rate", "scope_item"], as_dict=True)
+	rows = frappe.get_all(
+		child_doctype,
+		filters={"parent": doc.reference_name, "item_code": doc.item_code},
+		fields=_LINE_FIELDS,
+		order_by="idx asc",
+	)
+	if not rows:
+		return None
+	if len(rows) > 1:
+		frappe.throw(
+			_(
+				"{0} is on {1} lines of {2}, and they may be different scopes at "
+				"different rates. Create the inspection from the line that failed, so "
+				"Insite knows which one it was."
+			).format(doc.item_code, len(rows), doc.reference_name),
+			title=_("Which Line Failed?"),
+		)
+	return rows[0]
+
+
+def _warn_if_another_line_could_have_been_meant(doc, line):
+	"""Say so when the document has the same item under a different scope.
+
+	One item belongs to several scopes at once — a door handle belongs to every
+	scope that has doors — and those lines carry different rates. When an
+	inspection does not come off a line, ERPNext binds it to the first row that
+	matches the item code and says nothing. That silently files the rejection
+	against one scope at that scope's rate when the other was meant, which is
+	real money moving between scopes with nothing to show for it.
+
+	Insite cannot tell a deliberate choice from ERPNext's default, so it does
+	not override it. It just stops the ambiguity being silent.
+	"""
+	if not line or not doc.get("scope_item"):
+		return
+
+	others = frappe.get_all(
+		f"{doc.reference_type} Item",
+		filters={
+			"parent": doc.reference_name,
+			"item_code": doc.item_code,
+			"name": ["!=", line.name],
+			# No None in this list: SQL compares anything to NULL as NULL, so a
+			# single None turns the whole NOT IN false and the query silently
+			# matches nothing. Lines with no scope are excluded anyway — a blank
+			# scope is not a different scope.
+			"scope_item": ["not in", ["", doc.scope_item]],
+		},
+		fields=["idx", "scope_item"],
+		order_by="idx asc",
+	)
+	if not others:
+		return
+
+	elsewhere = ", ".join(_("line {0} ({1})").format(row.idx, _scope_title(row.scope_item)) for row in others)
+	frappe.msgprint(
+		_(
+			"This is filed against line {0}, {1}. The same item is also on {2}. "
+			"Check it is the right line — the scopes are billed at different rates."
+		).format(line.idx, _scope_title(doc.scope_item), elsewhere),
+		title=_("Same Item on Another Scope"),
+		indicator="orange",
+	)
+
+
+def _scope_title(scope):
+	return frappe.db.get_value("Scope Item", scope, "scope_title") or scope
 
 
 def _check_scope_company(doc):
