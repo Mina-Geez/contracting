@@ -11,7 +11,7 @@ ruff check insite
 ruff format --check insite
 node --check insite/public/js/insite_transaction.js
 
-# on a bench — 39 integration tests
+# on a bench — 41 integration tests
 bench --site test.localhost migrate
 bench --site test.localhost run-tests --app insite
 ```
@@ -219,6 +219,21 @@ keys and silently ignore the rest.**
 | --- | --- | --- |
 | `get_filtered_dimensions` | `dimension`, `account`, `company` | everything else, including `project` |
 | `get_project_name` | `customer`, `company` | everything else |
+| `get_outstanding_reference_documents` | `cost_center`, and any **active accounting dimension** | `project` — the dimension list it builds those conditions from leaves Project out |
+
+That last one has a sting in it. Registering the Scope as an accounting
+dimension makes ERPNext filter the **payment ledger** on `scope_item`, and the
+ledger row behind an invoice is the receivable posting, which carries the
+header's dimensions and never a scope. So the filter was not ignored — it
+matched nothing, every time, and the Filters dialog reported that a customer
+owed nothing on a scope they owed plenty on. A filter that is honoured against
+the wrong table is worse than one that is dropped.
+
+The fix pattern for both: take the filter **out of the arguments** before
+calling ERPNext's method, then apply it to the result yourself
+(`insite/overrides/payment_entry.py`). The method is replaced through
+`override_whitelisted_methods` in `hooks.py`, which is a supported extension
+point — no monkey-patching, and the client keeps calling ERPNext's path.
 
 So before relying on one: open the source, or call it and count the rows. And
 because `get_filtered_dimensions` appends `company = <value>` unconditionally

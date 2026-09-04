@@ -32,6 +32,17 @@ doctype_js = {dt: "public/js/insite_transaction.js" for dt in _c.TAGGED_DOCTYPES
 doctype_js["Measurement Rule"] = "public/js/measurement_rule.js"
 doctype_js["Work Item Type"] = "public/js/work_item_type.js"
 doctype_js["Project"] = "public/js/project.js"
+doctype_js["Payment Entry"] = "public/js/payment_entry.js"
+
+# --- Collecting a payment for one job ---------------------------------------
+# ERPNext's outstanding search filters by any active accounting dimension, so
+# the Scope already works. It will not filter by project — the dimension list it
+# builds those conditions from leaves Project out — so Insite runs theirs and
+# then keeps the vouchers on the project. A pass-through when no project is
+# asked for.
+override_whitelisted_methods = {
+	"erpnext.accounts.doctype.payment_entry.payment_entry.get_outstanding_reference_documents": "insite.overrides.payment_entry.get_outstanding_reference_documents"
+}
 
 # --- Document events (server-authoritative) ---------------------------------
 # Quantities are computed before ERPNext totals the document; the Project and

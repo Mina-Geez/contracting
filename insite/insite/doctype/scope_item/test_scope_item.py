@@ -1084,6 +1084,122 @@ class TestScopeProfitability(IntegrationTestCase):
 		# And with no customer at all — a Quotation to a Lead — nothing narrows.
 		self.assertIn(theirs, ask(None))
 
+	def test_collecting_a_payment_can_be_narrowed_to_one_job(self):
+		"""The outstanding invoices offered when a payment comes in.
+
+		A contractor is paid per project, and allocating a receipt against
+		another job's invoice is how money ends up on the wrong contract.
+		ERPNext's search filters by any active accounting dimension — so the
+		Scope already worked — but it builds those conditions from a dimension
+		list that leaves Project out, so a project handed to it was dropped.
+		"""
+		from insite.overrides.payment_entry import get_outstanding_reference_documents
+
+		other_project = _ensure(
+			"Project",
+			{"project_name": "Insite Second Job"},
+			{"project_name": "Insite Second Job", "company": self.company, "status": "Open"},
+		)
+
+		def invoice(project, amount):
+			doc = frappe.get_doc(
+				{
+					"doctype": "Sales Invoice",
+					"customer": self.customer,
+					"company": self.company,
+					"project": project,
+					"due_date": frappe.utils.add_days(frappe.utils.today(), 30),
+					"items": [{"item_code": self.item, "qty": 1, "rate": amount}],
+				}
+			)
+			doc.insert()
+			doc.submit()
+			return doc.name
+
+		this_job = invoice(self.project, 4_000)
+		other_job = invoice(other_project, 9_000)
+
+		receivable = frappe.get_cached_value("Company", self.company, "default_receivable_account")
+		args = {
+			"posting_date": frappe.utils.today(),
+			"company": self.company,
+			"party_type": "Customer",
+			"party": self.customer,
+			"payment_type": "Receive",
+			"party_account": receivable,
+			"get_outstanding_invoices": True,
+		}
+
+		everything = {row.get("voucher_no") for row in get_outstanding_reference_documents(dict(args))}
+		self.assertIn(this_job, everything)
+		self.assertIn(other_job, everything, "both invoices are outstanding to begin with")
+
+		narrowed = {
+			row.get("voucher_no")
+			for row in get_outstanding_reference_documents({**args, "project": self.project})
+		}
+		self.assertIn(this_job, narrowed)
+		self.assertNotIn(other_job, narrowed, "another job's invoice was offered for this payment")
+
+	def test_collecting_a_payment_can_be_narrowed_to_one_scope(self):
+		"""The Scope filter in that same dialog.
+
+		It is there because Insite registers the Scope as an accounting
+		dimension, and it always came back empty: ERPNext filters the payment
+		ledger, and the ledger row behind an invoice is the receivable posting,
+		which carries the header's dimensions and no scope at all — a scope
+		belongs to a line. So the dialog reported that a customer owed nothing
+		on a scope they owe plenty on. A scope is matched on the lines instead.
+		"""
+		from insite.overrides.payment_entry import get_outstanding_reference_documents
+
+		def invoice(scope, amount):
+			doc = frappe.get_doc(
+				{
+					"doctype": "Sales Invoice",
+					"customer": self.customer,
+					"company": self.company,
+					"project": self.project,
+					"due_date": frappe.utils.add_days(frappe.utils.today(), 30),
+					"items": [{"item_code": self.item, "qty": 1, "rate": amount, "scope_item": scope}],
+				}
+			)
+			doc.insert()
+			doc.submit()
+			return doc.name
+
+		this_scope = self.scope
+		self.setUp()  # a second scope on the same project
+		other_scope = self.scope
+
+		mine = invoice(this_scope, 3_000)
+		theirs = invoice(other_scope, 8_000)
+
+		args = {
+			"posting_date": frappe.utils.today(),
+			"company": self.company,
+			"party_type": "Customer",
+			"party": self.customer,
+			"payment_type": "Receive",
+			"party_account": frappe.get_cached_value("Company", self.company, "default_receivable_account"),
+			"get_outstanding_invoices": True,
+		}
+
+		everything = {row.get("voucher_no") for row in get_outstanding_reference_documents(dict(args))}
+		self.assertTrue({mine, theirs} <= everything, "both invoices are outstanding to begin with")
+
+		narrowed = {
+			row.get("voucher_no")
+			for row in get_outstanding_reference_documents({**args, "scope_item": this_scope})
+		}
+		self.assertIn(
+			mine,
+			narrowed,
+			"the scope filter found nothing, which is what it did before: ERPNext "
+			"filtered the payment ledger on a scope that is never set there",
+		)
+		self.assertNotIn(theirs, narrowed)
+
 	def test_the_reports_insite_does_not_build_are_really_there(self):
 		"""The workspace points at these instead of Insite rebuilding them.
 

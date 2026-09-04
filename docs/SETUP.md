@@ -236,7 +236,28 @@ Step 6 is optional. It moves the baseline to the new contract value, so
 Scope Item. Leave the Planned Amount alone to keep the original baseline in
 view.
 
-## 8. Handle rejected work
+## 8. Collect a payment for one job
+
+A contractor is paid per job, but a customer with three jobs running has open
+invoices on all three. Allocating a receipt against the wrong one puts the money
+on the wrong contract, and it is a quiet mistake to make.
+
+1. Open a **Payment Entry** and choose the customer.
+2. Choose **Get Outstanding Invoices**.
+3. In the **Filters** dialog, set **Project** — or **Scope**, to collect against
+   one part of a job.
+4. Only that job's invoices are pulled in.
+
+Both filters sit beside ERPNext's own — the posting and due dates, the
+outstanding amount, and the Cost Center. Leave them empty and you get every open
+invoice for the customer, exactly as before.
+
+**Project** matches the invoice. **Scope** matches its lines, because that is
+where a scope lives: an invoice covering three scopes appears under all three.
+Allocation is still per invoice, so what these filters change is which invoices
+you are choosing among, not how a payment is split.
+
+## 9. Handle rejected work
 
 The consultant rejects six of the panels you installed. Record it, so nobody
 invoices them and nobody forgets to redo them.
@@ -276,7 +297,7 @@ writes no statuses and posts nothing to the ledger.
 on the Purchase Receipt, which ERPNext already has. The Scope on the line carries
 the cost to the right place on its own.
 
-## 9. Print it for the client
+## 10. Print it for the client
 
 Insite ships four print formats: **Insite Quotation**, **Insite Sales Order**,
 **Insite Delivery Note** and **Insite Sales Invoice**.
@@ -294,7 +315,7 @@ arrived at, not the total.
 To make one the default for a document type, set it as the **Default Print
 Format** on that DocType, or pick it each time from the print view.
 
-## 10. Read the progress
+## 11. Read the progress
 
 Open **Contract Progress**. Filter by company, project or status.
 
@@ -323,7 +344,7 @@ A change of scope is another Sales Order, so **Ordered** is the current committe
 value of the work. **Variance to Plan** is how a change reads in the report. Work
 ordered beyond the original plan shows as a positive number.
 
-## 11. See what a scope is made of
+## 12. See what a scope is made of
 
 **Contract Progress** says where a scope stands. **Measurement Register** says
 what it is made of: every submitted line against the scope, the measurement
@@ -337,7 +358,7 @@ its own copy of the description from the moment it was raised, so editing the
 Item now cannot rewrite what a past delivery says it supplied. Nothing has to be
 switched on for this. The record was always there.
 
-## 12. See whether it is making money
+## 13. See whether it is making money
 
 Open **Scope Profitability**. One row per scope, worst margin first.
 
@@ -383,7 +404,7 @@ exactly as it does for a cost centre.
 Both **Profitability Analysis** and **Budget Variance Report** sit on the Insite
 workspace so nobody has to know they were already there.
 
-## 13. A worked example
+## 14. A worked example
 
 A client orders six glass units. Each unit is 2.4 m high and 1.8 m wide. The
 rate is 900 per square meter. The workshop also wants to know how much sheet the
@@ -425,7 +446,7 @@ Change the formula to `height * width * count * cutting_allowance`. **Worked out
 as** then reads `Height × Width × Count × 1.12`, and the quantity of the first
 line becomes 29.03.
 
-## 14. Change a Measurement Rule later
+## 15. Change a Measurement Rule later
 
 A change to a Work Item Type or a Measurement Rule does not touch the documents
 you already have. Insite calculates a quantity only when a person saves a
@@ -434,7 +455,7 @@ they hold. Submitted documents do not move.
 
 To apply a new rule to an open draft, open the draft and save it again.
 
-## 15. Who does what
+## 16. Who does what
 
 | Role | What they do |
 | --- | --- |
