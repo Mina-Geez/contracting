@@ -16,6 +16,8 @@ from __future__ import annotations
 import frappe
 from frappe import _
 
+from insite.constants import ITEM_DOCTYPES, QUALITY_INSPECTION
+
 DIMENSION_DOCTYPE = "Scope Item"
 DIMENSION_FIELDNAME = "scope_item"
 DIMENSION_LABEL = "Scope"
@@ -37,10 +39,44 @@ _VERIFY_TABLES = (
 )
 
 
+#: Everywhere a Scope can be stored, and so everywhere it gets filtered by.
+#: Derived rather than listed: a hand-kept copy of this drifted the moment it
+#: was written, and missed two of the nine line tables.
+#:
+#: Neither ERPNext's dimension machinery nor Insite's own custom fields index
+#: the column, and Contract Progress reads it with `scope_item in (...)` on
+#: every run — a full scan of a table that grows a row per line of every
+#: document a contractor ever raises.
+_INDEXED_TABLES = (*ITEM_DOCTYPES, QUALITY_INSPECTION)
+
+
 def ensure_scope_dimension():
 	doc = _get_or_create_dimension()
 	_create_dimension_fields(doc)
 	_verify_columns()
+	_index_scope_columns()
+
+
+def _index_scope_columns():
+	"""Index the Scope column wherever the app filters by it.
+
+	An index is code: applied here on install and every migrate, so it cannot
+	be lost to a database restore or forgotten on a new site. `add_index` is
+	idempotent, so re-running costs nothing.
+
+	Best effort per table — a site that does not have one of these (no Buying
+	module, say) must not fail the whole migrate over an index.
+	"""
+	for doctype in _INDEXED_TABLES:
+		if not _has_column(doctype):
+			continue
+		try:
+			frappe.db.add_index(doctype, [DIMENSION_FIELDNAME])
+		except Exception:
+			frappe.log_error(
+				title=f"Insite: could not index {DIMENSION_FIELDNAME} on {doctype}",
+				message=frappe.get_traceback(),
+			)
 
 
 def _get_or_create_dimension():

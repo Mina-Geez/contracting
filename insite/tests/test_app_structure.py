@@ -238,6 +238,28 @@ def test_the_print_templates_escape_what_they_print():
 			)
 
 
+def test_every_table_the_report_filters_by_scope_is_indexed():
+	"""Contract Progress reads these with `scope_item in (...)` on every run.
+
+	Neither ERPNext's dimension machinery nor Insite's own custom fields index
+	the column, so without this the report scans a table that grows a row per
+	line of every document a contractor raises. The list of tables the report
+	touches and the list Insite indexes have to stay the same list.
+	"""
+	from insite.constants import ITEM_DOCTYPES, QUALITY_INSPECTION
+
+	dimension = open("insite/config/accounting_dimension.py", encoding="utf-8").read()
+	report = open("insite/insite/report/contract_progress/contract_progress.py", encoding="utf-8").read()
+
+	# Derived from the one list of places a Scope can live, so the two cannot
+	# drift. A hand-kept copy did, and missed two of the nine line tables.
+	assert "_INDEXED_TABLES = (*ITEM_DOCTYPES, QUALITY_INSPECTION)" in dimension
+	indexed = set(ITEM_DOCTYPES) | {QUALITY_INSPECTION}
+
+	for doctype in re.findall(r'_sum_by_scope\(\s*"([^"]+)"', report):
+		assert doctype in indexed, f"the report filters {doctype} by scope but nothing indexes it"
+
+
 def test_the_workspace_agrees_with_itself():
 	"""The two lists in a Workspace are edited by hand and drift apart.
 
