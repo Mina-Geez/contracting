@@ -79,7 +79,7 @@ msgid "Comes from"
 msgstr "مصدر الرقم"
 
 msgid "Committed"
-msgstr "التزامات"
+msgstr "الالتزامات"
 
 msgid "Constant"
 msgstr "ثابت"
