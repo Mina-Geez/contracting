@@ -142,6 +142,25 @@ def test_insite_owns_no_doctype_erpnext_already_ships():
 		assert f'"{fieldname}"' in source, f"{fieldname} should be added to Quality Inspection"
 
 
+def test_a_quotation_line_can_carry_a_scope():
+	"""ERPNext will never put the Scope there, so Insite has to.
+
+	Accounting Dimensions only reach doctypes that post to the ledger, and a
+	Quotation does not. Without this field a quote cannot carry a scope, Frappe
+	drops the value silently, and the Sales Order made from it is refused by
+	Insite's own Scope check — the journey the whole app is built around.
+	"""
+	source = open("insite/config/custom_fields.py", encoding="utf-8").read()
+	assert '"Quotation Item"' in source, "Quotation Item needs its own scope_item field"
+
+	# Read as source: both modules import Frappe, and this suite runs without it.
+	dimension = open("insite/config/accounting_dimension.py", encoding="utf-8").read()
+	assert 'DIMENSION_FIELDNAME = "scope_item"' in dimension, (
+		"the Quotation field must share the dimension's fieldname, or get_mapped_doc "
+		"will not carry it into the Sales Order"
+	)
+
+
 def test_doctype_timestamps_have_been_bumped():
 	"""Frappe skips a DocType whose file is not newer than the database row.
 

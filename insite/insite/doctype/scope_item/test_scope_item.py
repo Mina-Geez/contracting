@@ -261,6 +261,158 @@ class TestRejectedWork(IntegrationTestCase):
 			frappe.db.set_single_value("Insite Settings", "block_invoicing_with_open_rejections", 0)
 
 
+class TestContractorJourney(IntegrationTestCase):
+	"""Quotation to invoice, the way the app is meant to be used.
+
+	This is the spine: a quote is measured and priced, it is approved, and the
+	Sales Order, Delivery Note and Sales Invoice made from it all carry the
+	measured quantity and the Scope through without anyone retyping either.
+
+	It exists because that journey was broken and nothing noticed. ERPNext only
+	puts Accounting Dimensions on doctypes that post to the ledger, so Quotation
+	Item never had `scope_item`; Frappe silently dropped the value, and the
+	Sales Order made from the quote was refused by Insite's own Scope check.
+	"""
+
+	@classmethod
+	def setUpClass(cls):
+		super().setUpClass()
+		cls.company = _a_company()
+		cls.customer = _ensure(
+			"Customer",
+			{"customer_name": "Insite Journey Customer"},
+			{"customer_name": "Insite Journey Customer", "customer_type": "Company"},
+		)
+		cls.group = _ensure(
+			"Item Group",
+			{"item_group_name": "Insite Journey Glazing"},
+			{
+				"item_group_name": "Insite Journey Glazing",
+				"parent_item_group": "All Item Groups",
+				"is_group": 0,
+			},
+		)
+		cls.item = _ensure(
+			"Item",
+			{"item_code": "INSITE-JOURNEY-GLASS"},
+			{
+				"item_code": "INSITE-JOURNEY-GLASS",
+				"item_name": "Insite Journey Glass",
+				"item_group": cls.group,
+				"stock_uom": "Square Meter",
+				"is_stock_item": 0,
+			},
+		)
+		# The field is work_item_type_name; the doctype is autonamed from it.
+		cls.work_item_type = _ensure(
+			"Work Item Type",
+			{"work_item_type_name": "Insite Journey Glass"},
+			{"work_item_type_name": "Insite Journey Glass"},
+		)
+		if not frappe.db.exists("Measurement Rule", {"item_group": cls.group}):
+			frappe.get_doc(
+				{
+					"doctype": "Measurement Rule",
+					"work_item_type": cls.work_item_type,
+					"apply_on": "Item Group",
+					"item_group": cls.group,
+					"preset": "Area",
+					"inputs": [
+						{"source": "Line", "field_name": "custom_height", "token": "height"},
+						{"source": "Line", "field_name": "custom_width", "token": "width"},
+						{"source": "Line", "field_name": "custom_base_qty", "token": "count"},
+					],
+					"formula": "height * width * count",
+				}
+			).insert(ignore_permissions=True)
+		cls.project = _ensure(
+			"Project",
+			{"project_name": "Insite Journey Project"},
+			{"project_name": "Insite Journey Project", "company": cls.company, "status": "Open"},
+		)
+		frappe.db.commit()
+
+	def setUp(self):
+		# A scope of its own each run, so the report totals this journey's
+		# documents and not those of every run before it.
+		self.scope = (
+			frappe.get_doc(
+				{
+					"doctype": "Scope Item",
+					"scope_title": f"Journey {frappe.generate_hash(length=8)}",
+					"project": self.project,
+					"status": "Active",
+					"planned_amount": 600000,
+				}
+			)
+			.insert()
+			.name
+		)
+
+	def test_the_quantity_and_the_scope_survive_the_whole_journey(self):
+		from erpnext.selling.doctype.quotation.quotation import make_sales_order
+		from erpnext.selling.doctype.sales_order.sales_order import (
+			make_delivery_note,
+			make_sales_invoice,
+		)
+
+		from insite.insite.report.contract_progress.contract_progress import execute
+
+		measured = 1.5 * 2.8 * 40  # 168
+
+		quotation = frappe.get_doc(
+			{
+				"doctype": "Quotation",
+				"quotation_to": "Customer",
+				"party_name": self.customer,
+				"company": self.company,
+				"items": [
+					{
+						"item_code": self.item,
+						"qty": 1,
+						"rate": 3500,
+						"scope_item": self.scope,
+						"custom_height": 1.5,
+						"custom_width": 2.8,
+						"custom_base_qty": 40,
+					}
+				],
+			}
+		).insert()
+
+		# The server measured the line; the typed qty of 1 is gone.
+		self.assertAlmostEqual(quotation.items[0].qty, measured)
+		self.assertEqual(quotation.items[0].scope_item, self.scope)
+		quotation.submit()
+
+		order = make_sales_order(quotation.name)
+		order.delivery_date = frappe.utils.add_days(frappe.utils.today(), 30)
+		order.project = self.project
+		order.insert()
+		self.assertAlmostEqual(order.items[0].qty, measured)
+		self.assertEqual(order.items[0].scope_item, self.scope, "the Scope must survive the mapping")
+		order.submit()
+
+		delivery = make_delivery_note(order.name)
+		delivery.insert()
+		self.assertAlmostEqual(delivery.items[0].qty, measured)
+		self.assertEqual(delivery.items[0].scope_item, self.scope)
+		delivery.submit()
+
+		invoice = make_sales_invoice(order.name)
+		invoice.insert()
+		self.assertAlmostEqual(invoice.items[0].qty, measured)
+		self.assertEqual(invoice.items[0].scope_item, self.scope)
+		invoice.submit()
+
+		_, rows = execute({"company": self.company, "project": self.project})
+		row = next(r for r in rows if r["scope"] == self.scope)
+		self.assertAlmostEqual(row["ordered"], measured * 3500)
+		self.assertAlmostEqual(row["delivered"], measured * 3500)
+		self.assertAlmostEqual(row["invoiced"], measured * 3500)
+		self.assertAlmostEqual(row["pct_invoiced"], 100.0)
+
+
 class TestMeasurementSummary(IntegrationTestCase):
 	"""The plain-English rule summary, which read as raw tokens for a while
 	because its word boundaries were literal backspace bytes."""

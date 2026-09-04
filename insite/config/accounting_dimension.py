@@ -21,6 +21,12 @@ DIMENSION_FIELDNAME = "scope_item"
 DIMENSION_LABEL = "Scope"
 
 #: The tables the app itself reads the dimension from.
+#:
+#: **Quotation Item is deliberately absent.** ERPNext only puts dimensions on
+#: doctypes that post to the ledger, and a Quotation does not, so it will never
+#: appear there however many times this runs. Insite adds `scope_item` to
+#: Quotation Item as a plain custom field instead — see
+#: `insite/config/custom_fields.py::_quotation_scope_field`.
 _VERIFY_TABLES = (
 	"Sales Order Item",
 	"Delivery Note Item",

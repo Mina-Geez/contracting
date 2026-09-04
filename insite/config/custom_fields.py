@@ -174,8 +174,34 @@ def _quality_inspection_fields():
 	]
 
 
+def _quotation_scope_field():
+	"""The Scope on a Quotation line, which ERPNext will never add.
+
+	`scope_item` reaches every other item table as an Accounting Dimension, but
+	ERPNext only puts dimensions on doctypes that post to the ledger, and a
+	Quotation does not. Quotation Item has no dimension section at all — no
+	cost_center, no project.
+
+	That broke the journey the app is built around. A quote could not carry a
+	scope, Frappe silently dropped the value, and `get_mapped_doc` then handed
+	the Sales Order a line with no scope — which Insite's own check refused. The
+	fieldname must stay exactly `scope_item` so the mapping carries it across.
+	"""
+	return [
+		{
+			"fieldname": "scope_item",
+			"label": "Scope",
+			"fieldtype": "Link",
+			"options": "Scope Item",
+			"insert_after": "warehouse",
+			"description": "The scope of work this line belongs to. It carries through to the Sales Order.",
+		}
+	]
+
+
 def get_custom_fields():
 	fields = {doctype: _fields() for doctype in ITEM_DOCTYPES}
+	fields["Quotation Item"] = fields["Quotation Item"] + _quotation_scope_field()
 	fields["Quality Inspection"] = _quality_inspection_fields()
 	return fields
 
