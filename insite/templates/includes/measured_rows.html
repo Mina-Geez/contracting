@@ -1,0 +1,53 @@
+{#
+	One scope's worth of lines. Expects `rows`.
+
+	The measurement line under the item is the whole point: a contractor bills a
+	measured quantity, and the client checks the measurement, not the total.
+	Only the boxes that were filled in are printed, so an ordinary line stays
+	clean.
+#}
+<table class="insite-items">
+	<thead>
+		<tr>
+			<th style="width: 45%">{{ _("Description") }}</th>
+			<th class="num" style="width: 17%">{{ _("Quantity") }}</th>
+			<th class="num" style="width: 17%">{{ _("Rate") }}</th>
+			<th class="num" style="width: 21%">{{ _("Amount") }}</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for row in rows %}
+		<tr>
+			<td>
+				<div>{{ row.item_name or row.item_code }}</div>
+				{%- set measured = [] -%}
+				{%- for value, label in [
+					(row.get("custom_height"), _("H")),
+					(row.get("custom_width"), _("W")),
+					(row.get("custom_length"), _("L")),
+				] -%}
+					{%- if value -%}{%- set _ = measured.append(label ~ " " ~ "%.3f"|format(value)) -%}{%- endif -%}
+				{%- endfor -%}
+				{%- if row.get("custom_base_qty") -%}
+					{%- set _ = measured.append("%g"|format(row.custom_base_qty) ~ " " ~ _("off")) -%}
+				{%- endif -%}
+				{%- if row.get("custom_waste_factor") -%}
+					{%- set _ = measured.append(_("waste") ~ " × " ~ "%g"|format(row.custom_waste_factor)) -%}
+				{%- endif -%}
+				{% if measured %}
+					<div class="insite-measure">{{ measured | join(" &nbsp;×&nbsp; ") | safe }}</div>
+				{% endif %}
+			</td>
+			<td class="num">{{ row.get_formatted("qty") }} {{ row.uom or "" }}</td>
+			<td class="num">{{ row.get_formatted("rate") }}</td>
+			<td class="num">{{ row.get_formatted("amount") }}</td>
+		</tr>
+		{% endfor %}
+		<tr class="insite-subtotal">
+			<td colspan="3">{{ _("Subtotal") }}</td>
+			<td class="num">
+				{{ frappe.utils.fmt_money(rows | sum(attribute="amount"), currency=doc.currency) }}
+			</td>
+		</tr>
+	</tbody>
+</table>

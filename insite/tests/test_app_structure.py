@@ -13,6 +13,7 @@ import re
 
 DOCTYPE_GLOB = "insite/insite/doctype/*/"
 REPORT_GLOB = "insite/insite/report/*/"
+PRINT_FORMAT_GLOB = "insite/insite/print_format/*/"
 
 
 def _dirs(pattern):
@@ -169,7 +170,7 @@ def test_doctype_timestamps_have_been_bumped():
 	never touched, and every change after the first install is silently
 	ignored by `bench migrate` — the field is simply never updated on the site.
 	"""
-	for d in _doctype_dirs() + _dirs(REPORT_GLOB):
+	for d in _doctype_dirs() + _dirs(REPORT_GLOB) + _dirs(PRINT_FORMAT_GLOB):
 		slug = os.path.basename(d)
 		with open(f"{d}/{slug}.json", encoding="utf-8") as fh:
 			doc = json.load(fh)
@@ -177,6 +178,36 @@ def test_doctype_timestamps_have_been_bumped():
 			continue
 		assert doc["modified"] > doc.get("creation", ""), (
 			f"{d}/{slug}.json: bump 'modified' past 'creation' so migrate picks the change up"
+		)
+
+
+def test_print_formats_are_wired_up():
+	"""Each print format points at a document Insite actually touches, and
+	renders through the shared template rather than its own copy of it."""
+	from insite.constants import MEASURED_DOCTYPES
+
+	dirs = _dirs(PRINT_FORMAT_GLOB)
+	assert dirs, "no print formats found"
+
+	for d in dirs:
+		slug = os.path.basename(d)
+		assert os.path.isfile(f"{d}/__init__.py"), f"{d} is missing __init__.py"
+		with open(f"{d}/{slug}.json", encoding="utf-8") as fh:
+			fmt = json.load(fh)
+
+		assert fmt["doctype"] == "Print Format"
+		assert fmt["module"] == "Insite"
+		assert fmt["standard"] == "Yes", "shipped with the app, not a site customisation"
+		assert fmt["print_format_type"] == "Jinja"
+		assert fmt["custom_format"] == 1, "without this Frappe ignores the html field"
+		assert fmt["doc_type"] in MEASURED_DOCTYPES, (
+			f"{slug} prints {fmt['doc_type']}, which Insite does not measure"
+		)
+		assert "measured_items.html" in fmt["html"], "the markup lives in one shared template"
+
+	for template in ("measured_items.html", "measured_rows.html"):
+		assert os.path.isfile(f"insite/templates/includes/{template}"), (
+			f"the print formats include templates/includes/{template}"
 		)
 
 

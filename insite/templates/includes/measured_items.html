@@ -1,0 +1,101 @@
+{#
+	Insite — the items of a sales document, grouped by scope of work.
+
+	One template for the quotation, the order, the delivery note and the
+	invoice, because a contractor's client checks the same two things on all
+	four: which scope of work a line belongs to, and the measurements behind
+	the quantity being billed. ERPNext's own formats show neither.
+
+	Lines with no scope are printed last under "Other", rather than dropped.
+#}
+
+<style>
+	.insite-doc { font-size: 12px; }
+	.insite-head td { padding: 2px 8px 2px 0; vertical-align: top; }
+	.insite-head .label { color: #6b7280; padding-right: 12px; white-space: nowrap; }
+	.insite-scope { margin-top: 18px; }
+	.insite-scope-title {
+		font-weight: 600; border-bottom: 1px solid #111; padding-bottom: 3px; margin-bottom: 6px;
+	}
+	table.insite-items { width: 100%; border-collapse: collapse; }
+	table.insite-items th {
+		text-align: left; font-weight: 600; color: #6b7280;
+		border-bottom: 1px solid #d1d5db; padding: 4px 6px;
+	}
+	table.insite-items td { padding: 5px 6px; border-bottom: 1px solid #f3f4f6; vertical-align: top; }
+	table.insite-items .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+	.insite-measure { color: #6b7280; font-size: 11px; }
+	.insite-subtotal td { border-top: 1px solid #d1d5db; border-bottom: none; font-weight: 600; }
+	.insite-totals { margin-top: 20px; width: 100%; }
+	.insite-totals td { padding: 3px 6px; }
+	.insite-totals .num { text-align: right; font-variant-numeric: tabular-nums; }
+	.insite-totals .grand td { border-top: 1px solid #111; font-weight: 700; font-size: 13px; }
+	.insite-words { margin-top: 8px; color: #374151; font-style: italic; }
+</style>
+
+<div class="insite-doc">
+
+<table class="insite-head">
+	{% if doc.customer_name or doc.customer %}
+	<tr><td class="label">{{ _("Customer") }}</td><td>{{ doc.customer_name or doc.customer }}</td></tr>
+	{% endif %}
+	{% if doc.project %}
+	<tr><td class="label">{{ _("Project") }}</td>
+		<td>{{ frappe.db.get_value("Project", doc.project, "project_name") or doc.project }}</td></tr>
+	{% endif %}
+	{% if doc.po_no %}
+	<tr><td class="label">{{ _("Your Reference") }}</td><td>{{ doc.po_no }}</td></tr>
+	{% endif %}
+</table>
+
+{#- scopes in the order they first appear, so the print follows the document -#}
+{%- set ordered = [] -%}
+{%- for row in doc.items -%}
+	{%- if row.get("scope_item") and row.scope_item not in ordered -%}
+		{%- set _ = ordered.append(row.scope_item) -%}
+	{%- endif -%}
+{%- endfor -%}
+{%- set unscoped = doc.items | rejectattr("scope_item") | list -%}
+
+{% for scope in ordered %}
+	{% set rows = doc.items | selectattr("scope_item", "equalto", scope) | list %}
+	<div class="insite-scope">
+		<div class="insite-scope-title">
+			{{ frappe.db.get_value("Scope Item", scope, "scope_title") or scope }}
+		</div>
+		{% include "insite/templates/includes/measured_rows.html" %}
+	</div>
+{% endfor %}
+
+{% if unscoped %}
+	<div class="insite-scope">
+		{% if ordered %}<div class="insite-scope-title">{{ _("Other") }}</div>{% endif %}
+		{% set rows = unscoped %}
+		{% include "insite/templates/includes/measured_rows.html" %}
+	</div>
+{% endif %}
+
+<table class="insite-totals">
+	<tr>
+		<td>{{ _("Net Total") }}</td>
+		<td class="num">{{ doc.get_formatted("net_total") }}</td>
+	</tr>
+	{% for tax in doc.get("taxes") or [] %}
+		{% if tax.tax_amount %}
+		<tr>
+			<td>{{ tax.description }}</td>
+			<td class="num">{{ tax.get_formatted("tax_amount") }}</td>
+		</tr>
+		{% endif %}
+	{% endfor %}
+	<tr class="grand">
+		<td>{{ _("Grand Total") }}</td>
+		<td class="num">{{ doc.get_formatted("grand_total") }}</td>
+	</tr>
+</table>
+
+{% if doc.in_words %}<div class="insite-words">{{ doc.in_words }}</div>{% endif %}
+
+{% if doc.terms %}<div style="margin-top:18px">{{ doc.terms }}</div>{% endif %}
+
+</div>
