@@ -18,7 +18,7 @@ bench --site test.localhost run-tests --app insite
 
 Run both before pushing. The integration tests live beside the doctype they
 cover (`insite/insite/doctype/scope_item/test_scope_item.py`), which is where
-Frappe looks for them; `pytest` never collects them because it is pointed at
+Frappe looks for them. `pytest` never collects them, because it is pointed at
 `insite/tests`.
 
 ## What the offline half proves
@@ -38,7 +38,7 @@ both bugs found on 2026-09-04, were invisible to it:
 | Word boundaries written as literal backspace bytes | Valid Python, invisible in an editor and in `git diff`. Every rule summary silently showed `height * width * count` instead of `Height × Width × Count`. |
 
 So: **run anything that touches a Frappe or ERPNext API on a real bench before
-pushing.** A guard test now covers the second one; the first is what a bench is
+pushing.** A guard test now covers the second one. The first is what a bench is
 for.
 
 ### Two sites, and why
@@ -79,8 +79,8 @@ Two traps, both of which produced tests that passed alone and failed together:
 
 ### Toolchain floors
 
-Frappe v16 needs more than most distributions ship. Neither floor is announced;
-both surface as confusing failures.
+Frappe v16 needs more than most distributions ship. Neither floor is announced.
+Both surface as confusing failures.
 
 | | v16 needs | Ubuntu 24.04 ships |
 | --- | --- | --- |

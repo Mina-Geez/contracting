@@ -206,7 +206,7 @@ The consultant rejects six of the panels you installed. Record it, so nobody
 invoices them and nobody forgets to redo them.
 
 Rejected work is ERPNext's **Quality Inspection**. Insite does not add a
-document of its own; it adds a Scope and a quantity to that one.
+document of its own. It adds a Scope and a quantity to that one.
 
 **Once, on the item:** tick **Inspection Required before Delivery**. ERPNext
 refuses to create an outgoing inspection for an item that does not ask for one.
@@ -221,7 +221,7 @@ Then, when work comes back:
 4. Submit it.
 
 The **Scope** is filled in from the delivery line, and **Rejected Amount** is
-worked out from the rate on that line. Both are read-only to you; Insite fills
+worked out from the rate on that line. Both are read-only to you. Insite fills
 them in so the two can never disagree.
 
 While a submitted inspection is still `Rejected`:

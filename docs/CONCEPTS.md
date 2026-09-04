@@ -216,7 +216,7 @@ A submitted inspection still marked **Rejected** does two things:
 
 - **It speaks up at billing time.** Invoicing that scope warns you and names the
   inspections. Turn on *Refuse to Submit Invoices for a Scope With Rejected
-  Work* in Insite Settings to make that a hard stop on submit; a draft can
+  Work* in Insite Settings to make that a hard stop on submit. A draft can
   always be saved, and a credit note is always allowed.
 - **It shows in Contract Progress**, as **Rejected** beside Delivered, so the
   delivered figure never reads better than the site does.

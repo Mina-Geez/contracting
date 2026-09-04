@@ -41,7 +41,7 @@ ordered, delivered and invoiced.
   from the rate on the line it came off. A submitted inspection still marked
   Rejected warns you when someone invoices that scope — a setting turns that
   into a refusal to submit — and shows in Contract Progress. Insite writes no
-  statuses and posts nothing; settling it stays ERPNext's business.
+  statuses and posts nothing. Settling it stays ERPNext's business.
 - **Contract Progress report** — scope, status, planned, ordered, variance to
   plan, delivered, rejected, invoiced, left to invoice and percent invoiced, for
   each scope.
