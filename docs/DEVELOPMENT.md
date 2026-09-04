@@ -170,6 +170,25 @@ that can be recreated identically on another machine. The trade is an extra laye
 between you and `bench`, which matters when the app source lives outside the
 container.
 
+## Arabic
+
+The product is bilingual. `insite/locale/ar.po` holds the Arabic, and
+`bench build --app insite` compiles it to a `.mo`.
+
+Two tests keep it honest, because a translation file rots without anyone
+noticing. One says every string the app shows is either translated or on the
+short list of standard Frappe labels that Frappe's own Arabic already covers.
+The other says an Arabic message keeps the same `{0}` placeholders as its
+English, so it still formats with a row number in it.
+
+Two things to know when adding a string:
+
+- **One literal per `_()` or `__()` call.** A concatenation reaches a
+  translator as fragments, and a fragment is not a sentence.
+- `bench generate-pot-file` does not work on a symlinked app. It takes a path
+  relative to the bench, and the real path is outside it. The tests extract the
+  strings themselves, so run them and read what they list as missing.
+
 ## Checking a Frappe API before you rely on it
 
 Frappe's own APIs shift between versions, and a wrong shape is a runtime error
