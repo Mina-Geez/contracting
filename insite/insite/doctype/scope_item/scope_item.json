@@ -11,7 +11,7 @@
   "allow_rename": 0,
   "track_changes": 1,
   "creation": "2026-09-03 00:00:00.000000",
-  "modified": "2026-09-04 17:00:00.000000",
+  "modified": "2026-09-04 17:45:00.000000",
   "owner": "Administrator",
   "modified_by": "Administrator",
   "sort_field": "modified",
@@ -93,7 +93,10 @@
       "fieldname": "currency",
       "fieldtype": "Link",
       "options": "Currency",
-      "label": "Currency"
+      "label": "Currency",
+      "fetch_from": "company.default_currency",
+      "read_only": 1,
+      "description": "The company's currency. The planned amount is always in it."
     },
     {
       "fieldname": "scope_section",
