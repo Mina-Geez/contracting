@@ -229,6 +229,20 @@ statuses and posts nothing.
 quantity and a rejected warehouse, and the Scope field is already on those
 lines, so a supplier's bad batch lands against the right scope on its own.
 
+## Printing
+
+Insite ships a print format for the quotation, the order, the delivery note and
+the invoice. Each groups the lines by **Scope**, with a subtotal per scope, and
+prints the measurement under every line: `H 1.500 × W 2.800 × 40 off`.
+
+That line is what a client checks. A contractor bills a measured quantity, and
+the argument is about the measurement, not the total. ERPNext's own formats show
+neither the scope nor the dimensions, so this is the one place the model had to
+be made visible on paper.
+
+The markup lives in a single shared template. The four formats are thin records
+that include it, so the table cannot drift between documents.
+
 ## How the pieces work together
 
 1. You set up the Work Item Types and their Measurement Rules once. You add a
@@ -242,3 +256,5 @@ lines, so a supplier's bad batch lands against the right scope on its own.
    delivery line and Insite carries the Scope onto it.
 5. **Contract Progress** shows, for each scope: planned, ordered, the variance
    to plan, delivered, what is rejected, invoiced, and what is left to invoice.
+6. You print the quotation or the invoice grouped by scope, with the
+   measurements shown, and the client can check the arithmetic.

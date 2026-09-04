@@ -240,7 +240,25 @@ writes no statuses and posts nothing to the ledger.
 on the Purchase Receipt, which ERPNext already has. The Scope on the line carries
 the cost to the right place on its own.
 
-## 9. Read the progress
+## 9. Print it for the client
+
+Insite ships four print formats: **Insite Quotation**, **Insite Sales Order**,
+**Insite Delivery Note** and **Insite Sales Invoice**.
+
+Open the document, choose the format from the print view, and it prints:
+
+- the lines **grouped by Scope**, with a subtotal for each scope
+- the **measurement under every line** — `H 1.500 × W 2.800 × 40 off` — showing
+  only the boxes that were filled in
+- lines with no scope last, under **Other**
+
+That measurement line is the point. A client checks how the quantity was
+arrived at, not the total.
+
+To make one the default for a document type, set it as the **Default Print
+Format** on that DocType, or pick it each time from the print view.
+
+## 10. Read the progress
 
 Open **Contract Progress**. Filter by company, project or status.
 
@@ -269,7 +287,7 @@ A change of scope is another Sales Order, so **Ordered** is the current committe
 value of the work. **Variance to Plan** is how a change reads in the report. Work
 ordered beyond the original plan shows as a positive number.
 
-## 10. A worked example
+## 11. A worked example
 
 A client orders six glass units. Each unit is 2.4 m high and 1.8 m wide. The
 rate is 900 per square meter. The workshop also wants to know how much sheet the
@@ -311,7 +329,7 @@ Change the formula to `height * width * count * cutting_allowance`. **Worked out
 as** then reads `Height × Width × Count × 1.12`, and the quantity of the first
 line becomes 29.03.
 
-## 11. Change a Measurement Rule later
+## 12. Change a Measurement Rule later
 
 A change to a Work Item Type or a Measurement Rule does not touch the documents
 you already have. Insite calculates a quantity only when a person saves a
@@ -320,7 +338,7 @@ they hold. Submitted documents do not move.
 
 To apply a new rule to an open draft, open the draft and save it again.
 
-## 12. Who does what
+## 13. Who does what
 
 | Role | What they do |
 | --- | --- |

@@ -45,6 +45,10 @@ ordered, delivered and invoiced.
 - **Contract Progress report** — scope, status, planned, ordered, variance to
   plan, delivered, rejected, invoiced, left to invoice and percent invoiced, for
   each scope.
+- **Print formats that show the work** — the quotation, order, delivery note and
+  invoice, with the lines grouped by Scope and a subtotal each, and the
+  measurement printed under every line: `H 1.500 × W 2.800 × 40 off`. A client
+  checks the measurement, not the total.
 
 Insite uses standard ERPNext documents on purpose. The Project, the Quotation,
 the Sales Order, the Delivery Note, the Sales Invoice and the purchase documents
