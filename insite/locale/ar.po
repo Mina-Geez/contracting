@@ -6,141 +6,44 @@ msgstr ""
 "Language: ar\n"
 "Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);\n"
 
-# Doctypes and roles
+msgid "% Invoiced"
+msgstr "٪ المفوتر"
 
-msgid "Work Item Type"
-msgstr "نوع بند الأعمال"
+msgid "A field named {0} already exists on the transaction line."
+msgstr "يوجد حقل باسم {0} في سطر المستند بالفعل."
 
-msgid "Measurement Rule"
-msgstr "قاعدة القياس"
+msgid "Add Scopes"
+msgstr "أضف نطاقات"
 
-msgid "Measurement Rules"
-msgstr "قواعد القياس"
+msgid "Add Scopes to {0}"
+msgstr "أضف نطاقات إلى {0}"
 
-msgid "Scope Item"
-msgstr "بند نطاق العمل"
+msgid "Add a Measurement Rule"
+msgstr "أضف قاعدة قياس"
 
-msgid "Variation Order"
-msgstr "أمر تغيير"
+msgid "Add a Project in the header before you save this {0}. Insite tracks contracting work by project."
+msgstr "أضف المشروع في الترويسة قبل حفظ {0}. Insite يتابع أعمال المقاولات حسب المشروع."
 
-msgid "Variation Lines"
-msgstr "بنود أمر التغيير"
+msgid "Add at least one input. A formula has nothing to read without one."
+msgstr "أضف مُدخلًا واحدًا على الأقل. المعادلة بلا مُدخلات لا تقرأ شيئًا."
 
-msgid "Insite Settings"
-msgstr "إعدادات المقاولات"
+msgid "Add the inputs and a formula first."
+msgstr "أضف المُدخلات والمعادلة أولًا."
 
-msgid "Contracting Manager"
-msgstr "مدير المقاولات"
+msgid "Adjust the measurement"
+msgstr "تعديل طريقة القياس"
 
-msgid "Contract Progress"
-msgstr "تقدم العقد"
-
-# Scope Item
-
-msgid "Scope"
-msgstr "النطاق"
-
-msgid "Title"
-msgstr "العنوان"
-
-msgid "Status"
-msgstr "الحالة"
-
-msgid "Series"
-msgstr "المسلسل"
-
-msgid "Disabled"
-msgstr "معطّل"
-
-msgid "Project"
-msgstr "المشروع"
-
-msgid "Customer"
-msgstr "العميل"
-
-msgid "Company"
-msgstr "الشركة"
-
-msgid "Currency"
-msgstr "العملة"
-
-msgid "Scope of Work"
-msgstr "نطاق العمل"
-
-msgid "Scope Description"
-msgstr "وصف نطاق العمل"
-
-msgid "Planned Values"
-msgstr "القيم المخططة"
-
-msgid "Planned Amount"
-msgstr "المبلغ المخطط"
-
-msgid "Planned Qty"
-msgstr "الكمية المخططة"
-
-msgid "UOM"
-msgstr "وحدة القياس"
-
-msgid "Net Variations"
-msgstr "صافي التغييرات"
-
-msgid "Revised Amount"
-msgstr "المبلغ المعدّل"
-
-# Scope Item status
-
-msgid "Draft"
-msgstr "مسودة"
-
-msgid "Active"
-msgstr "نشط"
-
-msgid "On Hold"
-msgstr "معلّق"
-
-msgid "Completed"
-msgstr "مكتمل"
-
-msgid "Cancelled"
-msgstr "ملغى"
-
-# Work Item Type
-
-msgid "Description"
-msgstr "الوصف"
-
-msgid "How is this measured?"
-msgstr "كيف يُقاس هذا؟"
-
-msgid "Default Accounts (per company)"
-msgstr "الحسابات الافتراضية (لكل شركة)"
-
-msgid "Accounts"
-msgstr "الحسابات"
-
-msgid "Income Account"
-msgstr "حساب الإيراد"
-
-msgid "Expense Account"
-msgstr "حساب المصروف"
-
-msgid "Cost Center"
-msgstr "مركز التكلفة"
-
-# Measurement Rule
+msgid "Already There"
+msgstr "موجود بالفعل"
 
 msgid "Applies To"
-msgstr "ينطبق على"
+msgstr "تُطبَّق على"
 
-msgid "Item"
-msgstr "الصنف"
+msgid "Applies To is set to {0}. Fill in the {1} box."
+msgstr "تُطبَّق على مضبوطة على {0}. املأ خانة {1}."
 
-msgid "Item Group"
-msgstr "مجموعة الأصناف"
-
-msgid "Item Template"
-msgstr "قالب الصنف"
+msgid "Area"
+msgstr "المساحة"
 
 msgid "Attribute"
 msgstr "الخاصية"
@@ -148,147 +51,510 @@ msgstr "الخاصية"
 msgid "Attribute Value"
 msgstr "قيمة الخاصية"
 
-msgid "Measured By"
-msgstr "طريقة القياس"
+msgid "Attribute Value Required"
+msgstr "قيمة الخاصية مطلوبة"
 
-msgid "Formula"
-msgstr "المعادلة"
+msgid "Breaks a tie between two rules that are equally specific. A more specific rule always wins, whatever the priority."
+msgstr "يفصل بين قاعدتين متساويتين في التخصيص. القاعدة الأكثر تخصيصًا تفوز دائمًا مهما كانت الأولوية."
 
-msgid "Priority"
-msgstr "الأولوية"
+msgid "Change this under Adjust the measurement, if you need to."
+msgstr "غيّرها من تعديل طريقة القياس، إن احتجت."
 
-# Measures
+msgid "Choose a Scope on {0}. Insite tracks contracting work by scope of work."
+msgstr "اختر النطاق في {0}. Insite يتابع أعمال المقاولات حسب نطاق العمل."
 
-msgid "Area (Height × Width × Count)"
-msgstr "المساحة (الارتفاع × العرض × العدد)"
+msgid "Combine the names above with + - * / % and abs, round, min, max, pow, sqrt, ceil, floor, pi."
+msgstr "اجمع الأسماء أعلاه باستخدام + - * / % والدوال abs و round و min و max و pow و sqrt و ceil و floor و pi."
 
-msgid "Perimeter ((Height + Width) × 2 × Count)"
-msgstr "المحيط ((الارتفاع + العرض) × 2 × العدد)"
+msgid "Comes from"
+msgstr "مصدر الرقم"
 
-msgid "Linear (Length × Count)"
-msgstr "الطولي (الطول × العدد)"
+msgid "Constant"
+msgstr "ثابت"
 
-msgid "Piece × Wastage (Count × Wastage)"
-msgstr "القطعة × الهدر (العدد × الهدر)"
-
-msgid "Manual (keep the typed quantity)"
-msgstr "يدوي (الاحتفاظ بالكمية المُدخلة)"
-
-msgid "Custom formula"
-msgstr "معادلة مخصصة"
-
-# Measurement fields on item rows
-
-msgid "Measurements"
-msgstr "إنسايت — القياسات"
-
-msgid "Height"
-msgstr "الارتفاع"
-
-msgid "Width"
-msgstr "العرض"
-
-msgid "Length"
-msgstr "الطول"
+msgid "Contract Progress"
+msgstr "تقدم العقد"
 
 msgid "Count"
 msgstr "العدد"
 
-msgid "Wastage"
-msgstr "الهدر"
+msgid "Create"
+msgstr "إنشاء"
 
-msgid "Calculated"
-msgstr "إنسايت — المحسوب"
+msgid "Creating the scopes…"
+msgstr "جارٍ إنشاء النطاقات…"
 
-msgid "Calculated Quantity"
-msgstr "الكمية المحسوبة"
+msgid "Custom"
+msgstr "مخصص"
 
-msgid "Rule Used"
-msgstr "طريقة القياس المستخدمة"
+msgid "Delivered"
+msgstr "المُسلَّم"
 
-# Variation Order
+msgid "Duplicate Name"
+msgstr "اسم مكرر"
 
-msgid "Date"
-msgstr "التاريخ"
+msgid "Field"
+msgstr "الحقل"
 
-msgid "Reason"
-msgstr "السبب"
+msgid "Field Already an Input"
+msgstr "الحقل مُستخدم كمُدخل"
 
-msgid "Scope Changes"
-msgstr "تغييرات النطاق"
+msgid "Field In Use"
+msgstr "الحقل قيد الاستخدام"
 
-msgid "Type"
-msgstr "النوع"
+msgid "Field Name"
+msgstr "اسم الحقل"
 
-msgid "Qty Change"
-msgstr "تغيير الكمية"
+msgid "Fill in the Attribute Value. A rule with no value can never match a line."
+msgstr "املأ قيمة الخاصية. القاعدة بلا قيمة لن تطابق أي سطر."
 
-msgid "Amount Change"
-msgstr "تغيير المبلغ"
+msgid "Filled in from the first Sales Order on this scope. A quotation does not set it. Edit it when a variation is formally agreed. Insite keeps the change history."
+msgstr "يُملأ من أول أمر بيع على هذا النطاق. عرض السعر لا يحدده. عدّله عند الاتفاق رسميًا على أمر تغيير. ويحتفظ Insite بسجل التغييرات."
 
-msgid "Note"
-msgstr "ملاحظة"
+msgid "For example 1.12 for a 12 percent cutting allowance."
+msgstr "مثال: 1.12 لسماح قص ١٢٪."
 
-msgid "Amended From"
-msgstr "معدّل من"
+msgid "For example: Curtain wall glazing, ACP cladding, Handrails, each on its own line. Leave the planned amounts alone. The first sales order on each scope sets them."
+msgstr "مثال: تزجيج الواجهات، كلادينج، دّرابزين، كل واحد في سطر. اترك المبالغ المخططة كما هي. أول أمر بيع على كل نطاق يحددها."
 
-msgid "Add"
-msgstr "إضافة"
+msgid "For your own reference. Insite does not calculate with it."
+msgstr "لمرجعيتك فقط. لا يحسب Insite به."
 
-msgid "Omit"
-msgstr "حذف"
+msgid "Formula"
+msgstr "المعادلة"
 
-msgid "Modify"
-msgstr "تعديل"
+msgid "Formula Problem"
+msgstr "مشكلة في المعادلة"
 
-# Contract Progress report
+msgid "Formula Required"
+msgstr "المعادلة مطلوبة"
 
-msgid "Planned"
-msgstr "المخطط"
+msgid "Give the field a label."
+msgstr "أعطِ الحقل تسمية."
 
-msgid "Revised"
-msgstr "المعدّل"
+msgid "Help Text"
+msgstr "نص المساعدة"
+
+msgid "Hide on documents"
+msgstr "إخفاؤه من المستندات"
+
+msgid "How is this measured?"
+msgstr "كيف يُقاس هذا؟"
+
+msgid "Inputs"
+msgstr "المُدخلات"
+
+msgid "Inputs Required"
+msgstr "المُدخلات مطلوبة"
+
+msgid "Insite"
+msgstr "Insite"
+
+msgid "Insite Settings"
+msgstr "إعدادات Insite"
+
+msgid "Insite already has a field called {0}. Choose another label."
+msgstr "لدى Insite حقل بالفعل باسم {0}. اختر تسمية أخرى."
+
+msgid "Insite could not add the Scope field to: {0}. Run 'bench migrate' again; if it keeps failing, re-save the Scope Item Accounting Dimension."
+msgstr "لم يستطع Insite إضافة حقل النطاق إلى: {0}. شغّل 'bench migrate' مرة أخرى. وإذا استمر الفشل، أعد حفظ بُعد المحاسبة لبند نطاق العمل."
+
+msgid "Insite derives this from the label. A formula never uses it; rules give the field their own short name."
+msgstr "يشتق Insite هذا من التسمية. لا تستخدمه المعادلة أبدًا، فالقواعد تعطي الحقل اسمًا قصيرًا خاصًا بها."
+
+msgid "Insite fills this in. A field used by a rule cannot be deleted."
+msgstr "يملأ Insite هذا. لا يمكن حذف حقل تستخدمه قاعدة."
+
+msgid "Insite names the rule after the work and what it applies to."
+msgstr "يسمي Insite القاعدة باسم العمل وما تُطبَّق عليه."
+
+msgid "Invalid Name"
+msgstr "اسم غير صالح"
+
+msgid "Invoiced"
+msgstr "المُفوتر"
+
+msgid "Item Attribute Value"
+msgstr "قيمة خاصية الصنف"
+
+msgid "Item Code"
+msgstr "كود الصنف"
+
+msgid "Item Template"
+msgstr "قالب الصنف"
+
+msgid "Keeps the field and everything already entered in it, but takes the box off the line."
+msgstr "يُبقي الحقل وكل ما أُدخل فيه، لكنه يزيل الخانة من السطر."
+
+msgid "Label"
+msgstr "التسمية"
+
+msgid "Label Required"
+msgstr "التسمية مطلوبة"
+
+msgid "Left to Invoice"
+msgstr "المتبقي للفوترة"
+
+msgid "Line"
+msgstr "السطر"
+
+msgid "Line: measured on the document. Item: a number held on the material. Constant: a fixed number this rule carries."
+msgstr "السطر: يُقاس على المستند. الصنف: رقم محفوظ على الخامة. ثابت: رقم ثابت تحمله القاعدة."
+
+msgid "Linear"
+msgstr "طولي"
+
+msgid "Lower case letters, digits and underscores, for example sheet_length."
+msgstr "حروف صغيرة وأرقام وشرطات سفلية، مثل sheet_length."
+
+msgid "Manual"
+msgstr "يدوي"
+
+msgid "Measurement Field"
+msgstr "حقل قياس"
+
+msgid "Measurement Input"
+msgstr "مُدخل القياس"
+
+msgid "Measurement Output"
+msgstr "ناتج القياس"
+
+msgid "Measurement Problem"
+msgstr "مشكلة في القياس"
+
+msgid "Measurement Rule"
+msgstr "قاعدة القياس"
+
+msgid "More Rejected Than Delivered"
+msgstr "المرفوض أكبر من المُسلَّم"
+
+msgid "Name Already Used"
+msgstr "الاسم مستخدم بالفعل"
+
+msgid "Name in the formula"
+msgstr "الاسم في المعادلة"
+
+msgid "Nothing is measured yet. Add a Measurement Rule to say how {0} work is worked out."
+msgstr "لا يوجد قياس بعد. أضف قاعدة قياس لتحديد كيف تُحسب أعمال {0}."
+
+msgid "Nothing to Add"
+msgstr "لا شيء لإضافته"
+
+msgid "Off, Insite warns and names the rejected work but lets the invoice through. On, it refuses to submit the invoice until each Quality Inspection is settled. A draft can always be saved either way, and credit notes are always allowed."
+msgstr "عند الإيقاف ينبه Insite ويسمي الأعمال المرفوضة لكنه يمرر الفاتورة. وعند التفعيل يرفض اعتماد الفاتورة حتى تُسوَّى كل عملية فحص جودة. وفي الحالتين يمكن دائمًا حفظ المسودة، وإشعارات الخصم مسموحة دائمًا."
+
+msgid "One scope per line"
+msgstr "نطاق واحد في كل سطر"
+
+msgid "Only open this if the ready-made answer is not what you measure. Add a field, name it, and use that name in the formula."
+msgstr "لا تفتحها إلا إذا كان الجواب الجاهز لا يوافق ما تقيسه. أضف حقلًا، وسمِّه، واستخدم الاسم في المعادلة."
+
+msgid "Only {0} of {1} was delivered on that line, so {2} cannot have been rejected."
+msgstr "تم تسليم {0} فقط من {1} في هذا السطر، فلا يمكن رفض {2}."
+
+msgid "Options"
+msgstr "خيارات"
 
 msgid "Ordered"
 msgstr "المطلوب"
 
-msgid "Delivered"
-msgstr "المسلَّم"
+msgid "Perimeter"
+msgstr "المحيط"
 
-msgid "Invoiced"
-msgstr "المفوتر"
+msgid "Pick the field"
+msgstr "اختر الحقل"
 
-msgid "Variance"
-msgstr "الفرق"
+msgid "Pick the one that matches how you price this work."
+msgstr "اختر ما يوافق طريقة تسعيرك لهذا العمل."
 
-msgid "Left to Invoice"
-msgstr "الفرق (المعدّل − المفوتر)"
+msgid "Piece × Wastage"
+msgstr "قطعة × هالك"
 
-msgid "% Invoiced"
-msgstr "نسبة الفوترة %"
+msgid "Planned"
+msgstr "المخطط"
 
-msgid "Over-run"
-msgstr "تجاوز"
+msgid "Planned Amount"
+msgstr "المبلغ المخطط"
 
-msgid "Yes"
-msgstr "نعم"
+msgid "Planned Qty"
+msgstr "الكمية المخططة"
 
-# Insite Settings
+msgid "Planned Values"
+msgstr "القيم المخططة"
+
+msgid "Project Required"
+msgstr "المشروع مطلوب"
 
 msgid "Project and Scope Tracking"
-msgstr "تتبع المشروع والنطاق"
+msgstr "متابعة المشروع والنطاق"
+
+msgid "Quantities recalculated from measurements"
+msgstr "أُعيد حساب الكميات من القياسات"
+
+msgid "Quantity"
+msgstr "الكمية"
+
+msgid "Refuse to Submit Invoices for a Scope With Rejected Work"
+msgstr "منع اعتماد الفواتير للنطاق الذي به أعمال مرفوضة"
+
+msgid "Rejected"
+msgstr "مرفوض"
+
+msgid "Rejected Work"
+msgstr "الأعمال المرفوضة"
+
+msgid "Rejected Work on This Scope"
+msgstr "أعمال مرفوضة على هذا النطاق"
 
 msgid "Require Project and Scope on Sales Documents"
-msgstr "إلزام المشروع والنطاق في مستندات المبيعات"
+msgstr "اشتراط المشروع والنطاق في مستندات البيع"
 
-msgid "Defaults"
-msgstr "القيم الافتراضية"
+msgid "Row {0} ({1}): quantity is still {2}"
+msgstr "صف {0} ({1}): الكمية ما زالت {2}"
 
-msgid "Setup"
-msgstr "الإعداد"
+msgid "Row {0}: '{1}' cannot be used in a formula. Use lower case letters, digits and underscores, for example number_of_panels."
+msgstr "صف {0}: لا يمكن استخدام '{1}' في معادلة. استخدم حروفًا صغيرة وأرقامًا وشرطات سفلية، مثل number_of_panels."
 
-msgid "Work"
-msgstr "الأعمال"
+msgid "Row {0}: '{1}' is not a number field on the transaction line."
+msgstr "صف {0}: '{1}' ليس حقلًا رقميًا في سطر المستند."
 
-msgid "Reports"
-msgstr "التقارير"
+msgid "Row {0}: '{1}' is not a number field on {2}. Pick one from the list."
+msgstr "صف {0}: '{1}' ليس حقلًا رقميًا في {2}. اختر واحدًا من القائمة."
+
+msgid "Row {0}: the Scope '{1}' belongs to company {2}, but this document is for {3}."
+msgstr "صف {0}: النطاق '{1}' يتبع الشركة {2}، بينما هذا المستند للشركة {3}."
+
+msgid "Row {0}: the Scope '{1}' belongs to project {2}, but this document is for {3}."
+msgstr "صف {0}: النطاق '{1}' يتبع المشروع {2}، بينما هذا المستند للمشروع {3}."
+
+msgid "Row {0}: the formula on {1} cannot be worked out with these measurements ({2})."
+msgstr "صف {0}: لا يمكن حساب معادلة {1} بهذه القياسات ({2})."
+
+msgid "Row {0}: the name '{1}' is used twice. Each input needs its own name."
+msgstr "صف {0}: الاسم '{1}' مستخدم مرتين. كل مُدخل يحتاج اسمًا خاصًا به."
+
+msgid "Row {0}: this rule reads {1}, so it cannot also write to it. Write the answer to a different field."
+msgstr "صف {0}: هذه القاعدة تقرأ {1}، فلا يمكنها الكتابة فيه أيضًا. اكتب الناتج في حقل آخر."
+
+msgid "Row {0}: {1}"
+msgstr "صف {0}: {1}"
+
+msgid "Row {0}: {1} cannot be worked out with these measurements ({2})."
+msgstr "صف {0}: لا يمكن حساب {1} بهذه القياسات ({2})."
+
+msgid "Row {0}: {1} is written to twice."
+msgstr "صف {0}: يُكتب في {1} مرتين."
+
+msgid "Row {0}: {1} — {2}"
+msgstr "صف {0}: {1} — {2}"
+
+msgid "Row {0}: {1} → {2} ({3})"
+msgstr "صف {0}: {1} → {2} ({3})"
+
+msgid "Rule"
+msgstr "القاعدة"
+
+msgid "Sales Orders, Delivery Notes and Sales Invoices must carry a Project, and a Scope on every measured line. Insite only checks lines that a Measurement Rule matched, so ordinary sales are not affected."
+msgstr "يجب أن تحمل أوامر البيع وإذون التسليم وفواتير البيع مشروعًا، ونطاقًا على كل سطر مقيس. لا يفحص Insite إلا السطور التي طابقتها قاعدة قياس، فالمبيعات العادية لا تتأثر."
+
+msgid "Same Item on Another Scope"
+msgstr "نفس الصنف على نطاق آخر"
+
+msgid "Scope"
+msgstr "النطاق"
+
+msgid "Scope Belongs to Another Company"
+msgstr "النطاق يتبع شركة أخرى"
+
+msgid "Scope Belongs to Another Project"
+msgstr "النطاق يتبع مشروعًا آخر"
+
+msgid "Scope Description"
+msgstr "وصف النطاق"
+
+msgid "Scope Dimension Incomplete"
+msgstr "بُعد النطاق غير مكتمل"
+
+msgid "Scope Item"
+msgstr "بند نطاق العمل"
+
+msgid "Scope Items"
+msgstr "بنود نطاق العمل"
+
+msgid "Scope Planned"
+msgstr "تم تحديد مخطط النطاق"
+
+msgid "Scope Required"
+msgstr "النطاق مطلوب"
+
+msgid "Scope of Work"
+msgstr "نطاق العمل"
+
+msgid "Settle them, or invoice only the work that was accepted."
+msgstr "سوِّها، أو افوتر الأعمال المقبولة فقط."
+
+msgid "Setup Incomplete"
+msgstr "الإعداد غير مكتمل"
+
+msgid "Show the scopes"
+msgstr "اعرض النطاقات"
+
+msgid "Shown under the box on the line. Say what to type."
+msgstr "يظهر تحت الخانة في السطر. اشرح ما يُكتب."
+
+msgid "Start from"
+msgstr "ابدأ من"
+
+msgid "Stops every rule for this kind of work. Quantities are no longer calculated for these items."
+msgstr "يوقف كل قواعد هذا النوع من العمل. لن تُحسب الكميات لهذه الأصناف بعد الآن."
+
+msgid "Stops this scope appearing in the Scope list on new documents. Documents that already use it keep it."
+msgstr "يمنع ظهور هذا النطاق في قائمة النطاقات على المستندات الجديدة. المستندات التي تستخدمه تحتفظ به."
+
+msgid "That formula cannot be worked out with these numbers."
+msgstr "لا يمكن حساب هذه المعادلة بهذه الأرقام."
+
+msgid "The Scope '{0}' belongs to company {1}, but this inspection is for {2}."
+msgstr "النطاق '{0}' يتبع الشركة {1}، بينما هذا الفحص للشركة {2}."
+
+msgid "The Scope field is missing from {0}. Run 'bench migrate' to finish setting up Insite."
+msgstr "حقل النطاق غير موجود في {0}. شغّل 'bench migrate' لإكمال إعداد Insite."
+
+msgid "The company's currency. The planned amount is always in it."
+msgstr "عملة الشركة. المبلغ المخطط يكون بها دائمًا."
+
+msgid "The field on the line this number is written to."
+msgstr "الحقل في السطر الذي يُكتب فيه هذا الرقم."
+
+msgid "The formula does not use: {0}. Remove the input, or use it in the formula."
+msgstr "المعادلة لا تستخدم: {0}. احذف المُدخل، أو استخدمه في المعادلة."
+
+msgid "The kind of work, for example Glass or Wood — Doors."
+msgstr "نوع العمل، مثل زجاج أو خشب — أبواب."
+
+msgid "The quantity above is what you bill. Add anything else the same measurements produce — the board a panel uses, the edging round it, the fittings that go on it."
+msgstr "الكمية أعلاه هي ما تفوتره. أضف أي شيء آخر تنتجه نفس القياسات — اللوح الذي يستهلكه اللوح، والحواف حوله، والإكسسوارات التي تُركب عليه."
+
+msgid "These lines are no longer measured — check the quantity"
+msgstr "هذه السطور لم تعد تُقاس — راجع الكمية"
+
+msgid "This invoice covers work that failed inspection and is still rejected:"
+msgstr "هذه الفاتورة تشمل أعمالًا رسبت في الفحص وما زالت مرفوضة:"
+
+msgid "This is filed against line {0}, {1}. The same item is also on {2}. Check it is the right line — the scopes are billed at different rates."
+msgstr "هذا مسجل على السطر {0}، {1}. نفس الصنف موجود أيضًا في {2}. تأكد أنه السطر الصحيح — النطاقات تُفوتر بأسعار مختلفة."
+
+msgid "This rule gives a quantity of {0}."
+msgstr "هذه القاعدة تعطي كمية {0}."
+
+msgid "Transaction line"
+msgstr "سطر المستند"
+
+msgid "Transaction line: measured each time, like a panel count. Item: true of the material itself, like the sheet it is cut from."
+msgstr "سطر المستند: يُقاس في كل مرة، مثل عدد الألواح. الصنف: صفة للخامة نفسها، مثل اللوح المقصوص منه."
+
+msgid "Try it"
+msgstr "جرّبها"
+
+msgid "Try this rule"
+msgstr "جرّب هذه القاعدة"
+
+msgid "Type at least one scope, one per line."
+msgstr "اكتب نطاقًا واحدًا على الأقل، واحدًا في كل سطر."
+
+msgid "Unknown Field"
+msgstr "حقل غير معروف"
+
+msgid "Unused Input"
+msgstr "مُدخل غير مستخدم"
+
+msgid "Used by rules"
+msgstr "القواعد التي تستخدمه"
+
+msgid "Uses the same input names as the rule, for example height * width * count."
+msgstr "تستخدم نفس أسماء مُدخلات القاعدة، مثل height * width * count."
+
+msgid "Value"
+msgstr "القيمة"
+
+msgid "Variance to Plan"
+msgstr "الفرق عن المخطط"
+
+msgid "Volume"
+msgstr "الحجم"
+
+msgid "What else these measurements give you"
+msgstr "ما الذي تعطيه هذه القياسات أيضًا"
+
+msgid "What the person filling in the document sees, for example Number of Panels."
+msgstr "ما يراه من يملأ المستند، مثل عدد الألواح."
+
+msgid "What this rule covers."
+msgstr "ما الذي تغطيه هذه القاعدة."
+
+msgid "What this scope of work covers, for example Curtain wall glazing."
+msgstr "ما الذي يغطيه نطاق العمل هذا، مثل تزجيج الواجهات."
+
+msgid "Where it belongs"
+msgstr "مكانه"
+
+msgid "Where it is used"
+msgstr "أين يُستخدم"
+
+msgid "Which Line Failed?"
+msgstr "أي سطر هو المرفوض؟"
+
+msgid "Work Item Type"
+msgstr "نوع بند الأعمال"
+
+msgid "Work it out"
+msgstr "احسبها"
+
+msgid "Worked out as"
+msgstr "تُحسب كالآتي"
+
+msgid "Write a formula, or choose a different starting point."
+msgstr "اكتب معادلة، أو اختر نقطة بداية أخرى."
+
+msgid "Writes to"
+msgstr "يُكتب في"
+
+msgid "Written Twice"
+msgstr "مكتوب مرتين"
+
+msgid "You are not allowed to create a Scope Item."
+msgstr "غير مسموح لك بإنشاء بند نطاق عمل."
+
+msgid "and"
+msgstr "و"
+
+msgid "line {0} ({1})"
+msgstr "السطر {0} ({1})"
+
+msgid "the Item"
+msgstr "الصنف"
+
+msgid "the transaction line"
+msgstr "سطر المستند"
+
+msgid "{0} added. These were already on the project, so they were left alone: {1}"
+msgstr "تمت إضافة {0}. وهذه كانت موجودة بالفعل في المشروع فتُركت كما هي: {1}"
+
+msgid "{0} is now planned at {1}, from this order. Edit the scope to change it."
+msgstr "أصبح مخطط {0} هو {1}، من هذا الأمر. عدّل النطاق لتغييره."
+
+msgid "{0} is on {1} lines of {2}, and they may be different scopes at different rates. Create the inspection from the line that failed, so Insite knows which one it was."
+msgstr "{0} موجود في {1} سطور من {2}، وقد تكون نطاقات مختلفة بأسعار مختلفة. أنشئ الفحص من السطر المرفوض حتى يعرف Insite أيها كان."
+
+msgid "{0} is used by: {1}. Change those rules first, or tick 'Hide on documents' instead."
+msgstr "{0} تستخدمه: {1}. عدّل هذه القواعد أولًا، أو فعّل 'إخفاؤه من المستندات' بدلًا من ذلك."
+
+msgid "{0} scopes added."
+msgstr "تمت إضافة {0} نطاقات."
+
+msgid "… and {0} more"
+msgstr "… و{0} غيرها"
+
+msgid "…and more."
+msgstr "…وغيرها."
+

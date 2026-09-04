@@ -260,6 +260,103 @@ def test_every_table_the_report_filters_by_scope_is_indexed():
 		assert doctype in indexed, f"the report filters {doctype} by scope but nothing indexes it"
 
 
+#: Standard Frappe and ERPNext labels. Insite shows them but does not own them,
+#: and Frappe's own Arabic already covers every one — checked on a bench.
+#: Translating them again here would fight it.
+_THEIRS_TO_TRANSLATE = {
+	"Active",
+	"Cancelled",
+	"Company",
+	"Completed",
+	"Currency",
+	"Customer",
+	"Description",
+	"Disabled",
+	"Draft",
+	"Item",
+	"Item Group",
+	"On Hold",
+	"Priority",
+	"Project",
+	"Series",
+	"Status",
+	"Title",
+	"UOM",
+}
+
+_TRANSLATABLE_CALL = re.compile(
+	r"""(?<![A-Za-z0-9_])_{1,2}\(\s*((?:"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')"""
+	r"""(?:\s*(?:"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'))*)"""
+)
+
+
+def _strings_the_app_shows():
+	"""Every `_()` and `__()` call, plus the labels and help on the forms."""
+	shown = set()
+
+	for path in glob.glob("insite/**/*.py", recursive=True) + glob.glob("insite/**/*.js", recursive=True):
+		if "__pycache__" in path or "test_" in path:
+			continue
+		for match in _TRANSLATABLE_CALL.finditer(open(path, encoding="utf-8").read()):
+			pieces = re.findall(r'"((?:[^"\\]|\\.)*)"|\'((?:[^\'\\]|\\.)*)\'', match.group(1))
+			text = "".join(a or b for a, b in pieces).replace('\\"', '"').replace("\\'", "'").strip()
+			if len(text) > 1 and not text.isdigit():
+				shown.add(text)
+
+	for path in glob.glob("insite/insite/**/*.json", recursive=True):
+		doc = json.load(open(path, encoding="utf-8"))
+		if doc.get("doctype") == "DocType":
+			shown.add(doc["name"])
+		for field in doc.get("fields", []):
+			for key in ("label", "description"):
+				if field.get(key) and len(field[key]) > 1:
+					shown.add(field[key].strip())
+			if field.get("fieldtype") == "Select" and field.get("options"):
+				shown.update(o.strip() for o in field["options"].split("\n") if len(o.strip()) > 1)
+	return shown
+
+
+def _arabic():
+	body = open("insite/locale/ar.po", encoding="utf-8").read()
+	return {
+		m.group(1): m.group(2)
+		for m in re.finditer(r'msgid "((?:[^"\\]|\\.)*)"\s*\nmsgstr "((?:[^"\\]|\\.)*)"', body)
+		if m.group(1)
+	}
+
+
+def test_the_arabic_keeps_up_with_the_app():
+	"""The product is bilingual, and a translation file rots silently.
+
+	This one did: it still translated "Variation Order" and "Variation Lines"
+	weeks after those doctypes were deleted, while a hundred and sixty strings
+	the app had grown since were never translated at all. Nothing failed,
+	because nothing was looking.
+	"""
+	shown = _strings_the_app_shows()
+	arabic = _arabic()
+
+	untranslated = sorted(
+		text
+		for text in shown - set(arabic) - _THEIRS_TO_TRANSLATE
+		# naming series patterns are not prose
+		if not re.fullmatch(r"[A-Z]{2,4}-[.#Y\-]*", text)
+	)
+	assert not untranslated, "no Arabic for: " + "; ".join(untranslated)
+
+	dead = sorted(set(arabic) - shown)
+	assert not dead, "ar.po translates strings the app no longer shows: " + "; ".join(dead)
+
+
+def test_the_arabic_keeps_every_placeholder():
+	"""A translation that drops a {0} formats into a message missing its number."""
+	for english, arabic in _arabic().items():
+		expected = sorted(re.findall(r"\{\d+\}", english))
+		assert sorted(re.findall(r"\{\d+\}", arabic)) == expected, (
+			f"placeholders differ between {english!r} and its Arabic"
+		)
+
+
 def test_the_workspace_agrees_with_itself():
 	"""The two lists in a Workspace are edited by hand and drift apart.
 

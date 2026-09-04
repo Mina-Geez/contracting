@@ -32,9 +32,10 @@ function insite_add_scopes(frm) {
 				label: __("One scope per line"),
 				fieldtype: "Small Text",
 				reqd: 1,
+				// One literal per __() call. A concatenation reaches the
+				// translator as two fragments, and neither is a sentence.
 				description: __(
-					"For example: Curtain wall glazing, ACP cladding, Handrails — each on its own line. " +
-						"Leave the planned amounts alone; the first sales order on each scope sets them."
+					"For example: Curtain wall glazing, ACP cladding, Handrails, each on its own line. Leave the planned amounts alone. The first sales order on each scope sets them."
 				),
 			},
 		],
