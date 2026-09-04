@@ -6,12 +6,12 @@ For people changing the app. [SETUP.md](./SETUP.md) is for people running it.
 
 ```bash
 # offline — no site needed
-python -m pytest insite/tests -q     # 62 tests
+python -m pytest insite/tests -q     # 73 tests
 ruff check insite
 ruff format --check insite
 node --check insite/public/js/insite_transaction.js
 
-# on a bench — 14 integration tests
+# on a bench — 25 integration tests
 bench --site test.localhost migrate
 bench --site test.localhost run-tests --app insite
 ```

@@ -45,6 +45,10 @@ ordered, delivered and invoiced.
 - **Contract Progress report** — scope, status, planned, ordered, variance to
   plan, delivered, rejected, invoiced, left to invoice and percent invoiced, for
   each scope.
+- **Measurement Register report** — every line supplied against a scope, the
+  measurement behind its quantity, and the specification that was on the item at
+  the time. When a standard changes mid-job, this is what says which deliveries
+  were made to the old one.
 - **Print formats that show the work** — the quotation, order, delivery note and
   invoice, with the lines grouped by Scope and a subtotal each, and the
   measurement printed under every line: `H 1.500 × W 2.800 × 40 off`. A client

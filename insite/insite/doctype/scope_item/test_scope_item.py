@@ -351,6 +351,114 @@ class TestAddingScopesInOneGo(IntegrationTestCase):
 			add_scopes(self.project, "   \n\n  ")
 
 
+class TestTheMeasurementRegister(IntegrationTestCase):
+	"""What a scope is actually made of, and to which specification.
+
+	Its own item, because the rejection fixtures use one that ERPNext will not
+	let out of the door without a Quality Inspection.
+	"""
+
+	@classmethod
+	def setUpClass(cls):
+		super().setUpClass()
+		cls.company = _a_company()
+		cls.customer = _ensure(
+			"Customer",
+			{"customer_name": "Insite Register Customer"},
+			{"customer_name": "Insite Register Customer", "customer_type": "Company"},
+		)
+		cls.item = _ensure(
+			"Item",
+			{"item_code": "INSITE-REGISTER-ITEM"},
+			{
+				"item_code": "INSITE-REGISTER-ITEM",
+				"item_name": "Insite Register Item",
+				"item_group": frappe.get_all("Item Group", filters={"is_group": 0}, pluck="name")[0],
+				"stock_uom": "Nos",
+				"is_stock_item": 0,
+			},
+		)
+		cls.project = _ensure(
+			"Project",
+			{"project_name": "Insite Register Project"},
+			{"project_name": "Insite Register Project", "company": cls.company, "status": "Open"},
+		)
+		frappe.db.commit()
+
+	def setUp(self):
+		self.scope = (
+			frappe.get_doc(
+				{
+					"doctype": "Scope Item",
+					"scope_title": f"Register {frappe.generate_hash(length=8)}",
+					"project": self.project,
+					"status": "Active",
+				}
+			)
+			.insert()
+			.name
+		)
+
+	def test_it_shows_the_specification_that_was_supplied(self):
+		"""The answer to 'which deliveries were made to the old standard'.
+
+		Nothing new is recorded to answer it. Every line keeps its own copy of
+		the description from the moment it was raised, so changing the Item
+		later cannot rewrite what a past delivery says it supplied.
+		"""
+		from insite.insite.report.measurement_register.measurement_register import execute
+
+		spec = "Handle type A, satin stainless, 300mm"
+		delivery = frappe.get_doc(
+			{
+				"doctype": "Delivery Note",
+				"customer": self.customer,
+				"company": self.company,
+				"project": self.project,
+				"items": [
+					{
+						"item_code": self.item,
+						"qty": 12,
+						"rate": 250,
+						"scope_item": self.scope,
+						"description": spec,
+					}
+				],
+			}
+		).insert()
+		delivery.submit()
+
+		_, rows = execute({"company": self.company, "project": self.project})
+		mine = next(r for r in rows if r["document"] == delivery.name)
+
+		self.assertEqual(mine["scope"], self.scope)
+		self.assertEqual(mine["description"], spec)
+		self.assertAlmostEqual(mine["qty"], 12)
+
+		# Changing the item now must not rewrite what was already supplied.
+		frappe.db.set_value("Item", self.item, "description", "Handle type B")
+		_, rows = execute({"company": self.company, "project": self.project})
+		still = next(r for r in rows if r["document"] == delivery.name)
+		self.assertEqual(still["description"], spec)
+
+	def test_a_draft_is_not_in_the_register(self):
+		"""Nothing is supplied until it is submitted."""
+		from insite.insite.report.measurement_register.measurement_register import execute
+
+		draft = frappe.get_doc(
+			{
+				"doctype": "Delivery Note",
+				"customer": self.customer,
+				"company": self.company,
+				"project": self.project,
+				"items": [{"item_code": self.item, "qty": 5, "rate": 100, "scope_item": self.scope}],
+			}
+		).insert()
+
+		_, rows = execute({"company": self.company, "project": self.project})
+		self.assertFalse([r for r in rows if r["document"] == draft.name])
+
+
 class TestThePlanFillsItself(IntegrationTestCase):
 	"""A scope's Planned Amount comes from the first Sales Order on it.
 

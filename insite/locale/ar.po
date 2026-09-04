@@ -36,6 +36,9 @@ msgstr "تعديل طريقة القياس"
 msgid "Already There"
 msgstr "موجود بالفعل"
 
+msgid "Amount"
+msgstr "المبلغ"
+
 msgid "Applies To"
 msgstr "تُطبَّق على"
 
@@ -87,8 +90,17 @@ msgstr "جارٍ إنشاء النطاقات…"
 msgid "Custom"
 msgstr "مخصص"
 
+msgid "Date"
+msgstr "التاريخ"
+
 msgid "Delivered"
 msgstr "المُسلَّم"
+
+msgid "Document"
+msgstr "المستند"
+
+msgid "Document Type"
+msgstr "نوع المستند"
 
 msgid "Duplicate Name"
 msgstr "اسم مكرر"
@@ -128,6 +140,9 @@ msgstr "مشكلة في المعادلة"
 
 msgid "Formula Required"
 msgstr "المعادلة مطلوبة"
+
+msgid "From Date"
+msgstr "من تاريخ"
 
 msgid "Give the field a label."
 msgstr "أعطِ الحقل تسمية."
@@ -209,6 +224,9 @@ msgstr "حروف صغيرة وأرقام وشرطات سفلية، مثل sheet_
 
 msgid "Manual"
 msgstr "يدوي"
+
+msgid "Measured"
+msgstr "القياس"
 
 msgid "Measurement Field"
 msgstr "حقل قياس"
@@ -293,6 +311,9 @@ msgstr "أُعيد حساب الكميات من القياسات"
 
 msgid "Quantity"
 msgstr "الكمية"
+
+msgid "Rate"
+msgstr "السعر"
 
 msgid "Refuse to Submit Invoices for a Scope With Rejected Work"
 msgstr "منع اعتماد الفواتير للنطاق الذي به أعمال مرفوضة"
@@ -402,6 +423,9 @@ msgstr "اعرض النطاقات"
 msgid "Shown under the box on the line. Say what to type."
 msgstr "يظهر تحت الخانة في السطر. اشرح ما يُكتب."
 
+msgid "Specification at the time"
+msgstr "المواصفة وقتها"
+
 msgid "Start from"
 msgstr "ابدأ من"
 
@@ -458,6 +482,9 @@ msgstr "جرّبها"
 
 msgid "Try this rule"
 msgstr "جرّب هذه القاعدة"
+
+msgid "Type"
+msgstr "النوع"
 
 msgid "Type at least one scope, one per line."
 msgstr "اكتب نطاقًا واحدًا على الأقل، واحدًا في كل سطر."

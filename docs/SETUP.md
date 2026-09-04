@@ -310,7 +310,21 @@ A change of scope is another Sales Order, so **Ordered** is the current committe
 value of the work. **Variance to Plan** is how a change reads in the report. Work
 ordered beyond the original plan shows as a positive number.
 
-## 11. A worked example
+## 11. See what a scope is made of
+
+**Contract Progress** says where a scope stands. **Measurement Register** says
+what it is made of: every submitted line against the scope, the measurement
+behind its quantity, and the specification that was on the item at the time.
+
+Filter it by project, scope, document type or date.
+
+That last column answers the argument that starts when a developer changes a
+standard mid-job. Which deliveries were made to the old one? Every line keeps
+its own copy of the description from the moment it was raised, so editing the
+Item now cannot rewrite what a past delivery says it supplied. Nothing has to be
+switched on for this. The record was always there.
+
+## 12. A worked example
 
 A client orders six glass units. Each unit is 2.4 m high and 1.8 m wide. The
 rate is 900 per square meter. The workshop also wants to know how much sheet the
@@ -352,7 +366,7 @@ Change the formula to `height * width * count * cutting_allowance`. **Worked out
 as** then reads `Height × Width × Count × 1.12`, and the quantity of the first
 line becomes 29.03.
 
-## 12. Change a Measurement Rule later
+## 13. Change a Measurement Rule later
 
 A change to a Work Item Type or a Measurement Rule does not touch the documents
 you already have. Insite calculates a quantity only when a person saves a
@@ -361,7 +375,7 @@ they hold. Submitted documents do not move.
 
 To apply a new rule to an open draft, open the draft and save it again.
 
-## 13. Who does what
+## 14. Who does what
 
 | Role | What they do |
 | --- | --- |
