@@ -11,7 +11,7 @@ ruff check insite
 ruff format --check insite
 node --check insite/public/js/insite_transaction.js
 
-# on a bench — 36 integration tests
+# on a bench — 39 integration tests
 bench --site test.localhost migrate
 bench --site test.localhost run-tests --app insite
 ```
@@ -208,6 +208,32 @@ rows = (
     .run(as_dict=True)
 )
 ```
+
+## Link queries: check what the filter actually does
+
+Three bugs in this app have come from the same mistake — handing a filter to one
+of ERPNext's search methods and assuming it was read. **They read a fixed set of
+keys and silently ignore the rest.**
+
+| Method | Reads | Ignores |
+| --- | --- | --- |
+| `get_filtered_dimensions` | `dimension`, `account`, `company` | everything else, including `project` |
+| `get_project_name` | `customer`, `company` | everything else |
+
+So before relying on one: open the source, or call it and count the rows. And
+because `get_filtered_dimensions` appends `company = <value>` unconditionally
+when the doctype has the field, omitting a company does not widen the search —
+it returns **nothing**.
+
+Two more rules for this app's pickers:
+
+- **Wrap an existing `get_query`, never replace it.** ERPNext puts its own on
+  `scope_item` (an accounting dimension) and on `project` in `sales_common.js`.
+  A plain `frm.set_query` is silently overwritten. The wrappers are marked
+  `__insite` so it is visible when one goes missing.
+- **A grid `set_query` lives at `grid.get_field(f).get_query`**, not on
+  `grid.docfields[]`. Looking in the wrong place will tell you there is no
+  filter when there is one.
 
 ## What a stress pass found
 

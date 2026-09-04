@@ -186,6 +186,19 @@ quantity out again on the server when you save, and that answer is the one you
 keep. When every field the rule reads is empty, Insite leaves your quantity
 alone.
 
+### What the two pickers offer
+
+Neither list ever offers something the document would be refused for.
+
+| Picker | Offers |
+| --- | --- |
+| **Project**, on the header | jobs for this customer, plus any job with no customer set. ERPNext does not make that field mandatory, so a site that leaves it blank still gets a usable list. |
+| **Scope**, on each line | scopes on this document's project, and nothing else |
+
+The Project narrows only when the document is for a customer. A **Quotation** to
+a Lead or a Prospect is offered every project, because a lead has no jobs of its
+own yet.
+
 Insite calculates on the Quotation, the Sales Order, the Delivery Note and the
 Sales Invoice. Purchase documents carry the **Scope** for cost. Insite does not
 calculate their quantities.

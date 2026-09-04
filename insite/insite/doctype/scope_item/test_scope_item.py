@@ -1005,6 +1005,85 @@ class TestScopeProfitability(IntegrationTestCase):
 		# and ERPNext's own filtering still applies underneath
 		self.assertIn(theirs, ask(frappe.db.get_value("Scope Item", theirs, "project")))
 
+	def test_the_scope_picker_needs_a_company_to_answer_at_all(self):
+		"""ERPNext's dimension search filters on the company unconditionally.
+
+		If nothing supplies one it filters on `company = None` and the picker
+		comes back empty. That is the shape of the Quotation, where the Scope
+		field is Insite's own and carries no ERPNext query to inherit a company
+		from — so the client sends one, and this records why.
+		"""
+		from insite.api import scope_query
+
+		project = frappe.db.get_value("Scope Item", self.scope, "project")
+		base = {"dimension": "scope_item", "account": "", "project": project}
+
+		with_company = scope_query("Scope Item", "", "name", 0, 100, {**base, "company": self.company})
+		self.assertIn(self.scope, {row[0] for row in with_company})
+
+		without = scope_query("Scope Item", "", "name", 0, 100, base)
+		self.assertEqual(without, [], "a company-less search should return nothing, not everything")
+
+	def test_a_quotation_offers_projects_of_its_party_only_when_it_is_a_customer(self):
+		"""The Project picker on a Quotation.
+
+		ERPNext narrows the project to the customer on the Sales Order, Delivery
+		Note and Sales Invoice, and there is nothing to rebuild there. But it
+		reads `doc.customer`, and a Quotation has no such field — its party is
+		`party_name`, and only a customer when `quotation_to` says so. So on a
+		Quotation nothing narrowed. This checks the query the client now sends.
+		"""
+		from erpnext.controllers.queries import get_project_name
+
+		mine = _ensure(
+			"Project",
+			{"project_name": "Insite Party Project"},
+			{
+				"project_name": "Insite Party Project",
+				"company": self.company,
+				"status": "Open",
+				"customer": self.customer,
+			},
+		)
+		other_customer = _ensure(
+			"Customer",
+			{"customer_name": "Insite Other Party"},
+			{"customer_name": "Insite Other Party", "customer_type": "Company"},
+		)
+		theirs = _ensure(
+			"Project",
+			{"project_name": "Insite Other Party Project"},
+			{
+				"project_name": "Insite Other Party Project",
+				"company": self.company,
+				"status": "Open",
+				"customer": other_customer,
+			},
+		)
+
+		def ask(customer):
+			rows = get_project_name(
+				"Project", "", "name", 0, 100, {"customer": customer, "company": self.company}
+			)
+			return {row[0] for row in rows}
+
+		offered = ask(self.customer)
+		self.assertIn(mine, offered)
+		self.assertNotIn(theirs, offered, "the picker offered another customer's project")
+
+		# A project nobody has assigned is still offered: ERPNext does not make
+		# the field mandatory, and a site that leaves it blank must not end up
+		# with an empty picker on every document.
+		unassigned = _ensure(
+			"Project",
+			{"project_name": "Insite Unassigned Project"},
+			{"project_name": "Insite Unassigned Project", "company": self.company, "status": "Open"},
+		)
+		self.assertIn(unassigned, ask(self.customer))
+
+		# And with no customer at all — a Quotation to a Lead — nothing narrows.
+		self.assertIn(theirs, ask(None))
+
 	def test_the_reports_insite_does_not_build_are_really_there(self):
 		"""The workspace points at these instead of Insite rebuilding them.
 

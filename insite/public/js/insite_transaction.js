@@ -73,7 +73,16 @@ function insite_narrow_scope_to_project(frm) {
 		const base = original ? original.call(this, doc, cdt, cdn) || {} : {};
 		if (!frm.doc.project) return base;
 
-		const filters = Object.assign({}, base.filters, { project: frm.doc.project });
+		// ERPNext's own values win over these defaults; the project always wins.
+		// The defaults matter on the Quotation, where the Scope field is
+		// Insite's own and carries no ERPNext query — without a company,
+		// `get_filtered_dimensions` filters on `company = None` and the picker
+		// comes back empty.
+		const filters = Object.assign(
+			{ dimension: "scope_item", account: "", company: frm.doc.company },
+			base.filters,
+			{ project: frm.doc.project }
+		);
 		// A project filter handed to ERPNext's dimension search does nothing:
 		// it reads the dimension, the account and the company out of the
 		// filters and ignores every other key. Browser testing found the picker
@@ -86,13 +95,64 @@ function insite_narrow_scope_to_project(frm) {
 	field.get_query = wrapped;
 }
 
+// Who the selling document is for. A Sales Order, Delivery Note and Sales
+// Invoice each carry a `customer`. A Quotation does not: it has a party, and
+// that party is only a customer when `quotation_to` says so — it may equally be
+// a Lead or a Prospect, and a lead has no projects to offer.
+function insite_selling_customer(doc) {
+	if (doc.customer) return doc.customer;
+	if (doc.quotation_to === "Customer") return doc.party_name;
+	return null;
+}
+
+// Never offer another customer's project.
+//
+// ERPNext already does this on the Sales Order, Delivery Note and Sales
+// Invoice: `get_project_name` matches the customer, and deliberately also
+// allows projects with no customer set, since the field is not mandatory and a
+// site that leaves it blank would otherwise get an empty picker. Nothing to
+// rebuild — but it reads `doc.customer`, and a Quotation has no such field, so
+// on a Quotation it narrowed nothing. The Project on a Quotation is Insite's
+// own field anyway, so nothing had put a query on it at all.
+function insite_narrow_project_to_customer(frm) {
+	const field = frm.fields_dict && frm.fields_dict.project;
+	if (!field || (field.get_query && field.get_query.__insite)) return;
+
+	const original = field.get_query;
+	const wrapped = function (doc) {
+		const base = original ? original.call(this, doc) || {} : {};
+		const customer = insite_selling_customer(frm.doc);
+		if (!customer) return base; // a lead or a prospect: every project is fair game
+
+		return Object.assign({}, base, {
+			query: base.query || "erpnext.controllers.queries.get_project_name",
+			filters: Object.assign({}, base.filters, {
+				customer: customer,
+				company: frm.doc.company,
+			}),
+		});
+	};
+	wrapped.__insite = true;
+	field.get_query = wrapped;
+}
+
 INSITE_PARENT_DOCTYPES.forEach((parent) => {
 	const child = `${parent} Item`;
+	const selling = INSITE_MEASURED_DOCTYPES.includes(parent);
+
+	const narrow = (frm) => {
+		insite_narrow_scope_to_project(frm);
+		// A supplier has no projects of their own, so this is a selling rule.
+		if (selling) insite_narrow_project_to_customer(frm);
+	};
 
 	const parent_handlers = {
-		onload: insite_narrow_scope_to_project,
-		refresh: insite_narrow_scope_to_project,
-		project: insite_narrow_scope_to_project,
+		onload: narrow,
+		refresh: narrow,
+		project: narrow,
+		customer: narrow,
+		party_name: narrow,
+		quotation_to: narrow,
 	};
 
 	frappe.ui.form.on(parent, parent_handlers);
