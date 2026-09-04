@@ -9,8 +9,6 @@ outlive the rule that produced it.
 
 from __future__ import annotations
 
-import json
-
 import frappe
 from frappe import _
 from frappe.utils import cint, flt
@@ -27,7 +25,6 @@ _AUDIT_FIELDS = (
 	"custom_calculated_qty",
 	"custom_calc_measure",
 	"custom_calc_source",
-	"custom_calc_dimensions",
 )
 
 #: Names the boxes this line's rule reads, so the form shows only those. A
@@ -255,10 +252,14 @@ def _clear_outputs(row, rule):
 
 
 def _stamp(row, rule, values):
-	"""Record which rule ran and what it read, so a quantity can be traced."""
+	"""Record which rule ran, so a quantity can be traced back to it.
+
+	The numbers it read are not stamped: they are still on the line, in the
+	boxes the reader can see, and a hidden JSON copy of them was written on
+	every save and read by nothing.
+	"""
 	row.set("custom_calc_measure", rule["title"])
 	row.set("custom_calc_source", rule["source"])
-	row.set("custom_calc_dimensions", json.dumps(values))
 
 
 def _clear_calc_fields(row):

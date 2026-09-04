@@ -110,20 +110,11 @@ def _fields():
 			"fieldname": "custom_measurement_inputs",
 			"label": "Measurement Inputs",
 			"fieldtype": "Data",
-			"insert_after": "custom_calc_dimensions",
-			"read_only": 1,
-			"hidden": 1,
-			"no_copy": 1,
-			"description": "Insite records which boxes this line's rule reads, so the rest stay out of the way.",
-		},
-		{
-			"fieldname": "custom_calc_dimensions",
-			"label": "Measurements Used",
-			"fieldtype": "Small Text",
 			"insert_after": "custom_calc_source",
 			"read_only": 1,
 			"hidden": 1,
 			"no_copy": 1,
+			"description": "Insite records which boxes this line's rule reads, so the rest stay out of the way.",
 		},
 	]
 
