@@ -6,12 +6,12 @@ For people changing the app. [SETUP.md](./SETUP.md) is for people running it.
 
 ```bash
 # offline — no site needed
-python -m pytest insite/tests -q     # 73 tests
+python -m pytest insite/tests -q     # 96 tests
 ruff check insite
 ruff format --check insite
 node --check insite/public/js/insite_transaction.js
 
-# on a bench — 34 integration tests
+# on a bench — 36 integration tests
 bench --site test.localhost migrate
 bench --site test.localhost run-tests --app insite
 ```
@@ -208,6 +208,26 @@ rows = (
     .run(as_dict=True)
 )
 ```
+
+## What a stress pass found
+
+Run against a bench with 300 scopes, 800 sales lines and 200 purchase lines.
+Worth repeating after any change to the reports or the hooks.
+
+| Probe | Result |
+| --- | --- |
+| 20 sandbox escapes at the formula evaluator (attribute access, lambda, comprehension, walrus, f-string, kwargs, starred args, null byte) | all refused |
+| a formula of 5,000 terms | **was** a RecursionError out of `ast.parse`, before the node count could reject it — nothing catches that, so it reached the user as a 500 from a whitelisted method. Now length-capped first |
+| three reports at 300 scopes | 4–7 SQL calls each, 17–81 ms. The call count does not move with the row count |
+| a foreign-currency order | contract value and committed both correct in company currency |
+| cancelled / draft / closed orders | correctly excluded |
+| a reader restricted to one project | saw only their scopes; the totals are keyed off a `get_list`, so the aggregates cannot reach further than the permission did |
+| XSS payloads forced past Frappe's sanitizer straight into the database | rendered as text |
+| two orders submitted at once on one blank scope | **was** a race — both read a blank plan, both wrote, the second won. Now the row is locked before it is read |
+
+Two of those are the interesting kind: the code was correct on every path a
+single test process can walk, and wrong on the two that need either a second
+connection or a parser's own stack.
 
 ## What the accounting dimension already bought you
 

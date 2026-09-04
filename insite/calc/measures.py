@@ -77,6 +77,12 @@ PRESET_CHOICES = (*PRESETS.keys(), MANUAL, CUSTOM)
 MAX_EXPONENT = 64
 MAX_BASE = 1e12
 MAX_NODES = 200
+#: Checked before parsing, because `ast.parse` recurses. A formula of a few
+#: thousand terms exhausts the stack while building the tree, which is a
+#: RecursionError from inside the parser — raised before MAX_NODES can count
+#: anything, and not something a caller catching ValueError would survive. The
+#: longest real formula is a line or two.
+MAX_LENGTH = 1000
 
 
 def _guarded_pow(base, exponent, *rest):
@@ -154,10 +160,17 @@ def evaluate_formula(formula, values):
 
 
 def formula_tokens(formula):
-	"""Every name a formula refers to, so a rule can be checked against its inputs."""
+	"""Every name a formula refers to, so a rule can be checked against its inputs.
+
+	Never raises. Callers use it to describe a formula, including one that does
+	not parse, and a rule whose tokens cannot be listed must still be reportable.
+	"""
+	text = str(formula or "")
+	if len(text) > MAX_LENGTH:
+		return set()
 	try:
-		tree = ast.parse(str(formula or ""), mode="eval")
-	except SyntaxError:
+		tree = ast.parse(text, mode="eval")
+	except (SyntaxError, RecursionError):
 		return set()
 	return {
 		node.id
@@ -180,12 +193,18 @@ def _f(value) -> float:
 
 
 def _parse(formula) -> ast.Expression:
-	if not formula or not str(formula).strip():
+	text = str(formula or "")
+	if not text.strip():
 		raise ValueError("The formula is empty.")
+	if len(text) > MAX_LENGTH:
+		raise ValueError("This formula is too long. Split it into a simpler one.")
 	try:
-		tree = ast.parse(str(formula), mode="eval")
+		tree = ast.parse(text, mode="eval")
 	except SyntaxError as e:
 		raise ValueError(f"Check the brackets and the signs in this formula ({e.msg}).") from e
+	except RecursionError as e:
+		# Nesting deep enough to exhaust the stack inside the parser itself.
+		raise ValueError("This formula is nested too deeply. Split it into a simpler one.") from e
 	if sum(1 for _ in ast.walk(tree)) > MAX_NODES:
 		raise ValueError("This formula is too long. Split it into a simpler one.")
 	return tree

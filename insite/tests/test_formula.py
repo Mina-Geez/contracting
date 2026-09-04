@@ -216,3 +216,63 @@ def test_formula_tokens_ignores_functions_and_constants():
 
 def test_formula_tokens_of_nonsense_is_empty():
 	assert formula_tokens("height *") == set()
+
+
+# --- hostile formulas, not just hostile values ------------------------------
+
+
+def test_a_formula_too_long_to_parse_is_refused_not_crashed():
+	"""`ast.parse` recurses, and a few thousand terms exhaust the stack.
+
+	That is a RecursionError raised inside the parser, before the node count can
+	reject anything. Nothing catches it: the engine and the preview endpoints
+	both catch ValueError and ArithmeticError, and RecursionError is neither, so
+	it reached the user as a 500 from a whitelisted method.
+	"""
+	monstrous = "+".join(["1"] * 5000)
+	with pytest.raises(ValueError, match="too long"):
+		validate_formula(monstrous, TOKENS)
+	with pytest.raises(ValueError, match="too long"):
+		evaluate_formula(monstrous, {})
+
+
+def test_a_formula_nested_too_deeply_is_refused_not_crashed():
+	with pytest.raises(ValueError):
+		validate_formula("(" * 400 + "1" + ")" * 400, TOKENS)
+
+
+def test_listing_the_tokens_of_a_monstrous_formula_never_raises():
+	"""`formula_tokens` promises never to raise. It is how a bad rule is described."""
+	assert formula_tokens("+".join(["height"] * 5000)) == set()
+	assert formula_tokens("(" * 400 + "height" + ")" * 400) == set()
+
+
+@pytest.mark.parametrize(
+	"formula",
+	[
+		"height.__class__",
+		"__import__",
+		"height[0]",
+		"height()",
+		"(lambda: 1)()",
+		"[x for x in (1, 2)][0]",
+		"(h := 5)",
+		"'abc'",
+		'f"{height}"',
+		"b'ab'",
+		"(1, 2)",
+		"height > 1",
+		"height and width",
+		"1 if height else 2",
+		"max(*[1, 2])",
+		"round(height, ndigits=2)",
+		"import os",
+		"1; 2",
+		"height × width",
+		"height\x00* width",
+	],
+)
+def test_nothing_but_arithmetic_gets_through(formula):
+	"""The evaluator is the one place a user's text becomes code."""
+	with pytest.raises(ValueError):
+		validate_formula(formula, TOKENS)

@@ -585,6 +585,68 @@ class TestThePlanFillsItself(IntegrationTestCase):
 		self.assertAlmostEqual(row["ordered"], 6200)
 		self.assertAlmostEqual(row["variance_to_plan"], 1200)
 
+	def test_an_order_in_another_currency_is_announced_in_ours(self):
+		"""The plan is stored from `base_amount`, so it is in the company's currency.
+
+		The message announcing it was formatted with the *document's* currency.
+		An order of 1,000 of a foreign currency at rate 50 stored 50,000 and then
+		told the user the scope was planned at 50,000 of the foreign one — fifty
+		times the real figure, in the wrong money.
+		"""
+		home = frappe.get_cached_value("Company", self.company, "default_currency")
+		others = [c for c in frappe.get_all("Currency", pluck="name") if c != home]
+		if not others:
+			self.skipTest("this site has one currency")
+
+		scope = self._scope()
+		order = frappe.get_doc(
+			{
+				"doctype": "Sales Order",
+				"customer": self.customer,
+				"company": self.company,
+				"project": self.project,
+				"currency": others[0],
+				"conversion_rate": 50,
+				"plc_conversion_rate": 50,
+				"delivery_date": frappe.utils.add_days(frappe.utils.today(), 30),
+				"items": [{"item_code": self.item, "qty": 10, "rate": 100, "scope_item": scope}],
+			}
+		)
+		order.insert()
+		frappe.clear_messages()
+		order.submit()
+
+		self.assertAlmostEqual(frappe.db.get_value("Scope Item", scope, "planned_amount"), 50_000)
+		said = " ".join(str(entry) for entry in frappe.get_message_log())
+		self.assertIn(frappe.utils.fmt_money(50_000, currency=home), said)
+
+	def test_the_scope_is_locked_before_the_plan_is_read(self):
+		"""Two orders submitted at the same moment must not both fill the plan.
+
+		Read-then-write is a race: both see a blank plan, both write, and the
+		second order wins — so the baseline belongs to the wrong order and every
+		Variance to Plan after it is measured against the wrong number. One
+		process cannot demonstrate two committing at once, so this asserts the
+		mechanism that prevents it, which is the thing a later tidy-up would
+		remove without noticing.
+		"""
+		scope = self._scope()
+		locked = []
+		real_get_value = frappe.db.get_value
+
+		def watching(*args, **kwargs):
+			if args[:2] == ("Scope Item", scope) and kwargs.get("for_update"):
+				locked.append(args)
+			return real_get_value(*args, **kwargs)
+
+		frappe.db.get_value = watching
+		try:
+			self._order(scope, rate=4_000)
+		finally:
+			frappe.db.get_value = real_get_value
+
+		self.assertTrue(locked, "the scope's plan was read without locking the row")
+
 	def test_a_plan_somebody_agreed_is_never_overwritten(self):
 		scope = self._scope()
 		frappe.db.set_value("Scope Item", scope, "planned_amount", 999)

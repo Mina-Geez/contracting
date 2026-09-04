@@ -153,21 +153,29 @@ def set_the_plan_from_the_first_order(doc, method=None):
 	if not totals:
 		return
 
-	planned = frappe.get_all(
-		"Scope Item",
-		filters={"name": ["in", sorted(totals)]},
-		fields=["name", "planned_amount"],
-	)
-	for scope in planned:
-		if flt(scope.planned_amount):
+	# The totals are base_amount, so the plan is in the company's currency, not
+	# the document's. An order raised in another currency was being announced at
+	# its company-currency value under the foreign symbol.
+	home_currency = frappe.get_cached_value("Company", doc.company, "default_currency")
+
+	# Sorted so two documents touching the same scopes lock them in the same
+	# order and cannot deadlock against each other.
+	for name in sorted(totals):
+		# Locked before it is read. Reading first and writing after is a race:
+		# two orders submitted at the same moment both see a blank plan, both
+		# write, and the second one wins — leaving the baseline set by the wrong
+		# order for the life of the contract, with every Variance to Plan
+		# measured against it. The lock is by primary key, so it is one row.
+		if flt(frappe.db.get_value("Scope Item", name, "planned_amount", for_update=True)):
 			continue  # already agreed; later documents are variations against it
-		record = frappe.get_doc("Scope Item", scope.name)
-		record.planned_amount = totals[scope.name]
+
+		record = frappe.get_doc("Scope Item", name)
+		record.planned_amount = totals[name]
 		record.save(ignore_permissions=True)
 		frappe.msgprint(
 			_("{0} is now planned at {1}, from this order. Edit the scope to change it.").format(
 				record.scope_title or record.name,
-				frappe.utils.fmt_money(totals[scope.name], currency=doc.get("currency")),
+				frappe.utils.fmt_money(totals[name], currency=home_currency),
 			),
 			title=_("Scope Planned"),
 			indicator="blue",
