@@ -2,14 +2,26 @@
 
 For people changing the app. [SETUP.md](./SETUP.md) is for people running it.
 
-## What you can prove without a site
+## The two halves of the gate
 
 ```bash
+# offline — no site needed
 python -m pytest insite/tests -q     # 62 tests
 ruff check insite
 ruff format --check insite
 node --check insite/public/js/insite_transaction.js
+
+# on a bench — 14 integration tests
+bench --site test.localhost migrate
+bench --site test.localhost run-tests --app insite
 ```
+
+Run both before pushing. The integration tests live beside the doctype they
+cover (`insite/insite/doctype/rejection/test_rejection.py`), which is where
+Frappe looks for them; `pytest` never collects them because it is pointed at
+`insite/tests`.
+
+## What the offline half proves
 
 This gate proves the pure calculation code (`insite/calc/measures.py` and
 `resolve.py` import no Frappe) and the app's structure — that every DocType has a
@@ -28,6 +40,40 @@ both bugs found on 2026-09-04, were invisible to it:
 So: **run anything that touches a Frappe or ERPNext API on a real bench before
 pushing.** A guard test now covers the second one; the first is what a bench is
 for.
+
+### Two sites, and why
+
+| Site | For |
+| --- | --- |
+| `test.localhost` | `bench run-tests`. Bare — **never run the setup wizard on it.** |
+| `dev.localhost` | Looking at the app: the setup wizard, a company, demo data. |
+
+They have to be separate. ERPNext's test bootstrap builds its own fixtures
+(`_Test Company`, the standard price lists), and on a site the setup wizard has
+already populated it dies with `DuplicateEntryError: ('Price List', 'Standard
+Buying')` before a single test runs.
+
+Three more things `bench run-tests` needs:
+
+- `bench --site test.localhost set-config allow_tests true`, or it refuses.
+- The **`payments`** app installed. ERPNext's bootstrap references the Payment
+  Gateway doctype, which moved out of ERPNext in v15, and without it discovery
+  fails with `DoesNotExistError: DocType Payment Gateway not found`.
+- `pytest` importable in the bench venv. Discovery imports every test module in
+  the app, including the offline ones, and stops at `No module named 'pytest'`.
+
+### Writing integration tests
+
+Two traps, both of which produced tests that passed alone and failed together:
+
+- **Look fixtures up by their unique field, not by name.** Project and Scope Item
+  are named by series, so `frappe.db.exists("Project", "My Project")` never
+  matches and the second run dies on the unique constraint.
+- **Clean up in `tearDown`.** Committing shared fixtures in `setUpClass` takes
+  the class outside Frappe's per-test rollback, so anything a test creates
+  survives into the next one. The report test then totals every leftover
+  rejection, and the invoice warning — which names five and then says "and
+  more" — stops naming the one the test just made.
 
 ## Getting a bench
 
