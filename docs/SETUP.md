@@ -28,8 +28,11 @@ Open **Insite > Work Item Type > New**.
 
 1. Name the type after the work, for example `Glass`.
 2. Write a **Description** if the name needs one.
-3. Add the default accounts per company that you want.
-4. Save.
+3. Save.
+
+There are no accounts here. Set the income account, the expense account and the
+cost centre where ERPNext already keeps them — **Item Defaults** on the Item or
+the Item Group.
 
 The saved form lists the rules of this type under **Measurement**. A Work Item
 Type measures nothing until it has a rule.

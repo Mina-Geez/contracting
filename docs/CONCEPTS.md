@@ -11,8 +11,12 @@ A kind of work you do. Example: "Glass", "Wood — Doors", "Handrails".
 A Work Item Type holds:
 
 - **Description** — what this kind of work covers.
-- **Default accounts** per company.
 - **Disabled** — stops every rule for this kind of work.
+
+It holds no accounts. ERPNext already keeps the income account, the expense
+account and the cost centre per company as **Item Defaults**, on the Item and
+the Item Group, and those are what post. A second place to set them would only
+be a decoration that disagrees with the first.
 
 The form lists the rules of this type under **Measurement**. You create a rule
 from there.

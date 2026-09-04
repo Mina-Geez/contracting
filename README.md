@@ -8,8 +8,8 @@ ordered, delivered and invoiced.
 ## What it adds
 
 - **Work Item Type** — a kind of work, for example `Glass`. It holds a
-  description and the default accounts per company. Its Measurement Rules are
-  listed on the form under **Measurement**.
+  description and a switch, nothing more — accounts stay in ERPNext's Item
+  Defaults. Its Measurement Rules are listed on the form under **Measurement**.
 - **Measurement Rule** — how a kind of work is measured. Say what the rule
   **Applies To**, pick a **Start from**, and read **Worked out as**. That line
   states the calculation in words, for example Height × Width × Count. Ready-made
