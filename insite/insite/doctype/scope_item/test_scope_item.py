@@ -953,6 +953,58 @@ class TestScopeProfitability(IntegrationTestCase):
 		ours = [row["scope"] for row in rows if row["scope"] in (healthy, thin)]
 		self.assertEqual(ours, [thin, healthy])
 
+	def test_the_scope_picker_offers_only_this_projects_scopes(self):
+		"""The search behind the Scope field on a document line.
+
+		Found in a browser, not here: the picker was offering every scope in the
+		company across every project. The client was adding a `project` to the
+		filters of ERPNext's dimension search, which reads `dimension`, `account`
+		and `company` and ignores every other key — so the filter went nowhere,
+		someone could pick a scope from another job, and the server then refused
+		the document it had just invited them to build.
+		"""
+		from insite.api import scope_query
+
+		mine = self.scope
+		theirs = (
+			frappe.get_doc(
+				{
+					"doctype": "Scope Item",
+					"scope_title": f"Elsewhere {frappe.generate_hash(length=6)}",
+					"project": _ensure(
+						"Project",
+						{"project_name": "Insite Other Margin Project"},
+						{
+							"project_name": "Insite Other Margin Project",
+							"company": self.company,
+							"status": "Open",
+						},
+					),
+					"status": "Active",
+				}
+			)
+			.insert()
+			.name
+		)
+
+		def ask(project):
+			rows = scope_query(
+				"Scope Item",
+				"",
+				"name",
+				0,
+				100,
+				{"dimension": "scope_item", "account": "", "company": self.company, "project": project},
+			)
+			return {row[0] for row in rows}
+
+		offered = ask(frappe.db.get_value("Scope Item", mine, "project"))
+		self.assertIn(mine, offered)
+		self.assertNotIn(theirs, offered, "the picker offered a scope from another project")
+
+		# and ERPNext's own filtering still applies underneath
+		self.assertIn(theirs, ask(frappe.db.get_value("Scope Item", theirs, "project")))
+
 	def test_the_reports_insite_does_not_build_are_really_there(self):
 		"""The workspace points at these instead of Insite rebuilding them.
 

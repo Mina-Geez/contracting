@@ -130,6 +130,38 @@ def line_preview(item_code: str | None = None, values: str | dict | None = None)
 	return answer
 
 
+@frappe.whitelist()
+@frappe.validate_and_sanitize_search_inputs
+def scope_query(doctype, txt, searchfield, start, page_len, filters, reference_doctype=None):
+	"""The Scope picker on a document line: ERPNext's own list, narrowed to the project.
+
+	`scope_item` is an Accounting Dimension, so ERPNext puts its own search on
+	the field — one that honours Accounting Dimension Filters, skips disabled
+	scopes and keeps to the company. Worth keeping.
+
+	What it will not do is narrow by project. It reads `dimension`, `account`
+	and `company` out of the filters and ignores every other key, so a `project`
+	added to them is silently dropped and the picker offers every scope in the
+	company. Someone then chooses a scope from another job and the server
+	refuses the document at save, having offered the choice in the first place.
+
+	So: run theirs, then keep the names that are on this project. A project has
+	a handful of scopes, which is the smaller set to fetch and compare against.
+	"""
+	from erpnext.controllers.queries import get_filtered_dimensions
+
+	filters = frappe._dict(filters or {})
+	project = filters.pop("project", None)
+	rows = get_filtered_dimensions(doctype, txt, searchfield, start, page_len, filters, reference_doctype)
+	if not project:
+		return rows
+
+	on_project = set(
+		frappe.get_all("Scope Item", filters={"project": project}, pluck="name", limit_page_length=0)
+	)
+	return [row for row in rows if row[0] in on_project]
+
+
 def _item_for(item_code):
 	values = frappe.get_cached_value(
 		"Item", item_code, ["item_group", "variant_of", "has_variants"], as_dict=True

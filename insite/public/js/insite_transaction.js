@@ -54,12 +54,13 @@ function insite_refresh_line(frm, cdt, cdn) {
 // Never offer a scope from another project: the document would be refused on
 // save, and the picker should not have suggested it.
 //
-// This wraps whatever query is already on the field instead of replacing it.
-// `scope_item` is an Accounting Dimension, and ERPNext puts its own query there
-// — narrowing to the dimension and the company — which quietly replaced a
-// plain `frm.set_query` and left the picker offering every scope in the
-// company. Wrapping keeps ERPNext's filter and adds the project to it, and the
-// marker lets us notice if ERPNext replaces the field's query again later.
+// `scope_item` is an Accounting Dimension, so ERPNext puts its own query on the
+// field. Two separate things went wrong here, and only the second was visible
+// without a browser. First, that query silently replaced a plain
+// `frm.set_query`, so we wrap it instead of replacing it. Second, ERPNext's
+// query cannot narrow by project at all, so wrapping alone still offered every
+// scope in the company — hence the delegation to `insite.api.scope_query`.
+// The marker lets us notice if ERPNext replaces the field's query again later.
 function insite_narrow_scope_to_project(frm) {
 	const grid = frm.fields_dict.items && frm.fields_dict.items.grid;
 	if (!grid) return;
@@ -70,9 +71,16 @@ function insite_narrow_scope_to_project(frm) {
 	const original = field.get_query;
 	const wrapped = function (doc, cdt, cdn) {
 		const base = original ? original.call(this, doc, cdt, cdn) || {} : {};
-		const filters = Object.assign({}, base.filters);
-		if (frm.doc.project) filters.project = frm.doc.project;
-		return Object.assign({}, base, { filters: filters });
+		if (!frm.doc.project) return base;
+
+		const filters = Object.assign({}, base.filters, { project: frm.doc.project });
+		// A project filter handed to ERPNext's dimension search does nothing:
+		// it reads the dimension, the account and the company out of the
+		// filters and ignores every other key. Browser testing found the picker
+		// still offering all 314 scopes across four projects. So point it at
+		// Insite's search, which runs ERPNext's and then keeps the scopes that
+		// are on this project.
+		return Object.assign({}, base, { query: "insite.api.scope_query", filters: filters });
 	};
 	wrapped.__insite = true;
 	field.get_query = wrapped;
