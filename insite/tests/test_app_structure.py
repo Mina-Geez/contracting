@@ -287,6 +287,10 @@ _THEIRS_TO_TRANSLATE = {
 	"Status",
 	"Title",
 	"UOM",
+	# ERPNext's own reports, which the workspace points at rather than rebuilding
+	"Budget Variance Report",
+	"Profitability Analysis",
+	"Quality Inspection",
 }
 
 _TRANSLATABLE_CALL = re.compile(
@@ -318,7 +322,36 @@ def _strings_the_app_shows():
 					shown.add(field[key].strip())
 			if field.get("fieldtype") == "Select" and field.get("options"):
 				shown.update(o.strip() for o in field["options"].split("\n") if len(o.strip()) > 1)
+
+		# The rest of what Frappe treats as translatable, taken from its own
+		# extractors (frappe/gettext/extractors/report.py and workspace.py) and
+		# from the workspace blocks, which render text through `__()`. None of
+		# this reaches a `_()` call in our source, so scanning the code alone
+		# said the Arabic was finished when the whole workspace was still
+		# English.
+		if doc.get("doctype") == "Report" and doc.get("report_name"):
+			shown.add(doc["report_name"].strip())
+
+		if doc.get("doctype") == "Workspace":
+			shown.update(_workspace_strings(doc))
+
 	return shown
+
+
+def _workspace_strings(workspace):
+	"""Labels and prose on a workspace: shortcuts, links, and the page's own text."""
+	shown = {workspace.get("label")}
+	for group in ("shortcuts", "links", "charts", "number_cards"):
+		for entry in workspace.get(group) or []:
+			shown.update({entry.get("label"), entry.get("description")})
+
+	for block in json.loads(workspace.get("content") or "[]"):
+		if block.get("type") in ("header", "paragraph"):
+			# Rendered as `__(text)` with its markup, so the markup is part of
+			# the string a translator is given.
+			shown.add((block.get("data") or {}).get("text"))
+
+	return {text.strip() for text in shown if text and len(text.strip()) > 1}
 
 
 def _arabic():

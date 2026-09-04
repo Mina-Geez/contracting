@@ -9,6 +9,12 @@ msgstr ""
 msgid "% Invoiced"
 msgstr "٪ المفوتر"
 
+msgid "<b>Profitability Analysis</b> and <b>Budget Variance Report</b> are ERPNext's own. They work per scope because Insite registers the Scope as an accounting dimension, so a scope can carry a cost budget like any cost centre."
+msgstr "<b>تحليل الربحية</b> و<b>تقرير إنحرافات الموازنة</b> من ERPNext نفسه. يعملان لكل نطاق لأن Insite يسجّل النطاق كبُعد محاسبي، فيمكن للنطاق أن يحمل موازنة تكلفة مثل أي مركز تكلفة."
+
+msgid "<b>Set up once:</b> a <b>Work Item Type</b> for each kind of work, then a <b>Measurement Rule</b> saying how it is measured. <b>Then per job:</b> a <b>Scope Item</b> on the Project for each scope you report on."
+msgstr "<b>إعداد لمرة واحدة:</b> <b>نوع بند الأعمال</b> لكل نوع من الأعمال، ثم <b>قاعدة القياس</b> تحدد كيفية قياسه. <b>ثم لكل مشروع:</b> <b>بند نطاق العمل</b> على المشروع لكل نطاق تتابعه في التقارير."
+
 msgid "A field named {0} already exists on the transaction line."
 msgstr "يوجد حقل باسم {0} في سطر المستند بالفعل."
 
@@ -84,6 +90,9 @@ msgstr "تقدم العقد"
 msgid "Contract Value"
 msgstr "قيمة العقد"
 
+msgid "Control the money"
+msgstr "الرقابة المالية"
+
 msgid "Cost"
 msgstr "التكلفة"
 
@@ -113,6 +122,9 @@ msgstr "المستند"
 
 msgid "Duplicate Name"
 msgstr "اسم مكرر"
+
+msgid "Every job"
+msgstr "لكل مشروع"
 
 msgid "Expected Cost"
 msgstr "التكلفة المتوقعة"
@@ -258,6 +270,9 @@ msgstr "ناتج القياس"
 msgid "Measurement Problem"
 msgstr "مشكلة في القياس"
 
+msgid "Measurement Register"
+msgstr "سجل القياسات"
+
 msgid "Measurement Rule"
 msgstr "قاعدة القياس"
 
@@ -275,6 +290,9 @@ msgstr "لا يوجد قياس بعد. أضف قاعدة قياس لتحديد �
 
 msgid "Nothing to Add"
 msgstr "لا شيء لإضافته"
+
+msgid "Now and then"
+msgstr "من حين لآخر"
 
 msgid "Off, Insite warns and names the rejected work but lets the invoice through. On, it refuses to submit the invoice until each Quality Inspection is settled. A draft can always be saved either way, and credit notes are always allowed."
 msgstr "عند الإيقاف ينبه Insite ويسمي الأعمال المرفوضة لكنه يمرر الفاتورة. وعند التفعيل يرفض اعتماد الفاتورة حتى تُسوَّى كل عملية فحص جودة. وفي الحالتين يمكن دائمًا حفظ المسودة، وإشعارات الخصم مسموحة دائمًا."
@@ -423,6 +441,9 @@ msgstr "بنود نطاق العمل"
 msgid "Scope Planned"
 msgstr "تم تحديد مخطط النطاق"
 
+msgid "Scope Profitability"
+msgstr "ربحية النطاق"
+
 msgid "Scope Required"
 msgstr "النطاق مطلوب"
 
@@ -431,6 +452,9 @@ msgstr "نطاق العمل"
 
 msgid "Scope"
 msgstr "النطاق"
+
+msgid "Set up"
+msgstr "الإعداد"
 
 msgid "Settle them, or invoice only the work that was accepted."
 msgstr "سوِّها، أو افوتر الأعمال المقبولة فقط."
@@ -605,5 +629,6 @@ msgstr "… و{0} غيرها"
 
 msgid "…and more."
 msgstr "…وغيرها."
+
 
 

@@ -181,6 +181,15 @@ short list of standard Frappe labels that Frappe's own Arabic already covers.
 The other says an Arabic message keeps the same `{0}` placeholders as its
 English, so it still formats with a row number in it.
 
+**What counts as "a string the app shows" is wider than the code.** The first
+version of that test scanned `_()` and `__()` calls and DocType JSON, and
+reported the Arabic finished while every report name and the whole workspace
+were still English. Frappe's own extractors say what else counts
+(`frappe/gettext/extractors/`): `report_name` from a Report, and from a
+Workspace its label, its shortcut and link labels, and its descriptions. The
+header and paragraph blocks are rendered as `__(text)` **with their markup**, so
+a workspace paragraph is translated as one string, `<b>` tags and all.
+
 Two things to know when adding a string:
 
 - **One literal per `_()` or `__()` call.** A concatenation reaches a
