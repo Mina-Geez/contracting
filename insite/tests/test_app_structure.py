@@ -180,6 +180,60 @@ def test_doctype_timestamps_have_been_bumped():
 		)
 
 
+def test_the_workspace_agrees_with_itself():
+	"""The two lists in a Workspace are edited by hand and drift apart.
+
+	`shortcuts` holds the definitions and `content` holds the layout that
+	references them by name. A shortcut missing from either side is a dead tile
+	or a tile that never appears, and neither shows up until someone opens the
+	app.
+	"""
+	with open("insite/insite/workspace/insite/insite.json", encoding="utf-8") as fh:
+		workspace = json.load(fh)
+
+	defined = [s["label"] for s in workspace["shortcuts"]]
+	laid_out = [
+		block["data"]["shortcut_name"]
+		for block in json.loads(workspace["content"])
+		if block["type"] == "shortcut"
+	]
+	assert defined == laid_out, (
+		f"workspace shortcuts and layout disagree: defined={defined}, laid out={laid_out}"
+	)
+
+
+def test_the_workspace_only_points_at_records_that_exist():
+	"""A shortcut to a deleted doctype is a dead link in the app's own sidebar.
+
+	Only Insite's own doctypes can be checked here — a shortcut to one of
+	ERPNext's (Quality Inspection) is fine and cannot be verified without a
+	site. What this catches is the case that actually happened: a doctype
+	deleted from the app while its shortcut stayed behind.
+	"""
+	with open("insite/insite/workspace/insite/insite.json", encoding="utf-8") as fh:
+		workspace = json.load(fh)
+
+	own = set()
+	for d in _doctype_dirs():
+		slug = os.path.basename(d)
+		with open(f"{d}/{slug}.json", encoding="utf-8") as fh:
+			own.add(json.load(fh)["name"])
+	reports = set()
+	for d in _dirs(REPORT_GLOB):
+		slug = os.path.basename(d)
+		with open(f"{d}/{slug}.json", encoding="utf-8") as fh:
+			reports.add(json.load(fh)["name"])
+
+	# Anything named like one of ours must actually be one of ours.
+	insite_names = {name for name in own | reports}
+	for shortcut in workspace["shortcuts"]:
+		target = shortcut["link_to"]
+		if shortcut["type"] == "Report":
+			assert target in reports, f"workspace points at a report that does not exist: {target}"
+		elif target.startswith(("Insite", "Measurement", "Work Item", "Scope")):
+			assert target in insite_names, f"workspace points at a deleted doctype: {target}"
+
+
 def test_every_report_has_py_and_init():
 	for d in _dirs(REPORT_GLOB):
 		slug = os.path.basename(d)
