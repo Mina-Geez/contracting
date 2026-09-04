@@ -60,6 +60,7 @@ then reads the change as **Variance to Plan**.
 
 - [docs/CONCEPTS.md](docs/CONCEPTS.md) — the ideas Insite adds.
 - [docs/SETUP.md](docs/SETUP.md) — install, first job, worked example.
+- [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) — for changing the app: the test gate, and how to get a bench that runs it.
 
 ## Install
 
@@ -100,3 +101,9 @@ Run the tests:
 ```bash
 python -m pytest insite/tests -v
 ```
+
+Those tests need no site, and they prove the pure calculation code and the app's
+structure — not Frappe's behaviour. Anything touching a Frappe or ERPNext API
+has to be run on a real bench before it is trusted.
+[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) says how to get one, including the two
+version floors v16 imposes that most distributions do not meet.
