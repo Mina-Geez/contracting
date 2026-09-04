@@ -48,14 +48,9 @@ del _doctype
 # Billing is where rejected work costs money, so that is where Insite speaks up.
 doc_events["Sales Invoice"]["validate"].append("insite.overrides.transaction.warn_open_rejections")
 
-# A scope's plan comes from whatever first committed the work: the quotation
-# where one was sent, the order where the customer phoned it in.
-for _doctype in ("Quotation", "Sales Order"):
-	doc_events.setdefault(_doctype, {})["on_submit"] = [
-		"insite.overrides.transaction.set_the_plan_from_the_first_commitment"
-	]
-
-del _doctype
+# A scope's plan comes from the first Sales Order on it. Not the quotation: a
+# quotation means nothing until it has been ordered.
+doc_events["Sales Order"]["on_submit"] = ["insite.overrides.transaction.set_the_plan_from_the_first_order"]
 
 # Rejected work is ERPNext's Quality Inspection. Insite gives it a Scope and
 # works out what the refused quantity was worth.

@@ -160,10 +160,10 @@ site, and the site does not fit Insite.
 3. Give each Scope Item a **Title** and the **Project**. Insite assigns the code
    for you.
 
-Leave the **Planned Amount** empty. Insite fills it in from whatever first
-commits the work — the quotation where one was sent, the sales order where the
-customer ordered by phone. After that it holds still, and later orders on the
-scope read as **Variance to Plan**. Edit it when a change is formally agreed.
+Leave the **Planned Amount** empty. Insite fills it in from the first **Sales
+Order** on the scope, because the order is the commitment. A quotation does not
+set it. After that it holds still, and later orders on the scope read as
+**Variance to Plan**. Edit it when a change is formally agreed.
 
 ## 6. Quote, order, deliver, invoice
 

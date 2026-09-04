@@ -9,7 +9,9 @@ Three responsibilities, all server-authoritative:
 2. `enforce_project_scope` — keep contracting work traceable. It applies ONLY
    to lines the measurement engine matched, so ordinary sales on the same site
    are unaffected, and it can be switched off in Insite Settings.
-3. `warn_open_rejections` — say so when a Sales Invoice bills a scope that
+3. `set_the_plan_from_the_first_order` — a scope's planned value is the
+   first order on it.
+4. `warn_open_rejections` — say so when a Sales Invoice bills a scope that
    still has rejected work on it. Rejected work is ERPNext's own Quality
    Inspection; Insite adds a Scope to it and reads it back here.
 
@@ -131,16 +133,16 @@ def warn_open_rejections(doc, method=None):
 	frappe.msgprint(message, title=title, indicator="orange")
 
 
-def set_the_plan_from_the_first_commitment(doc, method=None):
-	"""on_submit: fill a scope's Planned Amount from the document that set it.
+def set_the_plan_from_the_first_order(doc, method=None):
+	"""on_submit: fill a scope's Planned Amount from the first Sales Order on it.
 
 	Nobody knows a scope's value when they create it, and typing a number
-	twice is how two numbers come to disagree. The plan is whatever first
-	committed the work: a Quotation where one was sent, the Sales Order where
-	the customer ordered over the phone.
+	twice is how two numbers come to disagree. The order is the commitment —
+	a quotation means nothing until it has been ordered, and plenty of work is
+	ordered over the phone with no quotation at all.
 
 	Only fills a blank. Once a scope has a planned amount it is the agreed
-	baseline, and later documents are variations measured against it — that is
+	baseline, and later orders are variations measured against it — that is
 	what Variance to Plan reads. A contractor who re-agrees the contract value
 	edits the scope, and Frappe keeps the history.
 	"""
@@ -163,10 +165,9 @@ def set_the_plan_from_the_first_commitment(doc, method=None):
 		record.planned_amount = totals[scope.name]
 		record.save(ignore_permissions=True)
 		frappe.msgprint(
-			_("{0} is now planned at {1}, from this {2}. Edit the scope to change it.").format(
+			_("{0} is now planned at {1}, from this order. Edit the scope to change it.").format(
 				record.scope_title or record.name,
 				frappe.utils.fmt_money(totals[scope.name], currency=doc.get("currency")),
-				_(doc.doctype),
 			),
 			title=_("Scope Planned"),
 			indicator="blue",

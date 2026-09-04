@@ -299,13 +299,13 @@ class TestRejectedWork(IntegrationTestCase):
 
 
 class TestThePlanFillsItself(IntegrationTestCase):
-	"""A scope's Planned Amount comes from whatever first committed the work.
+	"""A scope's Planned Amount comes from the first Sales Order on it.
 
 	Nobody knows the value when they create the scope, and typing a number in
-	two places is how two numbers come to disagree. Sometimes a quotation goes
-	out first. Sometimes the customer orders over the phone and the Sales Order
-	is the plan. Either way the first one to be submitted sets it, and later
-	documents are variations measured against it.
+	two places is how two numbers come to disagree. The order is the
+	commitment: a quotation means nothing until it has been ordered, and plenty
+	of work is ordered over the phone with no quotation at all. Later orders on
+	the scope are variations measured against the first.
 	"""
 
 	@classmethod
@@ -376,9 +376,14 @@ class TestThePlanFillsItself(IntegrationTestCase):
 		self._order(scope, rate=5000)
 		self.assertAlmostEqual(frappe.db.get_value("Scope Item", scope, "planned_amount"), 5000)
 
-	def test_a_quotation_sets_it_when_one_was_sent(self):
+	def test_a_quotation_alone_plans_nothing(self):
+		"""A quotation means nothing until it has been ordered."""
 		scope = self._scope()
 		self._order(scope, rate=7500, doctype="Quotation")
+		self.assertFalse(frappe.db.get_value("Scope Item", scope, "planned_amount"))
+
+		# and the order that follows it is what sets the plan
+		self._order(scope, rate=7500)
 		self.assertAlmostEqual(frappe.db.get_value("Scope Item", scope, "planned_amount"), 7500)
 
 	def test_a_later_order_is_a_variation_not_a_new_plan(self):

@@ -115,7 +115,7 @@
       "fieldtype": "Currency",
       "label": "Planned Amount",
       "options": "currency",
-      "description": "Filled in from whatever first commits the work — the quotation, or the sales order when the customer ordered by phone. Edit it when a variation is formally agreed. Insite keeps the change history.",
+      "description": "Filled in from the first Sales Order on this scope. A quotation does not set it. Edit it when a variation is formally agreed. Insite keeps the change history.",
       "in_list_view": 1
     },
     {
