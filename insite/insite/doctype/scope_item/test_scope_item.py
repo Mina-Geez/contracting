@@ -376,6 +376,28 @@ class TestThePlanFillsItself(IntegrationTestCase):
 		self._order(scope, rate=5000)
 		self.assertAlmostEqual(frappe.db.get_value("Scope Item", scope, "planned_amount"), 5000)
 
+	def test_a_quotation_needs_neither_a_project_nor_a_scope(self):
+		"""At quote time the job may not exist yet.
+
+		Nothing is enforced until the Sales Order, and the line still measures.
+		Both fields are there to be used when the job is already running — a
+		Quotation has no Project of its own in ERPNext, so Insite adds one.
+		"""
+		quote = frappe.get_doc(
+			{
+				"doctype": "Quotation",
+				"quotation_to": "Customer",
+				"party_name": self.customer,
+				"company": self.company,
+				"items": [{"item_code": self.item, "qty": 3, "rate": 100}],
+			}
+		).insert()
+
+		self.assertFalse(quote.get("project"))
+		self.assertFalse(quote.items[0].get("scope_item"))
+		self.assertEqual(quote.items[0].qty, 3)
+		self.assertFalse(frappe.get_meta("Quotation").get_field("project").reqd)
+
 	def test_a_quotation_alone_plans_nothing(self):
 		"""A quotation means nothing until it has been ordered."""
 		scope = self._scope()

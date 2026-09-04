@@ -170,6 +170,31 @@ def _quality_inspection_fields():
 	]
 
 
+def _quotation_project_field():
+	"""An optional Project on the quotation header, which ERPNext does not give it.
+
+	A Sales Order has one and a Quotation does not, so a contractor quoting more
+	work on a job they are already running had nowhere to say which job. It also
+	left the Scope picker with nothing to narrow by, offering every scope on the
+	site.
+
+	Optional on purpose, and the Scope on the line is optional too: at quote
+	time the job may not exist yet. Nothing is enforced until the Sales Order.
+	The fieldname matches the Sales Order's, so `get_mapped_doc` carries it
+	across when the quote is ordered.
+	"""
+	return [
+		{
+			"fieldname": "project",
+			"label": "Project",
+			"fieldtype": "Link",
+			"options": "Project",
+			"insert_after": "order_type",
+			"description": "Optional. Set it to narrow the Scope list on the lines, and it carries to the Sales Order.",
+		}
+	]
+
+
 def _quotation_scope_field():
 	"""The Scope on a Quotation line, which ERPNext will never add.
 
@@ -198,6 +223,7 @@ def _quotation_scope_field():
 def get_custom_fields():
 	fields = {doctype: _fields() for doctype in ITEM_DOCTYPES}
 	fields["Quotation Item"] = fields["Quotation Item"] + _quotation_scope_field()
+	fields["Quotation"] = _quotation_project_field()
 	fields["Quality Inspection"] = _quality_inspection_fields()
 	return fields
 

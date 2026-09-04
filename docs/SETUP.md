@@ -187,6 +187,12 @@ Insite calculates on the Quotation, the Sales Order, the Delivery Note and the
 Sales Invoice. Purchase documents carry the **Scope** for cost. Insite does not
 calculate their quantities.
 
+A **Quotation** asks for neither a Project nor a Scope. At quote time the job
+may not exist yet. Both are there if you want them — Insite adds a Project to
+the quotation header, which ERPNext does not have — and setting the Project
+narrows the Scope list on the lines. Whatever you set carries to the Sales
+Order.
+
 Insite asks a Sales Order, a Delivery Note and a Sales Invoice for a Project on
 the header. It also asks for a Scope on each line that a Measurement Rule
 matched. Insite does not check a line that no rule matched, so ordinary sales
