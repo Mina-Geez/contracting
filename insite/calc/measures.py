@@ -97,11 +97,15 @@ _ALLOWED_FUNCS = {
 	"floor": math.floor,
 }
 #: (minimum args, maximum args) — None means "no maximum".
+#:
+#: `min` and `max` need two: over a single number Python wants something to
+#: iterate and raises TypeError, and a formula accepted at save time that
+#: cannot run is the one thing this module promises never to allow.
 _FUNC_ARITY = {
 	"abs": (1, 1),
 	"round": (1, 2),
-	"min": (1, None),
-	"max": (1, None),
+	"min": (2, None),
+	"max": (2, None),
 	"pow": (2, 2),
 	"sqrt": (1, 1),
 	"ceil": (1, 1),
@@ -232,8 +236,20 @@ def _walk(node, names, evaluate):
 		_check_arity(name, len(node.args))
 		if name == "pow":
 			_check_static_power(node.args[0], node.args[1])
+		if name == "round" and len(node.args) == 2:
+			_check_decimal_places(node.args[1])
 		args = [_walk(a, names, evaluate) for a in node.args]
-		return _ALLOWED_FUNCS[name](*args) if evaluate else None
+		if not evaluate:
+			return None
+		if name == "round":
+			# Python wants a whole number of places, and every measurement
+			# arrives here as a float. `_check_decimal_places` has already made
+			# sure this one is a plain number.
+			args = [args[0], int(args[1])] if len(args) == 2 else args
+		try:
+			return _ALLOWED_FUNCS[name](*args)
+		except ValueError as e:
+			raise ValueError(f"{name}() cannot be worked out with these measurements ({e}).") from e
 
 	raise ValueError(
 		"Insite cannot read part of this formula. Use numbers, the rule's inputs, "
@@ -245,7 +261,25 @@ def _check_arity(name, given):
 	low, high = _FUNC_ARITY[name]
 	if given < low or (high is not None and given > high):
 		expected = f"{low}" if high == low else (f"{low} or more" if high is None else f"{low} to {high}")
-		raise ValueError(f"{name}() needs {expected} value(s), but {given} were given.")
+		values = "value" if expected == "1" else "values"
+		was = "was" if given == 1 else "were"
+		raise ValueError(f"{name}() needs {expected} {values}, but {given} {was} given.")
+
+
+def _check_decimal_places(node):
+	"""`round(x, n)` needs a plain whole n, known without the measurements.
+
+	Every measurement reaches the arithmetic as a float, so `round(height,
+	width)` parses, passes the arity check, saves — and then raises TypeError on
+	the first document that uses it.
+	"""
+	places = _static_value(node)
+	if places is None:
+		raise ValueError(
+			"round() needs a plain number of decimal places, for example round(height * width, 2)."
+		)
+	if places != int(places):
+		raise ValueError("round() needs a whole number of decimal places, for example 2.")
 
 
 def _check_static_power(base_node, exponent_node):

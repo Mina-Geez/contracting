@@ -211,6 +211,33 @@ def test_print_formats_are_wired_up():
 		)
 
 
+def test_the_print_templates_escape_what_they_print():
+	"""Frappe renders print formats with Jinja autoescaping OFF.
+
+	A format legitimately prints HTML fields — Terms is a Text Editor — so the
+	whole template is unescaped by default, and every other interpolation has
+	to escape itself. It did not: an item name of `<script>alert(1)</script>`
+	reached the printed page and ran, as did a scope title of `<img src=x
+	onerror=...>`. Both are plain text that lose nothing by being escaped.
+
+	So: every `{{ ... }}` in these templates ends in `| e`, except the ones
+	listed here, which are HTML on purpose.
+	"""
+	allowed_raw = {"doc.terms"}
+
+	for template in ("measured_items.html", "measured_rows.html"):
+		path = f"insite/templates/includes/{template}"
+		body = open(path, encoding="utf-8").read()
+		for expression in re.findall(r"\{\{(.*?)\}\}", body, re.DOTALL):
+			printed = expression.strip()
+			if printed in allowed_raw:
+				continue
+			assert printed.endswith("| e"), (
+				f"{path} prints {printed!r} unescaped. Autoescaping is off in print "
+				"formats, so add `| e` — or add it to allowed_raw if it is meant to be HTML."
+			)
+
+
 def test_the_workspace_agrees_with_itself():
 	"""The two lists in a Workspace are edited by hand and drift apart.
 

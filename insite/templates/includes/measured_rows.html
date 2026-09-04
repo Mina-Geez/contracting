@@ -5,48 +5,55 @@
 	measured quantity, and the client checks the measurement, not the total.
 	Only the boxes that were filled in are printed, so an ordinary line stays
 	clean.
+
+	**Everything here is escaped with `| e`.** Frappe renders print formats with
+	Jinja autoescaping OFF, because a format legitimately prints HTML fields
+	like Terms and Description. That makes every other interpolation a hole: an
+	item name of `<script>…</script>` reached the printed page and ran, and an
+	item name is plain text that loses nothing by being escaped.
 #}
 <table class="insite-items">
 	<thead>
 		<tr>
-			<th style="width: 45%">{{ _("Description") }}</th>
-			<th class="num" style="width: 17%">{{ _("Quantity") }}</th>
-			<th class="num" style="width: 17%">{{ _("Rate") }}</th>
-			<th class="num" style="width: 21%">{{ _("Amount") }}</th>
+			<th style="width: 45%">{{ _("Description") | e }}</th>
+			<th class="num" style="width: 17%">{{ _("Quantity") | e }}</th>
+			<th class="num" style="width: 17%">{{ _("Rate") | e }}</th>
+			<th class="num" style="width: 21%">{{ _("Amount") | e }}</th>
 		</tr>
 	</thead>
 	<tbody>
 		{% for row in rows %}
 		<tr>
 			<td>
-				<div>{{ row.item_name or row.item_code }}</div>
+				<div>{{ (row.item_name or row.item_code) | e }}</div>
 				{%- set measured = [] -%}
 				{%- for value, label in [
 					(row.get("custom_height"), _("H")),
 					(row.get("custom_width"), _("W")),
 					(row.get("custom_length"), _("L")),
 				] -%}
-					{%- if value -%}{%- set _ = measured.append(label ~ " " ~ "%.3f"|format(value)) -%}{%- endif -%}
+					{%- if value -%}{%- set _x = measured.append(label ~ " " ~ "%.3f"|format(value)) -%}{%- endif -%}
 				{%- endfor -%}
 				{%- if row.get("custom_base_qty") -%}
-					{%- set _ = measured.append("%g"|format(row.custom_base_qty) ~ " " ~ _("off")) -%}
+					{%- set _x = measured.append("%g"|format(row.custom_base_qty) ~ " " ~ _("off")) -%}
 				{%- endif -%}
 				{%- if row.get("custom_waste_factor") -%}
-					{%- set _ = measured.append(_("waste") ~ " × " ~ "%g"|format(row.custom_waste_factor)) -%}
+					{%- set _x = measured.append(_("waste") ~ " × " ~ "%g"|format(row.custom_waste_factor)) -%}
 				{%- endif -%}
 				{% if measured %}
-					<div class="insite-measure">{{ measured | join(" &nbsp;×&nbsp; ") | safe }}</div>
+					{#- joined with a real × and spaced in CSS, so nothing needs `| safe` -#}
+					<div class="insite-measure">{{ measured | join("  ×  ") | e }}</div>
 				{% endif %}
 			</td>
-			<td class="num">{{ row.get_formatted("qty") }} {{ row.uom or "" }}</td>
-			<td class="num">{{ row.get_formatted("rate") }}</td>
-			<td class="num">{{ row.get_formatted("amount") }}</td>
+			<td class="num">{{ row.get_formatted("qty") | e }} {{ (row.uom or "") | e }}</td>
+			<td class="num">{{ row.get_formatted("rate") | e }}</td>
+			<td class="num">{{ row.get_formatted("amount") | e }}</td>
 		</tr>
 		{% endfor %}
 		<tr class="insite-subtotal">
-			<td colspan="3">{{ _("Subtotal") }}</td>
+			<td colspan="3">{{ _("Subtotal") | e }}</td>
 			<td class="num">
-				{{ frappe.utils.fmt_money(rows | sum(attribute="amount"), currency=doc.currency) }}
+				{{ frappe.utils.fmt_money(rows | sum(attribute="amount"), currency=doc.currency) | e }}
 			</td>
 		</tr>
 	</tbody>

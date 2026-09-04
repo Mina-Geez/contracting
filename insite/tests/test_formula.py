@@ -135,6 +135,74 @@ def test_non_finite_result_is_rejected():
 		evaluate_formula("1e308 * 10", T)
 
 
+# --- a formula that saves must be a formula that runs ------------------------
+#
+# The module promises validation and evaluation share one walker, so anything
+# accepted at save time can be worked out on a real document. These are the
+# ways that promise was broken: each of them saved cleanly and then raised an
+# unhandled TypeError on every document the rule matched.
+
+
+def test_min_and_max_need_two_numbers():
+	"""Over a single float Python wants something to iterate, and raises."""
+	for bad in ("min(height)", "max(height)"):
+		with pytest.raises(ValueError):
+			validate_formula(bad, TOKENS)
+
+
+def test_round_needs_a_plain_whole_number_of_places():
+	# A measurement arrives as a float, and float places is a TypeError.
+	with pytest.raises(ValueError):
+		validate_formula("round(height, width)", TOKENS)
+	with pytest.raises(ValueError):
+		validate_formula("round(height, 2.5)", TOKENS)
+
+
+def test_round_still_takes_a_literal_number_of_places():
+	assert evaluate_formula("round(height, 2)", {"height": 1.23456}) == 1.23
+	assert evaluate_formula("round(height)", {"height": 1.6}) == 2
+
+
+def test_nothing_the_validator_accepts_raises_an_unhandled_error():
+	"""The guarantee, stated as a test.
+
+	ValueError and ArithmeticError are the two the engine turns into a message
+	naming the row. Anything else reaches the user as a traceback.
+	"""
+	saveable = [
+		"height * width * count",
+		"min(height, width)",
+		"max(height, width, 3)",
+		"round(height * width, 2)",
+		"sqrt(height)",
+		"height / width",
+		"height % width",
+		"height ** width",
+		"abs(height - width)",
+		"ceil(height) + floor(width)",
+		"pow(height, 2)",
+		"height * pi",
+	]
+	hostile = [
+		{"height": 0, "width": 0, "count": 0},
+		{"height": -1, "width": 0, "count": -1},
+		{"height": 1e300, "width": 1e300, "count": 1e300},
+		{"height": 1.5, "width": 2.8, "count": 40},
+	]
+	for formula in saveable:
+		validate_formula(formula, TOKENS)
+		for values in hostile:
+			try:
+				evaluate_formula(formula, values)
+			except (ValueError, ArithmeticError):
+				pass  # handled: the engine reports these against the row
+			except Exception as e:
+				raise AssertionError(
+					f"{formula!r} on {values!r} raised {type(e).__name__}, "
+					"which nothing catches and the user sees as a traceback"
+				) from e
+
+
 # --- formula_tokens: what a rule must supply --------------------------------
 
 
