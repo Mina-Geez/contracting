@@ -23,6 +23,11 @@ def _fields():
 			"fieldtype": "Section Break",
 			"insert_after": "uom",
 			"collapsible": 1,
+			# Folded away on an ordinary line, open on a measured one. On a line
+			# whose quantity comes from these boxes they are the only thing to
+			# fill in, and hiding them behind a click — under a Quantity the
+			# server is about to overwrite — had it exactly backwards.
+			"collapsible_depends_on": "eval:doc.custom_measurement_inputs",
 		},
 		{
 			"fieldname": "custom_base_qty",
