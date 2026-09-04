@@ -157,8 +157,13 @@ site, and the site does not fit Insite.
 
 1. Create a **Project** for the job.
 2. Create a **Scope Item** for each scope of work.
-3. Give each Scope Item a **Title**, the **Project** and the **Planned Amount**.
-   Insite assigns the code for you.
+3. Give each Scope Item a **Title** and the **Project**. Insite assigns the code
+   for you.
+
+Leave the **Planned Amount** empty. Insite fills it in from whatever first
+commits the work — the quotation where one was sent, the sales order where the
+customer ordered by phone. After that it holds still, and later orders on the
+scope read as **Variance to Plan**. Edit it when a change is formally agreed.
 
 ## 6. Quote, order, deliver, invoice
 

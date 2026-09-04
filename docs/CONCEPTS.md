@@ -165,9 +165,17 @@ A Scope Item belongs to a **Project**, and holds a **Planned Amount**. The
 Planned Amount is the agreed baseline value of the scope. **Planned Qty** and
 **UOM** are for your own reference. Insite does not calculate with them.
 
-The Contracting Manager types the Planned Amount and can edit it later. When the
-client signs a change, set the Planned Amount to the new contract value. Frappe
-keeps the change history on the document.
+**You do not type the Planned Amount.** Nobody knows a scope's value when they
+create it, and a number typed in two places is how two numbers come to
+disagree. Insite fills it from whatever first commits the work. Where a
+quotation went out, the quotation sets it. Where the customer ordered over the
+phone, the Sales Order sets it.
+
+Only a blank is filled. Once a scope has a planned amount that is the agreed
+baseline, and every later document on that scope is a variation measured
+against it — which is what **Variance to Plan** reads. When the client signs a
+change, edit the Planned Amount to the new contract value. Frappe keeps the
+change history on the document.
 
 A Scope Item is also an **Accounting Dimension**. Every sales and purchase line
 can carry a Scope, so the cost and the revenue stay attached to the work.

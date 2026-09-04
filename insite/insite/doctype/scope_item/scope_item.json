@@ -11,7 +11,7 @@
   "allow_rename": 0,
   "track_changes": 1,
   "creation": "2026-09-03 00:00:00.000000",
-  "modified": "2026-09-03 22:40:00.000000",
+  "modified": "2026-09-04 17:00:00.000000",
   "owner": "Administrator",
   "modified_by": "Administrator",
   "sort_field": "modified",
@@ -115,7 +115,7 @@
       "fieldtype": "Currency",
       "label": "Planned Amount",
       "options": "currency",
-      "description": "The agreed value of this scope. Update it when a variation is formally agreed; Insite keeps the change history.",
+      "description": "Filled in from whatever first commits the work — the quotation, or the sales order when the customer ordered by phone. Edit it when a variation is formally agreed. Insite keeps the change history.",
       "in_list_view": 1
     },
     {

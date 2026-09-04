@@ -298,6 +298,112 @@ class TestRejectedWork(IntegrationTestCase):
 			frappe.db.set_single_value("Insite Settings", "block_invoicing_with_open_rejections", 0)
 
 
+class TestThePlanFillsItself(IntegrationTestCase):
+	"""A scope's Planned Amount comes from whatever first committed the work.
+
+	Nobody knows the value when they create the scope, and typing a number in
+	two places is how two numbers come to disagree. Sometimes a quotation goes
+	out first. Sometimes the customer orders over the phone and the Sales Order
+	is the plan. Either way the first one to be submitted sets it, and later
+	documents are variations measured against it.
+	"""
+
+	@classmethod
+	def setUpClass(cls):
+		super().setUpClass()
+		cls.company = _a_company()
+		cls.customer = _ensure(
+			"Customer",
+			{"customer_name": "Insite Plan Customer"},
+			{"customer_name": "Insite Plan Customer", "customer_type": "Company"},
+		)
+		cls.item = _ensure(
+			"Item",
+			{"item_code": "INSITE-PLAN-ITEM"},
+			{
+				"item_code": "INSITE-PLAN-ITEM",
+				"item_name": "Insite Plan Item",
+				"item_group": frappe.get_all("Item Group", filters={"is_group": 0}, pluck="name")[0],
+				"stock_uom": "Nos",
+				"is_stock_item": 0,
+			},
+		)
+		cls.project = _ensure(
+			"Project",
+			{"project_name": "Insite Plan Project"},
+			{"project_name": "Insite Plan Project", "company": cls.company, "status": "Open"},
+		)
+		frappe.db.commit()
+
+	def _scope(self):
+		"""A scope with no planned amount, the way one is really created."""
+		return (
+			frappe.get_doc(
+				{
+					"doctype": "Scope Item",
+					"scope_title": f"Plan {frappe.generate_hash(length=8)}",
+					"project": self.project,
+					"status": "Active",
+				}
+			)
+			.insert()
+			.name
+		)
+
+	def _order(self, scope, rate, qty=1, doctype="Sales Order"):
+		doc = frappe.get_doc(
+			{
+				"doctype": doctype,
+				"customer": self.customer,
+				"company": self.company,
+				"project": self.project,
+				"items": [{"item_code": self.item, "qty": qty, "rate": rate, "scope_item": scope}],
+			}
+		)
+		if doctype == "Quotation":
+			doc.quotation_to = "Customer"
+			doc.party_name = self.customer
+		else:
+			doc.delivery_date = frappe.utils.add_days(frappe.utils.today(), 30)
+		doc.insert()
+		doc.submit()
+		return doc
+
+	def test_an_order_taken_by_phone_sets_the_plan(self):
+		scope = self._scope()
+		self.assertFalse(frappe.db.get_value("Scope Item", scope, "planned_amount"))
+
+		self._order(scope, rate=5000)
+		self.assertAlmostEqual(frappe.db.get_value("Scope Item", scope, "planned_amount"), 5000)
+
+	def test_a_quotation_sets_it_when_one_was_sent(self):
+		scope = self._scope()
+		self._order(scope, rate=7500, doctype="Quotation")
+		self.assertAlmostEqual(frappe.db.get_value("Scope Item", scope, "planned_amount"), 7500)
+
+	def test_a_later_order_is_a_variation_not_a_new_plan(self):
+		"""The whole point: the baseline must hold still so variance can mean something."""
+		scope = self._scope()
+		self._order(scope, rate=5000)
+		self._order(scope, rate=1200)  # the variation
+
+		self.assertAlmostEqual(frappe.db.get_value("Scope Item", scope, "planned_amount"), 5000)
+
+		from insite.insite.report.contract_progress.contract_progress import execute
+
+		_, rows = execute({"company": self.company, "project": self.project})
+		row = next(r for r in rows if r["scope"] == scope)
+		self.assertAlmostEqual(row["planned"], 5000)
+		self.assertAlmostEqual(row["ordered"], 6200)
+		self.assertAlmostEqual(row["variance_to_plan"], 1200)
+
+	def test_a_plan_somebody_agreed_is_never_overwritten(self):
+		scope = self._scope()
+		frappe.db.set_value("Scope Item", scope, "planned_amount", 999)
+		self._order(scope, rate=5000)
+		self.assertAlmostEqual(frappe.db.get_value("Scope Item", scope, "planned_amount"), 999)
+
+
 class TestContractorJourney(IntegrationTestCase):
 	"""Quotation to invoice, the way the app is meant to be used.
 
