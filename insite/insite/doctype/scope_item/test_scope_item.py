@@ -298,6 +298,59 @@ class TestRejectedWork(IntegrationTestCase):
 			frappe.db.set_single_value("Insite Settings", "block_invoicing_with_open_rejections", 0)
 
 
+class TestAddingScopesInOneGo(IntegrationTestCase):
+	"""A job has six or ten scopes and a form each is the dullest part of setup."""
+
+	@classmethod
+	def setUpClass(cls):
+		super().setUpClass()
+		cls.company = _a_company()
+		cls.project = _ensure(
+			"Project",
+			{"project_name": "Insite Bulk Project"},
+			{"project_name": "Insite Bulk Project", "company": cls.company, "status": "Open"},
+		)
+		frappe.db.commit()
+
+	def tearDown(self):
+		frappe.db.delete("Scope Item", {"project": self.project})
+		frappe.db.commit()
+
+	def test_a_list_of_titles_becomes_a_list_of_scopes(self):
+		from insite.api import add_scopes
+
+		result = add_scopes(self.project, "Curtain wall glazing\nACP cladding\nHandrails")
+
+		self.assertEqual(len(result["created"]), 3)
+		titles = frappe.get_all("Scope Item", filters={"project": self.project}, pluck="scope_title")
+		self.assertEqual(sorted(titles), ["ACP cladding", "Curtain wall glazing", "Handrails"])
+
+	def test_blank_lines_and_stray_spaces_are_ignored(self):
+		from insite.api import add_scopes
+
+		result = add_scopes(self.project, "  Glazing  \n\n\n   \nCladding\n")
+		self.assertEqual(len(result["created"]), 2)
+		titles = frappe.get_all("Scope Item", filters={"project": self.project}, pluck="scope_title")
+		self.assertEqual(sorted(titles), ["Cladding", "Glazing"])
+
+	def test_a_scope_already_on_the_project_is_left_alone(self):
+		"""Two scopes with one name would split the work across two report rows."""
+		from insite.api import add_scopes
+
+		add_scopes(self.project, "Glazing")
+		result = add_scopes(self.project, "glazing\nCladding")
+
+		self.assertEqual(result["already_there"], ["glazing"])
+		self.assertEqual(len(result["created"]), 1)
+		self.assertEqual(frappe.db.count("Scope Item", {"project": self.project}), 2)
+
+	def test_an_empty_list_is_refused(self):
+		from insite.api import add_scopes
+
+		with self.assertRaises(frappe.ValidationError):
+			add_scopes(self.project, "   \n\n  ")
+
+
 class TestThePlanFillsItself(IntegrationTestCase):
 	"""A scope's Planned Amount comes from the first Sales Order on it.
 

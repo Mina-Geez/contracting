@@ -156,9 +156,12 @@ site, and the site does not fit Insite.
 ## 5. Create the job
 
 1. Create a **Project** for the job.
-2. Create a **Scope Item** for each scope of work.
-3. Give each Scope Item a **Title** and the **Project**. Insite assigns the code
-   for you.
+2. Open it, and choose **Insite > Add Scopes**.
+3. Type the scopes, one per line. Insite creates one Scope Item for each and
+   assigns the codes. A title already on the project is left alone rather than
+   duplicated, and it tells you which.
+
+Create them one at a time from the **Scope Item** list if you prefer.
 
 Leave the **Planned Amount** empty. Insite fills it in from the first **Sales
 Order** on the scope, because the order is the commitment. A quotation does not

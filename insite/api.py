@@ -34,6 +34,55 @@ def preview_formula(formula: str, values: str | dict | None = None):
 		)
 
 
+@frappe.whitelist(methods=["POST"])
+def add_scopes(project: str, titles: str):
+	"""Create several Scope Items on a project from a list of titles.
+
+	A job has six or ten scopes and opening a form for each is the dullest part
+	of setting Insite up. Titles arrive one per line.
+
+	A title already on the project is skipped rather than duplicated: two scopes
+	with the same name would split the same work across two rows of Contract
+	Progress and nobody would know which was which. Nothing else is set — the
+	planned amount fills itself from the first sales order on each scope.
+	"""
+	frappe.only_for(["Contracting Manager", "System Manager"])
+	if not frappe.has_permission("Scope Item", "create"):
+		frappe.throw(_("You are not allowed to create a Scope Item."), frappe.PermissionError)
+	project_doc = frappe.get_doc("Project", project)  # also checks read permission
+
+	wanted, seen = [], set()
+	for line in (titles or "").splitlines():
+		title = line.strip()
+		if title and title.casefold() not in seen:
+			seen.add(title.casefold())
+			wanted.append(title)
+	if not wanted:
+		frappe.throw(_("Type at least one scope, one per line."), title=_("Nothing to Add"))
+
+	existing = {
+		title.casefold()
+		for title in frappe.get_all("Scope Item", filters={"project": project}, pluck="scope_title")
+	}
+
+	created, already_there = [], []
+	for title in wanted:
+		if title.casefold() in existing:
+			already_there.append(title)
+			continue
+		scope = frappe.get_doc(
+			{
+				"doctype": "Scope Item",
+				"scope_title": title,
+				"project": project_doc.name,
+				"status": "Active",
+			}
+		).insert()
+		created.append(scope.name)
+
+	return {"created": created, "already_there": already_there}
+
+
 @frappe.whitelist()
 def line_preview(item_code: str | None = None, values: str | dict | None = None):
 	"""What a line needs, and what it comes to.
