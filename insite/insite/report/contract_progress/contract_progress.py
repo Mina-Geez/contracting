@@ -26,7 +26,7 @@ from frappe.query_builder.functions import Sum
 from frappe.utils import flt
 
 from insite.constants import QI_REJECTED, QUALITY_INSPECTION
-from insite.scope_totals import narrow_to_customer, sum_lines_by_scope
+from insite.scope_totals import SETTLED_ORDER_STATES, narrow_to_customer, sum_lines_by_scope
 
 
 def execute(filters=None):
@@ -66,7 +66,12 @@ def get_data(filters):
 		return []
 
 	names = [scope.name for scope in scopes]
-	ordered = sum_lines_by_scope("Sales Order Item", "Sales Order", names, filters.get("company"))
+	# A Sales Order closed because the work was abandoned is not ordered work.
+	# The purchase side already skipped Closed; this side did not, so the two
+	# halves of one file disagreed about what the word meant.
+	ordered = sum_lines_by_scope(
+		"Sales Order Item", "Sales Order", names, filters.get("company"), skip_states=SETTLED_ORDER_STATES
+	)
 	delivered = sum_lines_by_scope("Delivery Note Item", "Delivery Note", names, filters.get("company"))
 	invoiced = sum_lines_by_scope("Sales Invoice Item", "Sales Invoice", names, filters.get("company"))
 	rejected = _open_rejections(names, filters.get("company"))

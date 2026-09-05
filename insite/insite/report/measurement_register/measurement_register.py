@@ -12,6 +12,11 @@ from the moment it was raised. The record existed and nobody could read it.
 
 Documents are read with `get_list` so a reader only sees what their permissions
 allow, and the lines are then fetched for those documents alone.
+
+Money is company currency (`base_rate`, `base_amount`), like the other two
+reports. It used to read the transaction currency into columns the desk renders
+with the company's symbol, so a line of 1,000 ZWL printed as 1,000 EGP beside
+Contract Progress showing 50,000 for the same line.
 """
 
 from __future__ import annotations
@@ -118,8 +123,8 @@ def _lines(doctype, child_doctype, date_field, filters):
 			"item_code",
 			"description",
 			"qty",
-			"rate",
-			"amount",
+			"base_rate",
+			"base_amount",
 			SCOPE_FIELD,
 			*[field for field, _label in MEASUREMENTS],
 		],
@@ -135,8 +140,8 @@ def _lines(doctype, child_doctype, date_field, filters):
 			"item_code": line.item_code,
 			"measured": _in_words(line),
 			"qty": flt(line.qty),
-			"rate": flt(line.rate),
-			"amount": flt(line.amount),
+			"rate": flt(line.base_rate),
+			"amount": flt(line.base_amount),
 			"description": _plain(line.description),
 		}
 		for line in lines

@@ -38,8 +38,22 @@ REJECTIONS_NAMED = 5
 
 
 def recalculate(doc, method=None):
-	"""before_validate: recompute measured line quantities (drafts only)."""
+	"""before_validate: recompute measured line quantities (drafts only).
+
+	**A return is never recalculated.** Its quantities are negative — that is
+	what makes it a return — and a measurement formula can only produce a
+	positive number. The engine used to overwrite the mapped -42 with +42, and
+	ERPNext then refused the document outright: "at least one item should be
+	entered with negative quantity". No credit note or return of measured work
+	could be recorded at all, and the only way through was to clear the
+	measurements, which threw away the record of what came back.
+
+	So the measurements ride along as a description of what was returned, and
+	the quantity stays what the return says it is.
+	"""
 	if doc.doctype not in MEASURED_DOCTYPES or doc.docstatus != 0:
+		return
+	if doc.get("is_return"):
 		return
 	try:
 		engine.recalculate_document(doc)
@@ -50,12 +64,69 @@ def recalculate(doc, method=None):
 		raise
 
 
+def drop_the_stamp_when_the_quantity_stops_matching(doc, method=None):
+	"""on_update_after_submit: never claim a measurement produced a quantity it did not.
+
+	ERPNext's "Update Items" rewrites `qty` on a submitted order. The engine
+	cannot follow it there — recalculating a submitted document would change
+	what was approved — so the line kept its old stamp and the Measurement
+	Register printed "40 off x H 2 x W 1.5 — Quantity 5", which is a lie about a
+	shipment.
+
+	The quantity is left exactly as ERPNext set it. What goes is Insite's claim
+	to have worked it out.
+	"""
+	changed = []
+	for row in doc.get("items") or []:
+		if not row.get("custom_calc_source"):
+			continue
+		calculated = flt(row.get("custom_calculated_qty"))
+		if not calculated or flt(row.get("qty"), 3) == flt(calculated, 3):
+			continue
+		for field in ("custom_calculated_qty", "custom_calc_measure", "custom_calc_source"):
+			row.db_set(field, None, update_modified=False)
+		changed.append(row.idx)
+
+	if changed:
+		frappe.msgprint(
+			_(
+				"The quantity on {0} no longer comes from the measurements, so Insite has stopped claiming it does. The measurements are still recorded."
+			).format(_rows_phrase([frappe._dict(idx=idx) for idx in changed])),
+			title=_("No Longer Measured"),
+			indicator="orange",
+		)
+
+
+def keep_scopes_on_their_own_project(doc, method=None):
+	"""validate: a line that names a Scope must name one from this document's project.
+
+	This is a consistency check, not a requirement to carry a scope, so it runs
+	on **every** tagged document — the purchase side included — and on every
+	line, measured or not.
+
+	Both of those used to be false, and the hole was wide. The old check looked
+	only at lines the engine had matched a rule to, so a scope from another job
+	sailed through on any ordinary line — prelims, plant hire, labour, freight,
+	which every contractor has. Purchase documents were never checked at all, so
+	one job's costs could be committed against another's scope. A cost landed on
+	a scope whose own project's Measurement Register could not show it, because
+	that report filters by the document's project and Contract Progress filters
+	by the scope's.
+	"""
+	rows = [row for row in (doc.get("items") or []) if row.get("scope_item")]
+	if rows:
+		_check_scopes_belong_to_document(doc, rows)
+
+
 def enforce_project_scope(doc, method=None):
-	"""validate: require a Project, and a Scope that belongs to it.
+	"""validate: require a Project, and a Scope, on measured lines.
 
 	A line counts as contracting when the engine matched a rule to it in
 	`before_validate` (which stamps `custom_calc_source`). Documents with no
-	such lines are left alone.
+	such lines are left alone — ordinary sales still work.
+
+	Consistency between a scope and its project is checked separately, on every
+	line and every document, by `keep_scopes_on_their_own_project`.
 	"""
 	if doc.doctype not in ENFORCED_DOCTYPES:
 		return
@@ -83,7 +154,38 @@ def enforce_project_scope(doc, method=None):
 			title=_("Scope Required"),
 		)
 
-	_check_scopes_belong_to_document(doc, rows)
+
+def forget_the_plan_when_the_order_goes(doc, method=None):
+	"""on_cancel: a cancelled order is not a plan.
+
+	The plan only ever fills a blank, and nothing used to react to a
+	cancellation — so a scope went on claiming a baseline from a document that
+	no longer existed, and Contract Progress read "Variance to Plan -50,000"
+	against nothing. Amending then made it worse: the corrected order read as a
+	variation against the figure it superseded.
+
+	Cleared only when no submitted order is left on the scope, so cancelling one
+	order of several does not throw away a baseline the others still support.
+	The amended document sets it again on submit, which is the right answer: an
+	amendment is a correction, not a variation.
+	"""
+	scopes = {row.scope_item for row in (doc.get("items") or []) if row.get("scope_item")}
+	for scope in sorted(scopes):
+		if _another_order_still_stands(scope, doc.name):
+			continue
+		if flt(frappe.db.get_value("Scope Item", scope, "planned_amount")):
+			frappe.db.set_value("Scope Item", scope, "planned_amount", 0, update_modified=False)
+
+
+def _another_order_still_stands(scope, except_order):
+	"""Is any other submitted Sales Order still carrying this scope?"""
+	rows = frappe.get_all(
+		"Sales Order Item",
+		filters={"scope_item": scope, "docstatus": 1, "parent": ["!=", except_order]},
+		pluck="parent",
+		limit=1,
+	)
+	return bool(rows)
 
 
 def warn_open_rejections(doc, method=None):
@@ -149,13 +251,15 @@ def set_the_plan_from_the_first_order(doc, method=None):
 	totals = {}
 	for row in doc.get("items") or []:
 		if row.get("scope_item"):
-			totals[row.scope_item] = totals.get(row.scope_item, 0) + flt(row.get("base_amount"))
+			totals[row.scope_item] = totals.get(row.scope_item, 0) + flt(row.get("base_net_amount"))
 	if not totals:
 		return
 
-	# The totals are base_amount, so the plan is in the company's currency, not
-	# the document's. An order raised in another currency was being announced at
-	# its company-currency value under the foreign symbol.
+	# The totals are base_net_amount, so the plan is in the company's currency
+	# and net of any discount — the price the customer actually agreed. Gross
+	# recorded a baseline nobody signed, and every Variance to Plan after it was
+	# measured against that. An order raised in another currency was also being
+	# announced at its company-currency value under the foreign symbol.
 	home_currency = frappe.get_cached_value("Company", doc.company, "default_currency")
 
 	# Sorted so two documents touching the same scopes lock them in the same

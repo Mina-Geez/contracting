@@ -16,7 +16,7 @@ import frappe
 from frappe import _
 from frappe.utils import flt
 
-from insite.constants import QI_REJECTED, QI_SELL_SIDE_REFERENCES
+from insite.constants import QI_REJECTED, QI_SELL_SIDE_REFERENCES, QUALITY_INSPECTION
 
 
 def price_the_rejection(doc, method=None):
@@ -37,15 +37,58 @@ def price_the_rejection(doc, method=None):
 
 	# Blank means the whole line was refused — the common case on site.
 	quantity = flt(doc.get("custom_rejected_qty")) or (flt(line.qty) if line else 0)
-	if line and quantity > flt(line.qty):
-		frappe.throw(
-			_("Only {0} of {1} was delivered on that line, so {2} cannot have been rejected.").format(
-				flt(line.qty), doc.item_code, quantity
-			),
-			title=_("More Rejected Than Delivered"),
-		)
+	if line:
+		_refuse_more_than_was_delivered(doc, line, quantity)
 
 	doc.custom_rejected_amount = quantity * flt(line.base_rate) if line else 0
+
+
+def _refuse_more_than_was_delivered(doc, line, quantity):
+	"""Cap the rejections on a line by what that line delivered — all of them, together.
+
+	Each inspection used to be capped only against its own line quantity, and
+	nothing looked at the others. Three inspections on the same delivery line,
+	each rejecting the whole ten, totalled thirty rejected out of ten delivered,
+	and Contract Progress added them all up. On a live job that column only ever
+	grows.
+	"""
+	delivered = flt(line.qty)
+	already = _rejected_elsewhere_on(line, except_inspection=doc.name)
+	if quantity + already <= delivered:
+		return
+
+	if already:
+		frappe.throw(
+			_(
+				"{0} of {1} was delivered on that line and {2} is already rejected, so {3} more cannot be."
+			).format(delivered, doc.item_code, already, quantity),
+			title=_("More Rejected Than Delivered"),
+		)
+	frappe.throw(
+		_("Only {0} of {1} was delivered on that line, so {2} cannot have been rejected.").format(
+			delivered, doc.item_code, quantity
+		),
+		title=_("More Rejected Than Delivered"),
+	)
+
+
+def _rejected_elsewhere_on(line, except_inspection=None):
+	"""How much of this delivery line other submitted inspections already refuse."""
+	filters = {
+		"child_row_reference": line.name,
+		"status": QI_REJECTED,
+		"docstatus": 1,
+	}
+	if except_inspection:
+		filters["name"] = ["!=", except_inspection]
+
+	total = 0.0
+	for row in frappe.get_all(
+		QUALITY_INSPECTION, filters=filters, fields=["custom_rejected_qty"], limit_page_length=0
+	):
+		# Blank meant the whole line, there as here.
+		total += flt(row.custom_rejected_qty) or flt(line.qty)
+	return total
 
 
 #: What the inspection needs from the line it came off.

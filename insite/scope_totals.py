@@ -4,10 +4,16 @@ Contract Progress and Scope Profitability both ask what has been ordered against
 a scope. If each worked it out its own way the two would eventually disagree,
 and a reader has no way to tell which one is lying. So the totals live here once.
 
-Everything comes back in company currency — `base_amount` on a line, the
-ledger's own debit and credit, a purchase line converted at its order's rate.
-A scope's figures are single numbers and the documents behind them may be raised
-in any currency.
+Everything comes back in company currency, **net**: `base_net_amount` on a line,
+and the ledger's own debit and credit. A scope's figures are single numbers and
+the documents behind them may be raised in any currency.
+
+Net, not gross, because the ledger is net and these figures are read beside it.
+`base_amount` is the line before any document-level discount and inclusive of a
+tax charged that way, so a scope invoiced for 100,000 less a 10,000 discount
+posted 90,000 to Sales and reported 100,000 as Invoiced. Worse in Scope
+Profitability, which compared a tax-inclusive contract value against
+tax-exclusive costs and overstated the margin by the whole of the VAT.
 
 Every function takes an explicit list of scopes. The caller is expected to have
 read that list with `get_list`, so the reader only ever sees scopes their
@@ -19,13 +25,14 @@ from __future__ import annotations
 
 import frappe
 from frappe import _
-from frappe.query_builder import Case
 from frappe.query_builder.functions import Sum
 from frappe.utils import flt
 
 from insite.config.accounting_dimension import DIMENSION_FIELDNAME as SCOPE_FIELD
 
-#: A Purchase Order in one of these states is no longer money we are going to spend.
+#: An order in one of these states is no longer live: a Purchase Order in it is
+#: not money we are going to spend, and a Sales Order in it is not work we are
+#: going to do. Both sides read the same list — one of them used to ignore it.
 SETTLED_ORDER_STATES = ("Closed",)
 
 #: The two sides of the ledger a scope's profit is made of.
@@ -58,8 +65,8 @@ def narrow_to_customer(conditions, customer):
 	return conditions
 
 
-def sum_lines_by_scope(child_doctype, parent_doctype, scopes, company=None):
-	"""Submitted line amounts per scope, in company currency."""
+def sum_lines_by_scope(child_doctype, parent_doctype, scopes, company=None, skip_states=()):
+	"""Submitted net line amounts per scope, in company currency."""
 	if not scopes:
 		return {}
 
@@ -73,13 +80,15 @@ def sum_lines_by_scope(child_doctype, parent_doctype, scopes, company=None):
 		frappe.qb.from_(child)
 		.join(parent)
 		.on(child.parent == parent.name)
-		.select(scope_column.as_("scope"), Sum(child.base_amount).as_("amount"))
+		.select(scope_column.as_("scope"), Sum(child.base_net_amount).as_("amount"))
 		.where(scope_column.isin(scopes))
 		.where(parent.docstatus == 1)
 		.groupby(scope_column)
 	)
 	if company:
 		query = query.where(parent.company == company)
+	if skip_states:
+		query = query.where(parent.status.notin(skip_states))
 
 	return {row.scope: flt(row.amount) for row in query.run(as_dict=True)}
 
@@ -135,41 +144,29 @@ def committed_by_scope(scopes, company=None):
 
 	The number no financial report holds. A Purchase Order is a promise to pay
 	that has not reached the ledger, so a scope can look profitable right up to
-	the moment the invoices arrive. `billed_amt` is what the supplier has already
-	invoiced, so the rest is still to come.
+	the moment the invoices arrive.
 
-	A line billed for more than it was ordered contributes nothing rather than a
-	negative, because an over-billed line is not a negative commitment — the
-	excess is already posted and counted as cost.
+	**Worked out by comparing the two totals, not from `billed_amt`.** ERPNext
+	only maintains `billed_amt` on a Purchase Order line when the invoice is
+	raised *from* the order, through `po_detail`. An invoice keyed in from the
+	supplier's paperwork instead — the everyday case in an accounts office —
+	posts its cost to the ledger while leaving the order looking unbilled. The
+	same spend was then counted twice: once as Cost, once as Committed. Ten
+	thousand spent read as sixteen thousand expected.
+
+	So: everything ordered for the scope, less everything invoiced for it,
+	floored at zero. Invoicing more than was ordered is not a negative
+	commitment — the excess is posted, and Cost already has it.
 	"""
 	if not scopes:
 		return {}
 
-	_require_scope_field("Purchase Order Item")
-
-	line = frappe.qb.DocType("Purchase Order Item")
-	order = frappe.qb.DocType("Purchase Order")
-	scope_column = getattr(line, SCOPE_FIELD)
-	outstanding = (
-		Case()
-		.when(line.amount > line.billed_amt, (line.amount - line.billed_amt) * order.conversion_rate)
-		.else_(0)
+	ordered = sum_lines_by_scope(
+		"Purchase Order Item", "Purchase Order", scopes, company, skip_states=SETTLED_ORDER_STATES
 	)
+	invoiced = sum_lines_by_scope("Purchase Invoice Item", "Purchase Invoice", scopes, company)
 
-	query = (
-		frappe.qb.from_(line)
-		.join(order)
-		.on(line.parent == order.name)
-		.select(scope_column.as_("scope"), Sum(outstanding).as_("amount"))
-		.where(scope_column.isin(scopes))
-		.where(order.docstatus == 1)
-		.where(order.status.notin(SETTLED_ORDER_STATES))
-		.groupby(scope_column)
-	)
-	if company:
-		query = query.where(order.company == company)
-
-	return {row.scope: flt(row.amount) for row in query.run(as_dict=True)}
+	return {scope: max(0.0, flt(ordered.get(scope)) - flt(invoiced.get(scope))) for scope in ordered}
 
 
 def _require_scope_field(doctype):

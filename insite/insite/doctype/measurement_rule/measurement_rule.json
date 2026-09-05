@@ -10,7 +10,7 @@
  "show_title_field_in_link": 1,
  "track_changes": 1,
  "creation": "2026-09-03 00:00:00.000000",
- "modified": "2026-09-05 11:45:00.000000",
+ "modified": "2026-09-05 16:00:00.000000",
  "owner": "Administrator",
  "modified_by": "Administrator",
  "sort_field": "modified",
@@ -28,6 +28,7 @@
   "attribute_value",
   "measure_section",
   "preset",
+  "uom",
   "measurement_summary",
   "adjust_section",
   "inputs",
@@ -123,6 +124,13 @@
    "default": "Area",
    "reqd": 1,
    "description": "Pick the one that matches how you price this work."
+  },
+  {
+   "fieldname": "uom",
+   "label": "Unit",
+   "fieldtype": "Link",
+   "options": "UOM",
+   "description": "The unit this rule works out. Needed only when a line is sold in something other than the item's stock unit."
   },
   {
    "fieldname": "measurement_summary",

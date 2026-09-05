@@ -71,6 +71,7 @@ def load_rules():
 					}
 					for row in doc.outputs
 				],
+				"uom": doc.uom,
 				"apply_on": doc.apply_on,
 				"item_code": doc.item_code,
 				"item_template": doc.item_template,
@@ -133,6 +134,9 @@ def apply_rule_to_row(row, rule, item_values=None):
 		_clear_calc_fields(row)
 		return None
 
+	_refuse_negative_measurements(row, rule, values)
+	_refuse_a_unit_the_rule_did_not_measure(row, rule)
+
 	try:
 		qty = measures.evaluate_formula(rule["formula"], values)
 	except ValueError as e:
@@ -155,6 +159,56 @@ def apply_rule_to_row(row, rule, item_values=None):
 	# Unrounded, so the audit trail can still show what the engine really computed.
 	row.set("custom_calculated_qty", qty)
 	return (previous, rounded) if flt(previous, precision) != rounded else None
+
+
+def _refuse_negative_measurements(row, rule, values):
+	"""A thing cannot be minus one and a half metres tall.
+
+	Two negatives multiply to a positive, so a height of -2 and a width of -1.5
+	gave a perfectly plausible quantity and submitted without a word. One
+	negative gave "Grand Total must be >= 0", which says nothing about
+	measurements and sends the reader to the wrong field.
+	"""
+	negative = sorted(token for token, value in values.items() if flt(value) < 0)
+	if negative:
+		frappe.throw(
+			_("Row {0}: a measurement cannot be negative ({1}).").format(row.idx, ", ".join(negative)),
+			title=_("Measurement Problem"),
+		)
+
+
+def _refuse_a_unit_the_rule_did_not_measure(row, rule):
+	"""Do not write an area into a line sold by the box.
+
+	The engine writes a number into `qty`, and `qty` is denominated in the
+	line's UOM. A rule that works out square metres has no idea of that: a line
+	for the same glass sold in boxes of ten took qty 12 as twelve BOXES and
+	shipped a hundred and twenty square metres, while the audit field still read
+	12.
+
+	`conversion_factor` is the tell. At 1 the line is in the item's stock unit
+	and a rule written for that item is measuring the right thing. At anything
+	else the two disagree, and the rule has to say which unit it produces before
+	Insite will write into a line sold in another.
+	"""
+	factor = flt(row.get("conversion_factor") or 1)
+	expected = (rule.get("uom") or "").strip()
+	line_uom = (row.get("uom") or "").strip()
+
+	if expected and line_uom and expected != line_uom:
+		frappe.throw(
+			_("Row {0}: {1} works out a quantity in {2}, but this line is in {3}.").format(
+				row.idx, rule["title"], expected, line_uom
+			),
+			title=_("Wrong Unit"),
+		)
+	if not expected and factor != 1:
+		frappe.throw(
+			_(
+				"Row {0} is sold in {1}, which is not the stock unit, and {2} does not say which unit it measures. Set Unit on the rule."
+			).format(row.idx, line_uom or _("another unit"), rule["title"]),
+			title=_("Wrong Unit"),
+		)
 
 
 def recalculate_document(doc):

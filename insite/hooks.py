@@ -58,6 +58,24 @@ doc_events = {
 for _doctype in _c.ENFORCED_DOCTYPES:
 	doc_events.setdefault(_doctype, {})["validate"] = ["insite.overrides.transaction.enforce_project_scope"]
 
+# A scope that names another project is wrong on ANY document that can carry one
+# — the buying side included, and on ordinary lines the measurement engine never
+# touched. That is a consistency check, so it runs everywhere the field exists.
+for _doctype in _c.TAGGED_DOCTYPES:
+	doc_events.setdefault(_doctype, {}).setdefault("validate", []).insert(
+		0, "insite.overrides.transaction.keep_scopes_on_their_own_project"
+	)
+
+del _doctype
+
+# "Update Items" rewrites qty on a submitted order, where the engine cannot
+# follow. Insite drops its claim to have measured it rather than print a
+# measurement that no longer explains the quantity.
+for _doctype in _c.MEASURED_DOCTYPES:
+	doc_events.setdefault(_doctype, {})["on_update_after_submit"] = [
+		"insite.overrides.transaction.drop_the_stamp_when_the_quantity_stops_matching"
+	]
+
 del _doctype
 
 # Billing is where rejected work costs money, so that is where Insite speaks up.
@@ -66,6 +84,7 @@ doc_events["Sales Invoice"]["validate"].append("insite.overrides.transaction.war
 # A scope's plan comes from the first Sales Order on it. Not the quotation: a
 # quotation means nothing until it has been ordered.
 doc_events["Sales Order"]["on_submit"] = ["insite.overrides.transaction.set_the_plan_from_the_first_order"]
+doc_events["Sales Order"]["on_cancel"] = ["insite.overrides.transaction.forget_the_plan_when_the_order_goes"]
 
 # Tick Measurable on an Item Group, a Brand or an Item and Insite writes the
 # rule; untick it and the rule is disabled. The rule stays the authority, so the

@@ -11,7 +11,7 @@ ruff check insite
 ruff format --check insite
 node --check insite/public/js/insite_transaction.js
 
-# on a bench — 73 integration tests
+# on a bench — 82 integration tests
 bench --site test.localhost migrate
 bench --site test.localhost run-tests --app insite
 ```
@@ -278,6 +278,31 @@ Worth repeating after any change to the reports or the hooks.
 Two of those are the interesting kind: the code was correct on every path a
 single test process can walk, and wrong on the two that need either a second
 connection or a parser's own stack.
+
+## What two reviewers found by attacking it
+
+A stock controller and a quantity surveyor were turned loose on a bench with one
+instruction: find data-integrity problems, demonstrate them, do not argue them.
+Between them they found ten, every one of which had passed the whole suite. The
+regression tests live in `TestTheIntegrityFixes`. What they teach:
+
+| The bug | The shape of it |
+| --- | --- |
+| No return or credit note of measured work could be saved | A guard that asked `docstatus != 0` and never asked `is_return`. A formula produces a positive number; a return needs a negative one |
+| Contract Progress disagreed with the ledger | `base_amount` is gross. Every ledger figure is net. One discount and the two reports differed by it |
+| Committed cost double-counted a supplier invoice | `billed_amt` is only maintained when the invoice is raised *from* the order. Accounts keys it from the paperwork |
+| A scope from another job rode in on an ordinary line | The check ran only on lines the engine had matched, and never on the buying side at all |
+| Three inspections rejected 30,000 of a 10,000 delivery | Each was capped against its own line and nothing summed them |
+| An area was written into a line sold by the box | `qty` is denominated in the line's UOM and the engine had never heard of UOMs |
+| A cancelled order left its plan behind | Nothing reacted to `on_cancel`, so a baseline outlived its document |
+| A submitted order's quantity drifted from its stamp | "Update Items" writes qty where the engine cannot follow |
+| Two negative measurements multiplied into a plausible quantity | Nothing checked the sign |
+| The register showed foreign currency under the company's symbol | It read `amount` where its siblings read `base_amount` |
+
+Six of the ten are one sentence each: **a figure was taken from the wrong field,
+or a guard asked the wrong question.** Neither is visible in a passing test
+suite, and neither is visible from reading the code that contains it — they were
+all found by building a document and looking at what came out.
 
 ## What the accounting dimension already bought you
 

@@ -41,6 +41,7 @@ from frappe import _
 from frappe.utils import flt
 
 from insite.scope_totals import (
+	SETTLED_ORDER_STATES,
 	committed_by_scope,
 	narrow_to_customer,
 	posted_by_scope,
@@ -97,7 +98,9 @@ def get_data(filters):
 
 	names = [scope.name for scope in scopes]
 	company = filters.get("company")
-	ordered = sum_lines_by_scope("Sales Order Item", "Sales Order", names, company)
+	ordered = sum_lines_by_scope(
+		"Sales Order Item", "Sales Order", names, company, skip_states=SETTLED_ORDER_STATES
+	)
 	posted = posted_by_scope(names, company)
 	committed = committed_by_scope(names, company)
 

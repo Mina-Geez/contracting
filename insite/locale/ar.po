@@ -372,6 +372,9 @@ msgstr "الاسم مستخدم بالفعل"
 msgid "Name in the formula"
 msgstr "الاسم في المعادلة"
 
+msgid "No Longer Measured"
+msgstr "لم يعد مقيسًا"
+
 msgid "Nothing measures this yet, so quantities are typed by hand."
 msgstr "لا شيء يقيس هذا بعد، لذا تُكتب الكميات يدويًا."
 
@@ -471,6 +474,9 @@ msgstr "الإيرادات"
 msgid "Row {0} ({1}): quantity is still {2}"
 msgstr "صف {0} ({1}): الكمية ما زالت {2}"
 
+msgid "Row {0} is sold in {1}, which is not the stock unit, and {2} does not say which unit it measures. Set Unit on the rule."
+msgstr "صف {0} يُباع بـ{1}، وهي ليست وحدة المخزون، و{2} لا تحدد وحدة القياس. حدد الوحدة على القاعدة."
+
 msgid "Row {0}: '{1}' cannot be used in a formula. Use lower case letters, digits and underscores, for example number_of_panels."
 msgstr "صف {0}: لا يمكن استخدام '{1}' في معادلة. استخدم حروفًا صغيرة وأرقامًا وشرطات سفلية، مثل number_of_panels."
 
@@ -479,6 +485,9 @@ msgstr "صف {0}: '{1}' ليس حقلًا رقميًا في سطر المستن�
 
 msgid "Row {0}: '{1}' is not a number field on {2}. Pick one from the list."
 msgstr "صف {0}: '{1}' ليس حقلًا رقميًا في {2}. اختر واحدًا من القائمة."
+
+msgid "Row {0}: a measurement cannot be negative ({1})."
+msgstr "صف {0}: لا يمكن أن يكون القياس سالبًا ({1})."
 
 msgid "Row {0}: the Scope '{1}' belongs to company {2}, but this document is for {3}."
 msgstr "صف {0}: النطاق '{1}' يتبع الشركة {2}، بينما هذا المستند للشركة {3}."
@@ -503,6 +512,9 @@ msgstr "صف {0}: لا يمكن حساب {1} بهذه القياسات ({2})."
 
 msgid "Row {0}: {1} is written to twice."
 msgstr "صف {0}: يُكتب في {1} مرتين."
+
+msgid "Row {0}: {1} works out a quantity in {2}, but this line is in {3}."
+msgstr "صف {0}: {1} تحسب الكمية بـ{2}، لكن هذا السطر بـ{3}."
 
 msgid "Row {0}: {1} — {2}"
 msgstr "صف {0}: {1} — {2}"
@@ -606,8 +618,14 @@ msgstr "المعادلة لا تستخدم: {0}. احذف المُدخل، أو 
 msgid "The quantity above is what you bill. Add anything else the same measurements produce — the board a panel uses, the edging round it, the fittings that go on it."
 msgstr "الكمية أعلاه هي ما تفوتره. أضف أي شيء آخر تنتجه نفس القياسات — اللوح الذي يستهلكه اللوح، والحواف حوله، والإكسسوارات التي تُركب عليه."
 
+msgid "The quantity on {0} no longer comes from the measurements, so Insite has stopped claiming it does. The measurements are still recorded."
+msgstr "الكمية في {0} لم تعد ناتجة عن القياسات، لذا توقف Insite عن الادعاء بذلك. القياسات ما زالت مسجّلة."
+
 msgid "The scope of work this line belongs to. It carries through to the Sales Order."
 msgstr "نطاق العمل الذي يتبعه هذا السطر. ينتقل إلى أمر البيع."
+
+msgid "The unit this rule works out. Needed only when a line is sold in something other than the item's stock unit."
+msgstr "الوحدة التي تحسبها هذه القاعدة. مطلوبة فقط عندما يُباع السطر بوحدة غير وحدة مخزون الصنف."
 
 msgid "These lines are no longer measured — check the quantity"
 msgstr "هذه السطور لم تعد تُقاس — راجع الكمية"
@@ -641,6 +659,9 @@ msgstr "النوع"
 
 msgid "Type at least one scope, one per line."
 msgstr "اكتب نطاقًا واحدًا على الأقل، واحدًا في كل سطر."
+
+msgid "Unit"
+msgstr "الوحدة"
 
 msgid "Unknown Field"
 msgstr "حقل غير معروف"
@@ -711,11 +732,17 @@ msgstr "جارٍ كتابة القاعدة…"
 msgid "Written Twice"
 msgstr "مكتوب مرتين"
 
+msgid "Wrong Unit"
+msgstr "وحدة غير صحيحة"
+
 msgid "You are not allowed to create a Scope Item."
 msgstr "غير مسموح لك بإنشاء بند نطاق عمل."
 
 msgid "and"
 msgstr "و"
+
+msgid "another unit"
+msgstr "وحدة أخرى"
 
 msgid "line {0} ({1})"
 msgstr "السطر {0} ({1})"
@@ -750,6 +777,9 @@ msgstr "{0} أحد الحقول المضمّنة مع Insite ولا يمكن ح�
 msgid "{0} is used by: {1}. Change those rules first, or tick 'Hide on documents' instead."
 msgstr "{0} تستخدمه: {1}. عدّل هذه القواعد أولًا، أو فعّل 'إخفاؤه من المستندات' بدلًا من ذلك."
 
+msgid "{0} of {1} was delivered on that line and {2} is already rejected, so {3} more cannot be."
+msgstr "سُلّم {0} من {1} في ذلك السطر و{2} مرفوض بالفعل، لذا لا يمكن رفض {3} إضافية."
+
 msgid "{0} scopes added."
 msgstr "تمت إضافة {0} نطاقات."
 
@@ -764,6 +794,7 @@ msgstr "… و{0} غيرها"
 
 msgid "…and more."
 msgstr "…وغيرها."
+
 
 
 

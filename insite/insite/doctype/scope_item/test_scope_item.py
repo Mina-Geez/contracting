@@ -10,6 +10,7 @@ Progress.
 
 import frappe
 from frappe.tests import IntegrationTestCase
+from frappe.utils import flt
 
 from insite.constants import QI_ACCEPTED, QI_REJECTED, QUALITY_INSPECTION
 
@@ -903,23 +904,42 @@ class TestScopeProfitability(IntegrationTestCase):
 		self.assertAlmostEqual(row["margin"], 4_000)
 		self.assertAlmostEqual(row["margin_pct"], 40.0)
 
+	def _billed(self, rate, qty=1):
+		"""A real Purchase Invoice on the scope, with no link back to any order.
+
+		Deliberately unlinked: that is the case `billed_amt` cannot see, and the
+		one that used to count the same spend as both Cost and Committed.
+		"""
+		bill = frappe.get_doc(
+			{
+				"doctype": "Purchase Invoice",
+				"supplier": self.supplier,
+				"company": self.company,
+				"project": self.project,
+				"items": [{"item_code": self.item, "qty": qty, "rate": rate, "scope_item": self.scope}],
+			}
+		)
+		bill.insert()
+		bill.submit()
+		return bill
+
 	def test_what_the_supplier_has_invoiced_stops_being_committed(self):
 		self._sold(rate=10_000)
-		order = self._bought(rate=6_000)
+		self._bought(rate=6_000)
+		self.assertAlmostEqual(self._row()["committed"], 6_000)
 
-		# What a Purchase Invoice against the order does to the line. Done
-		# directly so the test is about the arithmetic, not about ERPNext's
-		# billing flow, which has its own tests.
-		frappe.db.set_value("Purchase Order Item", order.items[0].name, "billed_amt", 2_500)
-
+		self._billed(2_500)
 		self.assertAlmostEqual(self._row()["committed"], 3_500)
 
 	def test_an_over_billed_line_is_not_a_negative_commitment(self):
 		self._sold(rate=10_000)
-		order = self._bought(rate=6_000)
-		frappe.db.set_value("Purchase Order Item", order.items[0].name, "billed_amt", 7_000)
+		self._bought(rate=6_000)
+		self._billed(7_000)
 
-		self.assertAlmostEqual(self._row()["committed"], 0)
+		row = self._row()
+		self.assertAlmostEqual(row["committed"], 0)
+		# and the 7,000 is counted once, as cost
+		self.assertAlmostEqual(row["expected_cost"], 7_000, places=2)
 
 	def test_a_closed_order_is_no_longer_money_we_are_going_to_spend(self):
 		self._sold(rate=10_000)
@@ -1357,3 +1377,283 @@ class TestFilteringReportsByCustomer(IntegrationTestCase):
 		narrowed = documents(customer=self.ours)
 		self.assertIn(mine, narrowed)
 		self.assertNotIn(theirs, narrowed)
+
+
+class TestTheIntegrityFixes(IntegrationTestCase):
+	"""The things two reviewers found by attacking the app on a bench.
+
+	Every one of these passed the suite before it was found, so each test here
+	is the shape of a bug that shipped.
+	"""
+
+	@classmethod
+	def setUpClass(cls):
+		super().setUpClass()
+		cls.company = _a_company()
+		cls.customer = _ensure(
+			"Customer",
+			{"customer_name": "Integrity Customer"},
+			{"customer_name": "Integrity Customer", "customer_type": "Company"},
+		)
+		cls.supplier = _ensure(
+			"Supplier",
+			{"supplier_name": "Integrity Supplier"},
+			{"supplier_name": "Integrity Supplier", "supplier_group": "All Supplier Groups"},
+		)
+		cls.item = _ensure(
+			"Item",
+			{"item_code": "INTEGRITY-ITEM"},
+			{
+				"item_code": "INTEGRITY-ITEM",
+				"item_name": "Integrity Item",
+				"item_group": frappe.get_all("Item Group", filters={"is_group": 0}, pluck="name")[0],
+				"stock_uom": "Nos",
+				"is_stock_item": 0,
+			},
+		)
+		cls.project = _ensure(
+			"Project",
+			{"project_name": "Integrity Project"},
+			{"project_name": "Integrity Project", "company": cls.company, "status": "Open"},
+		)
+		cls.other_project = _ensure(
+			"Project",
+			{"project_name": "Integrity Other Project"},
+			{"project_name": "Integrity Other Project", "company": cls.company, "status": "Open"},
+		)
+		frappe.db.commit()
+
+	def setUp(self):
+		self.scope = self._scope(self.project)
+
+	def _scope(self, project):
+		return (
+			frappe.get_doc(
+				{
+					"doctype": "Scope Item",
+					"scope_title": f"Integrity {frappe.generate_hash(length=6)}",
+					"project": project,
+					"status": "Active",
+				}
+			)
+			.insert()
+			.name
+		)
+
+	def _order(self, rate, doctype="Sales Order", scope=None, **extra):
+		values = {
+			"doctype": doctype,
+			"company": self.company,
+			"project": self.project,
+			"items": [{"item_code": self.item, "qty": 1, "rate": rate, "scope_item": scope or self.scope}],
+			**extra,
+		}
+		if doctype == "Sales Order":
+			values["customer"] = self.customer
+			values["delivery_date"] = frappe.utils.add_days(frappe.utils.today(), 30)
+		else:
+			values["supplier"] = self.supplier
+			values["schedule_date"] = frappe.utils.add_days(frappe.utils.today(), 15)
+		doc = frappe.get_doc(values)
+		doc.insert()
+		doc.submit()
+		return doc
+
+	# --- the money columns are net, like the ledger --------------------------
+
+	def test_a_discount_moves_invoiced_and_revenue_together(self):
+		from insite.insite.report.contract_progress import contract_progress
+		from insite.insite.report.scope_profitability import scope_profitability
+
+		invoice = frappe.get_doc(
+			{
+				"doctype": "Sales Invoice",
+				"customer": self.customer,
+				"company": self.company,
+				"project": self.project,
+				"due_date": frappe.utils.add_days(frappe.utils.today(), 30),
+				"items": [{"item_code": self.item, "qty": 1, "rate": 100_000, "scope_item": self.scope}],
+				"apply_discount_on": "Grand Total",
+				"discount_amount": 10_000,
+			}
+		)
+		invoice.insert()
+		invoice.submit()
+
+		def row_of(module):
+			rows = module.execute({"company": self.company})[1]
+			return next(r for r in rows if r["scope"] == self.scope)
+
+		invoiced = row_of(contract_progress)["invoiced"]
+		revenue = row_of(scope_profitability)["revenue"]
+		self.assertAlmostEqual(invoiced, 90_000, places=2)
+		self.assertAlmostEqual(revenue, 90_000, places=2)
+		self.assertAlmostEqual(invoiced, revenue, places=2, msg="the two reports disagree")
+
+	def test_the_plan_is_the_price_that_was_agreed(self):
+		self._order(100_000, apply_discount_on="Grand Total", discount_amount=25_000)
+		self.assertAlmostEqual(
+			flt(frappe.db.get_value("Scope Item", self.scope, "planned_amount")), 75_000, places=2
+		)
+
+	# --- committed cost does not double count --------------------------------
+
+	def test_an_invoice_keyed_without_its_order_does_not_double_count(self):
+		from insite.scope_totals import committed_by_scope, posted_by_scope
+
+		self._order(10_000, doctype="Purchase Order")
+		self.assertAlmostEqual(committed_by_scope([self.scope], self.company)[self.scope], 10_000)
+
+		bill = frappe.get_doc(
+			{
+				"doctype": "Purchase Invoice",
+				"supplier": self.supplier,
+				"company": self.company,
+				"project": self.project,
+				"items": [{"item_code": self.item, "qty": 1, "rate": 10_000, "scope_item": self.scope}],
+			}
+		)
+		bill.insert()
+		bill.submit()
+
+		committed = committed_by_scope([self.scope], self.company).get(self.scope, 0)
+		cost = (posted_by_scope([self.scope], self.company).get(self.scope) or {}).get("expense", 0)
+		self.assertAlmostEqual(committed, 0, msg="the order is fully invoiced; nothing is still committed")
+		self.assertAlmostEqual(cost + committed, 10_000, places=2, msg="10,000 was spent, not 20,000")
+
+	# --- a scope cannot wander onto another project's document ---------------
+
+	def test_an_ordinary_line_cannot_carry_another_projects_scope(self):
+		"""The old check looked only at lines a rule had matched."""
+		theirs = self._scope(self.other_project)
+		with self.assertRaises(frappe.ValidationError):
+			frappe.get_doc(
+				{
+					"doctype": "Sales Invoice",
+					"customer": self.customer,
+					"company": self.company,
+					"project": self.project,
+					"due_date": frappe.utils.add_days(frappe.utils.today(), 30),
+					"items": [{"item_code": self.item, "qty": 1, "rate": 1000, "scope_item": theirs}],
+				}
+			).insert()
+
+	def test_a_purchase_document_cannot_either(self):
+		"""Nothing checked the buying side at all."""
+		theirs = self._scope(self.other_project)
+		with self.assertRaises(frappe.ValidationError):
+			frappe.get_doc(
+				{
+					"doctype": "Purchase Order",
+					"supplier": self.supplier,
+					"company": self.company,
+					"project": self.project,
+					"schedule_date": frappe.utils.add_days(frappe.utils.today(), 15),
+					"items": [{"item_code": self.item, "qty": 1, "rate": 1000, "scope_item": theirs}],
+				}
+			).insert()
+
+	# --- a cancelled order is not a plan -------------------------------------
+
+	def test_cancelling_the_only_order_forgets_the_plan(self):
+		order = self._order(50_000)
+		self.assertAlmostEqual(flt(frappe.db.get_value("Scope Item", self.scope, "planned_amount")), 50_000)
+
+		order.cancel()
+		self.assertFalse(
+			flt(frappe.db.get_value("Scope Item", self.scope, "planned_amount")),
+			"the plan outlived the order that set it",
+		)
+
+	def test_cancelling_one_of_two_orders_keeps_the_plan(self):
+		first = self._order(50_000)
+		self._order(20_000)  # a variation
+		first.cancel()
+
+		self.assertAlmostEqual(
+			flt(frappe.db.get_value("Scope Item", self.scope, "planned_amount")),
+			50_000,
+			msg="another order still stands, so the baseline should hold",
+		)
+
+	# --- closed orders are not live work -------------------------------------
+
+	def test_a_closed_sales_order_stops_counting_as_ordered(self):
+		from insite.insite.report.contract_progress import contract_progress
+
+		order = self._order(60_000)
+
+		def ordered():
+			rows = contract_progress.execute({"company": self.company})[1]
+			return next(r for r in rows if r["scope"] == self.scope)["ordered"]
+
+		self.assertAlmostEqual(ordered(), 60_000, places=2)
+		order.update_status("Closed")
+		self.assertAlmostEqual(ordered(), 0, places=2)
+
+	# --- negative measurements -----------------------------------------------
+
+	def test_two_negative_measurements_do_not_multiply_into_a_quantity(self):
+		"""Minus two by minus one and a half is a plausible-looking three."""
+		measured = _a_measured_item()
+		with self.assertRaises(frappe.ValidationError):
+			frappe.get_doc(
+				{
+					"doctype": "Sales Order",
+					"customer": self.customer,
+					"company": self.company,
+					"project": self.project,
+					"delivery_date": frappe.utils.add_days(frappe.utils.today(), 30),
+					"items": [
+						{
+							"item_code": measured,
+							"qty": 1,
+							"rate": 100,
+							"scope_item": self.scope,
+							"custom_height": -2,
+							"custom_width": -1.5,
+							"custom_base_qty": 4,
+						}
+					],
+				}
+			).insert()
+
+
+def _a_measured_item():
+	"""An item a rule matches, with a rule to match it."""
+	group = "Integrity Measured Group"
+	if not frappe.db.exists("Item Group", group):
+		frappe.get_doc(
+			{"doctype": "Item Group", "item_group_name": group, "parent_item_group": "All Item Groups"}
+		).insert(ignore_permissions=True)
+
+	code = "INTEGRITY-MEASURED"
+	if not frappe.db.exists("Item", code):
+		frappe.get_doc(
+			{
+				"doctype": "Item",
+				"item_code": code,
+				"item_name": "Integrity Measured",
+				"item_group": group,
+				"stock_uom": "Nos",
+				"is_stock_item": 0,
+			}
+		).insert(ignore_permissions=True)
+
+	if not frappe.db.exists("Measurement Rule", {"item_group": group}):
+		frappe.get_doc(
+			{
+				"doctype": "Measurement Rule",
+				"rule_title": "Integrity Area",
+				"apply_on": "Item Group",
+				"item_group": group,
+				"preset": "Area",
+				"inputs": [
+					{"source": "Line", "field_name": "custom_height", "token": "height"},
+					{"source": "Line", "field_name": "custom_width", "token": "width"},
+					{"source": "Line", "field_name": "custom_base_qty", "token": "count"},
+				],
+				"formula": "height * width * count",
+			}
+		).insert(ignore_permissions=True)
+	return code
