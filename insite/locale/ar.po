@@ -30,11 +30,26 @@ msgstr "أضف قاعدة قياس"
 msgid "Add a Project in the header before you save this {0}. Insite tracks contracting work by project."
 msgstr "أضف المشروع في الترويسة قبل حفظ {0}. Insite يتابع أعمال المقاولات حسب المشروع."
 
+msgid "Add a new field"
+msgstr "إضافة حقل جديد"
+
+msgid "Add a new field…"
+msgstr "إضافة حقل جديد…"
+
 msgid "Add at least one input. A formula has nothing to read without one."
 msgstr "أضف مُدخلًا واحدًا على الأقل. المعادلة بلا مُدخلات لا تقرأ شيئًا."
 
+msgid "Add it"
+msgstr "أضفه"
+
 msgid "Add the inputs and a formula first."
 msgstr "أضف المُدخلات والمعادلة أولًا."
+
+msgid "Added to every transaction line, for a number measured on site."
+msgstr "يُضاف إلى كل سطر في المستندات، لرقم يُقاس في الموقع."
+
+msgid "Added to the Item, for a number that is true of the material."
+msgstr "يُضاف إلى الصنف، لرقم ثابت في المادة نفسها."
 
 msgid "Adjust the measurement"
 msgstr "تعديل طريقة القياس"
@@ -146,6 +161,9 @@ msgstr "املأ قيمة الخاصية. القاعدة بلا قيمة لن ت
 
 msgid "Filled in from the first Sales Order on this scope. A quotation does not set it. Edit it when a variation is formally agreed. Insite keeps the change history."
 msgstr "يُملأ من أول أمر بيع على هذا النطاق. عرض السعر لا يحدده. عدّله عند الاتفاق رسميًا على أمر تغيير. ويحتفظ Insite بسجل التغييرات."
+
+msgid "For a number Insite does not ship"
+msgstr "لرقم غير مضمّن في Insite"
 
 msgid "For example 1.12 for a 12 percent cutting allowance."
 msgstr "مثال: 1.12 لسماح قص ١٢٪."
@@ -612,6 +630,9 @@ msgstr "سطر المستند"
 msgid "{0} added. These were already on the project, so they were left alone: {1}"
 msgstr "تمت إضافة {0}. وهذه كانت موجودة بالفعل في المشروع فتُركت كما هي: {1}"
 
+msgid "{0} is now on every document that needs it."
+msgstr "{0} أصبح متاحًا في كل مستند يحتاجه."
+
 msgid "{0} is now planned at {1}, from this order. Edit the scope to change it."
 msgstr "أصبح مخطط {0} هو {1}، من هذا الأمر. عدّل النطاق لتغييره."
 
@@ -629,6 +650,7 @@ msgstr "… و{0} غيرها"
 
 msgid "…and more."
 msgstr "…وغيرها."
+
 
 
 

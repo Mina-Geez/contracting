@@ -1,10 +1,15 @@
 // Insite — Measurement Rule.
 //
-// Three jobs: fill in the starting point so a new rule opens ready to save,
-// offer only the fields that actually exist for each input's source, and let
-// someone try the rule with sample numbers. The arithmetic is done on the
-// server by the same code that runs on a live document, so what you see here
-// is what you get.
+// Four jobs: fill in the starting point so a new rule opens ready to save,
+// offer only the fields that actually exist for each input's source, let
+// someone add a field that does not exist yet without leaving the rule, and let
+// them try the rule with sample numbers. The arithmetic is done on the server
+// by the same code that runs on a live document, so what you see here is what
+// you get.
+
+// Picked from the field list to make a new field instead of choosing one. Not a
+// fieldname anything could collide with.
+const INSITE_ADD_FIELD = "__insite_add_field";
 
 frappe.ui.form.on("Measurement Rule", {
 	onload(frm) {
@@ -59,6 +64,14 @@ frappe.ui.form.on("Measurement Input", {
 	field_name(frm, cdt, cdn) {
 		const row = locals[cdt][cdn];
 		const source = row.source || "Line";
+
+		if (row.field_name === INSITE_ADD_FIELD) {
+			// Not a choice — a request to make one. Put the cell back and ask.
+			frappe.model.set_value(cdt, cdn, "field_name", null);
+			insite_add_field_dialog(frm, cdt, cdn, source);
+			return;
+		}
+
 		const known = (frm.__insite_fields || {})[source] || [];
 		const match = known.find((f) => f.value === row.field_name);
 		if (!match) return;
@@ -117,20 +130,69 @@ function insite_apply_preset(frm) {
 	});
 }
 
+// The number a rule needs does not always exist yet, and making one used to
+// mean leaving the rule half-written, opening Measurement Field, coming back and
+// finding your place. The field list offers to make it here instead. Where it
+// belongs is not asked: the row already says whether the number is measured on
+// the line or held on the Item, and asking twice is how the two disagree.
+function insite_add_field_dialog(frm, cdt, cdn, source) {
+	const on_the_item = source === "Item";
+	const dialog = new frappe.ui.Dialog({
+		title: __("Add a new field"),
+		fields: [
+			{
+				fieldname: "field_label",
+				label: __("Label"),
+				fieldtype: "Data",
+				reqd: 1,
+				description: on_the_item
+					? __("Added to the Item, for a number that is true of the material.")
+					: __("Added to every transaction line, for a number measured on site."),
+			},
+			{ fieldname: "help_text", label: __("Help Text"), fieldtype: "Small Text" },
+		],
+		primary_action_label: __("Add it"),
+		primary_action(values) {
+			dialog.hide();
+			frappe.db
+				.insert({
+					doctype: "Measurement Field",
+					field_label: values.field_label,
+					applies_to: on_the_item ? "Item" : "Transaction line",
+					help_text: values.help_text,
+				})
+				.then((doc) => {
+					// Setting the fieldname runs the handler above, which fills
+					// in the label and suggests the name for the formula.
+					insite_load_fields(frm, source, () => {
+						frappe.model.set_value(cdt, cdn, "field_name", doc.field_name);
+					});
+					frappe.show_alert({
+						message: __("{0} is now on every document that needs it.", [doc.field_label]),
+						indicator: "green",
+					});
+				});
+		},
+	});
+	dialog.show();
+}
+
 // Ask the server which number fields exist, for each place a rule can read from.
-function insite_load_fields(frm) {
-	if (frm.__insite_fields) {
+// Pass a source to re-ask for just that one, after adding a field to it.
+function insite_load_fields(frm, only, done) {
+	if (frm.__insite_fields && !only) {
 		insite_apply_field_options(frm);
 		return;
 	}
-	frm.__insite_fields = {};
-	["Line", "Item"].forEach((source) => {
+	frm.__insite_fields = frm.__insite_fields || {};
+	(only ? [only] : ["Line", "Item"]).forEach((source) => {
 		frappe.call({
 			method: "insite.insite.doctype.measurement_rule.measurement_rule.get_measurable_fields",
 			args: { source: source },
 			callback(r) {
 				frm.__insite_fields[source] = r.message || [];
 				insite_apply_field_options(frm);
+				if (done) done();
 			},
 		});
 	});
@@ -143,7 +205,14 @@ function insite_apply_field_options(frm) {
 		if (df) {
 			df.get_data = (txt, row) => {
 				const source = (row && row.source) || "Line";
-				return (frm.__insite_fields || {})[source] || [];
+				const fields = (frm.__insite_fields || {})[source] || [];
+				return fields.concat([
+					{
+						value: INSITE_ADD_FIELD,
+						label: __("Add a new field…"),
+						description: __("For a number Insite does not ship"),
+					},
+				]);
 			};
 		}
 	}

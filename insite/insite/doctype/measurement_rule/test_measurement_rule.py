@@ -43,3 +43,59 @@ class TestMeasurementSummary(IntegrationTestCase):
 			),
 		]
 		self.assertEqual(in_plain_words("count * waste", rows), "Count × 1.12")
+
+
+class TestAddingAFieldWhileWritingARule(IntegrationTestCase):
+	"""The Inputs grid offers "Add a new field…" as the last of its choices.
+
+	Whoever is writing a rule needs a number Insite does not ship, and used to
+	have to abandon a half-written rule, open Measurement Field, create it and
+	find their place again. The dialog does it in the grid instead.
+
+	That only works because a Measurement Field puts its column on the
+	documents the moment it is saved. If it ever became deferred work, the rule
+	would offer a field the line does not have, and the rule would save and then
+	fail on a real document. These tests are that guarantee.
+	"""
+
+	def tearDown(self):
+		for name in frappe.get_all(
+			"Measurement Field", filters={"field_label": ["like", "Inline %"]}, pluck="name"
+		):
+			frappe.delete_doc("Measurement Field", name, force=True, ignore_permissions=True)
+		frappe.db.commit()
+
+	def _add(self, label, applies_to="Transaction line"):
+		return frappe.get_doc(
+			{"doctype": "Measurement Field", "field_label": label, "applies_to": applies_to}
+		).insert(ignore_permissions=True)
+
+	def test_a_new_line_field_can_be_used_the_moment_it_is_made(self):
+		from insite.insite.doctype.measurement_rule.measurement_rule import get_measurable_fields
+
+		label = f"Inline Panels {frappe.generate_hash(length=5)}"
+		field = self._add(label)
+
+		offered = {row["value"]: row["label"] for row in get_measurable_fields("Line")}
+		self.assertIn(field.field_name, offered, "the new field is not in the list the grid reads")
+		self.assertEqual(offered[field.field_name], label)
+		self.assertTrue(
+			frappe.db.has_column("Sales Order Item", field.field_name),
+			"the column is not on the line yet, so a rule using it would fail on a real document",
+		)
+
+	def test_a_new_item_field_lands_on_the_item_not_the_line(self):
+		from insite.insite.doctype.measurement_rule.measurement_rule import get_measurable_fields
+
+		label = f"Inline Sheet {frappe.generate_hash(length=5)}"
+		field = self._add(label, applies_to="Item")
+
+		self.assertIn(field.field_name, {row["value"] for row in get_measurable_fields("Item")})
+		self.assertNotIn(field.field_name, {row["value"] for row in get_measurable_fields("Line")})
+		self.assertTrue(frappe.db.has_column("Item", field.field_name))
+
+	def test_the_name_the_dialog_never_asks_for_is_worked_out(self):
+		"""The dialog asks for a label only. The fieldname is Insite's business."""
+		field = self._add(f"Inline Number Of Panels {frappe.generate_hash(length=5)}")
+		self.assertTrue(field.field_name.startswith("custom_"))
+		self.assertNotIn(" ", field.field_name)

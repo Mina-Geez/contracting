@@ -95,6 +95,13 @@ where that number is.
 For **Line** and **Item**, pick the field from the list. You never type a field
 name. For **Constant**, type the number in **Value**.
 
+If the number you need is not in the list, choose **Add a new field…** at the
+bottom of it. Give it a label and it is created, added to the documents, and
+put into the row you were filling in — without leaving the half-written rule.
+Insite works out where it belongs from **Comes from**: a `Line` input becomes a
+box on every transaction line, an `Item` input a field on the Item. Section 4
+covers the same thing from the other end, and says how to hide or remove one.
+
 Each row also gives the number a short name for the formula. Insite suggests the
 name from the label of the field. Keep it, or type a shorter one.
 
@@ -129,6 +136,10 @@ twice. Insite refuses both when you save the rule.
 
 Insite ships five measurement boxes: Count, Height, Width, Length and Wastage.
 Add a **Measurement Field** for any other number your site measures.
+
+The quickest way is not this form at all: while writing a Measurement Rule,
+choose **Add a new field…** at the bottom of the field list. Use this form when
+you are setting several up at once, or to change or hide one.
 
 Open **Insite > Measurement Field > New**.
 
