@@ -288,6 +288,9 @@ _THEIRS_TO_TRANSLATE = {
 	"Title",
 	"UOM",
 	"Brand",  # العلامة التجارية
+	"Length",  # طول
+	"Width",  # عرض
+	"Rejected Qty",  # الكمية المرفوضة
 	# ERPNext's own reports, which the workspace points at rather than rebuilding
 	"Budget Variance Report",
 	"Profitability Analysis",
@@ -336,7 +339,32 @@ def _strings_the_app_shows():
 		if doc.get("doctype") == "Workspace":
 			shown.update(_workspace_strings(doc))
 
+	shown.update(_custom_field_strings())
 	return shown
+
+
+def _custom_field_strings():
+	"""Labels and descriptions on the fields Insite adds to ERPNext's doctypes.
+
+	Frappe translates a Custom Field's label like any other, and ships an
+	extractor for exactly this. `custom_fields.py` imports Frappe, so it is read
+	as source rather than imported — this suite has to run without a site.
+	"""
+	import ast
+
+	source = open("insite/config/custom_fields.py", encoding="utf-8").read()
+	found = set()
+	for node in ast.walk(ast.parse(source)):
+		if not isinstance(node, ast.Dict):
+			continue
+		for key, value in zip(node.keys, node.values, strict=False):
+			if not isinstance(key, ast.Constant) or key.value not in ("label", "description"):
+				continue
+			if isinstance(value, ast.Constant) and isinstance(value.value, str):
+				text = value.value.strip()
+				if len(text) > 1:
+					found.add(text)
+	return found
 
 
 def _workspace_strings(workspace):

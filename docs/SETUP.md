@@ -63,12 +63,22 @@ formula you write from scratch.
 Add a rule for each item group, brand, item, template or attribute value you
 measure.
 
-**You can also write the rule from the thing it measures.** Open an **Item
-Group**, a **Brand** or an **Item**. The top of the form says which rule
-measures it and how that rule works out, with a button to open it. Where nothing
-does, it says so and offers **Measure This** — pick a starting point, and the
-rule is written and pointed at the record you were standing on. Being there is
-what said what it applies to, so it is not asked again.
+**Or set it on the thing it measures.** An **Item Group**, a **Brand** and an
+**Item** each carry a **Measurement** section:
+
+1. Tick **Measurable**.
+2. Set **How is it measured?**
+3. Save.
+
+Insite writes the rule. **Worked out as** then shows what it does, for example
+`Height × Width × Count`. Untick Measurable and the rule is disabled, not
+deleted — a rule may have been relied on for months, and losing it is not
+undoable. Tick it again and the same rule comes back.
+
+The rule is still the record that decides. Open it to change the inputs, write a
+formula of your own, or add the further numbers the same measurements give. If
+someone disables or repoints it there, this form says so the next time it is
+opened rather than going on claiming otherwise.
 
 A rule inherited from a parent item group names the group it was set on, so
 nobody edits the wrong record. A record that already has a rule is not given a

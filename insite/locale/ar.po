@@ -84,11 +84,20 @@ msgstr "قيمة الخاصية مطلوبة"
 msgid "Breaks a tie between two rules that are equally specific. A more specific rule always wins, whatever the priority."
 msgstr "يفصل بين قاعدتين متساويتين في التخصيص. القاعدة الأكثر تخصيصًا تفوز دائمًا مهما كانت الأولوية."
 
+msgid "Calculated"
+msgstr "المحسوب"
+
+msgid "Calculated Quantity"
+msgstr "الكمية المحسوبة"
+
 msgid "Change this under Adjust the measurement, if you need to."
 msgstr "غيّرها من تعديل طريقة القياس، إن احتجت."
 
 msgid "Choose a Scope on {0}. Insite tracks contracting work by scope of work."
 msgstr "اختر النطاق في {0}. Insite يتابع أعمال المقاولات حسب نطاق العمل."
+
+msgid "Choose how {0} is measured, or untick Measurable."
+msgstr "اختر كيف يُقاس {0}، أو ألغِ تحديد \"قابل للقياس\"."
 
 msgid "Combine the names above with + - * / % and abs, round, min, max, pow, sqrt, ceil, floor, pi."
 msgstr "اجمع الأسماء أعلاه باستخدام + - * / % والدوال abs و round و min و max و pow و sqrt و ceil و floor و pi."
@@ -107,6 +116,9 @@ msgstr "تقدم العقد"
 
 msgid "Contract Value"
 msgstr "قيمة العقد"
+
+msgid "Contracting"
+msgstr "المقاولات"
 
 msgid "Control the money"
 msgstr "الرقابة المالية"
@@ -192,17 +204,35 @@ msgstr "من تاريخ"
 msgid "Give the field a label."
 msgstr "أعطِ الحقل تسمية."
 
+msgid "Height"
+msgstr "الارتفاع"
+
 msgid "Help Text"
 msgstr "نص المساعدة"
 
 msgid "Hide on documents"
 msgstr "إخفاؤه من المستندات"
 
+msgid "How Is It Measured?"
+msgstr "كيف يُقاس؟"
+
+msgid "How is it measured?"
+msgstr "كيف يُقاس؟"
+
 msgid "How is this measured?"
 msgstr "كيف يُقاس هذا؟"
 
 msgid "How is {0} measured?"
 msgstr "كيف يُقاس {0}؟"
+
+msgid "How many units or pieces."
+msgstr "كم عدد الوحدات أو القطع."
+
+msgid "How much of the line was refused. Leave blank if the whole line was."
+msgstr "كم رُفض من السطر. اتركه فارغًا إن رُفض السطر كله."
+
+msgid "How much to add for waste. Type 1.1 to add 10 percent. Leave blank for none."
+msgstr "كم يُضاف للهالك. اكتب 1.1 لإضافة 10 بالمئة. اتركه فارغًا لعدم الإضافة."
 
 msgid "Inputs"
 msgstr "المُدخلات"
@@ -227,6 +257,9 @@ msgstr "يشتق Insite هذا من التسمية. لا تستخدمه المع
 
 msgid "Insite fills this in. A field used by a rule cannot be deleted."
 msgstr "يملأ Insite هذا. لا يمكن حذف حقل تستخدمه قاعدة."
+
+msgid "Insite records which boxes this line's rule reads, so the rest stay out of the way."
+msgstr "يسجّل Insite الحقول التي تقرأها قاعدة هذا السطر، ليبقى الباقي بعيدًا عن الطريق."
 
 msgid "Invalid Name"
 msgstr "اسم غير صالح"
@@ -279,6 +312,9 @@ msgstr "الهامش"
 msgid "Margin %"
 msgstr "نسبة الهامش"
 
+msgid "Measurable"
+msgstr "قابل للقياس"
+
 msgid "Measure This"
 msgstr "قِس هذا"
 
@@ -288,17 +324,26 @@ msgstr "قِسه"
 msgid "Measured"
 msgstr "القياس"
 
+msgid "Measured By"
+msgstr "قِيس بواسطة"
+
 msgid "Measured by {0}{1}, set on {2}."
 msgstr "يُقاس بواسطة {0}{1}، المحددة على {2}."
 
 msgid "Measured by {0}{1}."
 msgstr "يُقاس بواسطة {0}{1}."
 
+msgid "Measurement"
+msgstr "القياس"
+
 msgid "Measurement Field"
 msgstr "حقل قياس"
 
 msgid "Measurement Input"
 msgstr "مُدخل القياس"
+
+msgid "Measurement Inputs"
+msgstr "مُدخلات القياس"
 
 msgid "Measurement Output"
 msgstr "ناتج القياس"
@@ -311,6 +356,9 @@ msgstr "سجل القياسات"
 
 msgid "Measurement Rule"
 msgstr "قاعدة القياس"
+
+msgid "Measurements"
+msgstr "القياسات"
 
 msgid "More Rejected Than Delivered"
 msgstr "المرفوض أكبر من المُسلَّم"
@@ -341,6 +389,12 @@ msgstr "لا تفتحها إلا إذا كان الجواب الجاهز لا ي
 
 msgid "Only {0} of {1} was delivered on that line, so {2} cannot have been rejected."
 msgstr "تم تسليم {0} فقط من {1} في هذا السطر، فلا يمكن رفض {2}."
+
+msgid "Open the rule to change the inputs, add a formula of your own, or write further numbers onto the line."
+msgstr "افتح القاعدة لتغيير المُدخلات، أو كتابة معادلة خاصة بك، أو كتابة أرقام أخرى على السطر."
+
+msgid "Optional. Set it to narrow the Scope list on the lines, and it carries to the Sales Order."
+msgstr "اختياري. حدده لتضييق قائمة النطاق على السطور، وينتقل إلى أمر البيع."
 
 msgid "Options"
 msgstr "خيارات"
@@ -392,6 +446,9 @@ msgstr "منع اعتماد الفواتير للنطاق الذي به أعما
 
 msgid "Rejected"
 msgstr "مرفوض"
+
+msgid "Rejected Amount"
+msgstr "قيمة المرفوض"
 
 msgid "Rejected Work"
 msgstr "الأعمال المرفوضة"
@@ -449,6 +506,9 @@ msgstr "صف {0}: {1} → {2} ({3})"
 
 msgid "Rule"
 msgstr "القاعدة"
+
+msgid "Rule Used"
+msgstr "القاعدة المستخدمة"
 
 msgid "Sales Orders, Delivery Notes and Sales Invoices must carry a Project, and a Scope on every measured line. Insite only checks lines that a Measurement Rule matched, so ordinary sales are not affected."
 msgstr "يجب أن تحمل أوامر البيع وإذون التسليم وفواتير البيع مشروعًا، ونطاقًا على كل سطر مقيس. لا يفحص Insite إلا السطور التي طابقتها قاعدة قياس، فالمبيعات العادية لا تتأثر."
@@ -534,6 +594,9 @@ msgstr "المعادلة لا تستخدم: {0}. احذف المُدخل، أو 
 msgid "The quantity above is what you bill. Add anything else the same measurements produce — the board a panel uses, the edging round it, the fittings that go on it."
 msgstr "الكمية أعلاه هي ما تفوتره. أضف أي شيء آخر تنتجه نفس القياسات — اللوح الذي يستهلكه اللوح، والحواف حوله، والإكسسوارات التي تُركب عليه."
 
+msgid "The scope of work this line belongs to. It carries through to the Sales Order."
+msgstr "نطاق العمل الذي يتبعه هذا السطر. ينتقل إلى أمر البيع."
+
 msgid "These lines are no longer measured — check the quantity"
 msgstr "هذه السطور لم تعد تُقاس — راجع الكمية"
 
@@ -545,6 +608,9 @@ msgstr "هذا مسجل على السطر {0}، {1}. نفس الصنف موجو�
 
 msgid "This rule gives a quantity of {0}."
 msgstr "هذه القاعدة تعطي كمية {0}."
+
+msgid "Tick when the quantity is worked out from measurements rather than typed."
+msgstr "فعّله عندما تُحسب الكمية من القياسات بدلًا من كتابتها."
 
 msgid "Transaction line"
 msgstr "سطر المستند"
@@ -585,6 +651,9 @@ msgstr "الفرق عن المخطط"
 msgid "Volume"
 msgstr "الحجم"
 
+msgid "Wastage"
+msgstr "الهالك"
+
 msgid "What else these measurements give you"
 msgstr "ما الذي تعطيه هذه القياسات أيضًا"
 
@@ -606,11 +675,17 @@ msgstr "أين يُستخدم"
 msgid "Which Line Failed?"
 msgstr "أي سطر هو المرفوض؟"
 
+msgid "Which scope of work this belongs to. Contract Progress reports rejected work against it."
+msgstr "أي نطاق عمل يتبعه هذا. يُدرج تقرير تقدم العقد الأعمال المرفوضة عليه."
+
 msgid "Work it out"
 msgstr "احسبها"
 
 msgid "Worked out as"
 msgstr "تُحسب كالآتي"
+
+msgid "Worked out from the rate on the line this came off, in company currency."
+msgstr "يُحسب من سعر السطر الذي جاء منه، بعملة الشركة."
 
 msgid "Write a formula, or choose a different starting point."
 msgstr "اكتب معادلة، أو اختر نقطة بداية أخرى."
@@ -671,6 +746,8 @@ msgstr "… و{0} غيرها"
 
 msgid "…and more."
 msgstr "…وغيرها."
+
+
 
 
 

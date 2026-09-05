@@ -12,6 +12,7 @@ from __future__ import annotations
 
 from frappe.custom.doctype.custom_field.custom_field import create_custom_fields
 
+from insite.calc.measures import PRESET_CHOICES
 from insite.constants import ITEM_DOCTYPES
 
 
@@ -220,11 +221,70 @@ def _quotation_scope_field():
 	]
 
 
+#: The record a rule can be written from, and where its Measurement section goes.
+MEASURABLE_AFTER = {"Item Group": "item_group_name", "Item": "item_group", "Brand": "description"}
+
+
+def _measurable_fields(insert_after):
+	"""Say on the record itself whether it is measured, and how.
+
+	A Measurement Rule stays its own record — that is what lets one rule cover a
+	group, a brand, a template or an item, and what gives the ladder something
+	to order. But nobody setting up an item group should have to know that. Tick
+	**Measurable**, pick how, save: Insite writes the rule.
+
+	These two are the input. The rule is the authority, so the summary is read
+	back from it, and a rule edited directly puts these straight on next load.
+	"""
+	return [
+		{
+			"fieldname": "custom_insite_measurement_sb",
+			"label": "Measurement",
+			"fieldtype": "Section Break",
+			"insert_after": insert_after,
+			"collapsible": 1,
+			"collapsible_depends_on": "custom_measurable",
+		},
+		{
+			"fieldname": "custom_measurable",
+			"label": "Measurable",
+			"fieldtype": "Check",
+			"insert_after": "custom_insite_measurement_sb",
+			"description": "Tick when the quantity is worked out from measurements rather than typed.",
+		},
+		{
+			"fieldname": "custom_measurement_preset",
+			"label": "How is it measured?",
+			"fieldtype": "Select",
+			"options": "\n" + "\n".join(PRESET_CHOICES),
+			"insert_after": "custom_measurable",
+			"depends_on": "custom_measurable",
+			"mandatory_depends_on": "custom_measurable",
+			"description": "Pick the one that matches how you price this work.",
+		},
+		{
+			"fieldname": "custom_measurement_summary",
+			"label": "Worked out as",
+			"fieldtype": "Data",
+			"insert_after": "custom_measurement_preset",
+			"depends_on": "custom_measurable",
+			"read_only": 1,
+			"allow_on_submit": 1,
+			"description": "Open the rule to change the inputs, add a formula of your own, or write further numbers onto the line.",
+		},
+	]
+
+
 def get_custom_fields():
 	fields = {doctype: _fields() for doctype in ITEM_DOCTYPES}
 	fields["Quotation Item"] = fields["Quotation Item"] + _quotation_scope_field()
 	fields["Quotation"] = _quotation_project_field()
 	fields["Quality Inspection"] = _quality_inspection_fields()
+
+	# Where a rule can be set from the record it measures. The field it sits
+	# after differs because these three forms are laid out differently.
+	for doctype, after in MEASURABLE_AFTER.items():
+		fields[doctype] = _measurable_fields(after)
 	return fields
 
 

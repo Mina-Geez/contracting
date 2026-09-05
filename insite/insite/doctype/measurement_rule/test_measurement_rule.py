@@ -299,3 +299,108 @@ class TestMeasuringFromTheRecordItself(IntegrationTestCase):
 
 		name = measure_this("Item Group", self.group, "Area")["rule"]
 		self.assertEqual(measured_by("Item Group", self.group)["rule"], name)
+
+
+class TestTheMeasurableCheckbox(IntegrationTestCase):
+	"""Tick Measurable on the record, pick how, save — Insite writes the rule.
+
+	The rule stays the authority. These fields are the front door to the common
+	case, and they are put straight from the rule whenever the form is opened,
+	so going in through the back one cannot leave the record lying.
+	"""
+
+	@classmethod
+	def setUpClass(cls):
+		super().setUpClass()
+		cls.group = _ensure_group("Insite Checkbox Group")
+		frappe.db.commit()
+
+	def tearDown(self):
+		for name in frappe.get_all(
+			"Measurement Rule", filters={"item_group": ["like", "Insite Checkbox%"]}, pluck="name"
+		):
+			frappe.delete_doc("Measurement Rule", name, force=True, ignore_permissions=True)
+		group = frappe.get_doc("Item Group", self.group)
+		group.custom_measurable = 0
+		group.custom_measurement_preset = None
+		group.save(ignore_permissions=True)
+		frappe.db.commit()
+
+	def _tick(self, preset="Area"):
+		group = frappe.get_doc("Item Group", self.group)
+		group.custom_measurable = 1
+		group.custom_measurement_preset = preset
+		group.save(ignore_permissions=True)
+		return group
+
+	def _rule(self):
+		name = frappe.db.get_value(
+			"Measurement Rule", {"apply_on": "Item Group", "item_group": self.group}, "name"
+		)
+		return frappe.get_doc("Measurement Rule", name) if name else None
+
+	def test_ticking_it_writes_the_rule(self):
+		self._tick("Area")
+		rule = self._rule()
+		self.assertIsNotNone(rule, "ticking Measurable should have written a rule")
+		self.assertEqual(rule.preset, "Area")
+		self.assertEqual(rule.formula, "height * width * count")
+		self.assertFalse(rule.disabled)
+
+	def test_the_summary_comes_back_onto_the_record(self):
+		self._tick("Area")
+		self.assertEqual(
+			frappe.db.get_value("Item Group", self.group, "custom_measurement_summary"),
+			"Height × Width × Count",
+		)
+
+	def test_changing_how_it_is_measured_rewrites_the_arithmetic(self):
+		self._tick("Area")
+		self._tick("Count")
+		rule = self._rule()
+		self.assertEqual(rule.preset, "Count")
+		self.assertEqual(rule.formula, "count")
+		self.assertEqual({row.token for row in rule.inputs}, {"count"})
+
+	def test_unticking_it_disables_the_rule_rather_than_deleting_it(self):
+		"""A rule may have been written on for months. Losing it is not undoable."""
+		self._tick("Area")
+		name = self._rule().name
+
+		group = frappe.get_doc("Item Group", self.group)
+		group.custom_measurable = 0
+		group.save(ignore_permissions=True)
+
+		self.assertTrue(frappe.db.exists("Measurement Rule", name), "the rule should still be there")
+		self.assertTrue(frappe.db.get_value("Measurement Rule", name, "disabled"))
+		self.assertFalse(frappe.db.get_value("Item Group", self.group, "custom_measurement_summary"))
+
+	def test_ticking_it_again_brings_the_same_rule_back(self):
+		self._tick("Area")
+		name = self._rule().name
+		group = frappe.get_doc("Item Group", self.group)
+		group.custom_measurable = 0
+		group.save(ignore_permissions=True)
+
+		self._tick("Area")
+		self.assertEqual(self._rule().name, name, "a second rule should not appear")
+		self.assertFalse(self._rule().disabled)
+
+	def test_measurable_without_saying_how_is_refused(self):
+		group = frappe.get_doc("Item Group", self.group)
+		group.custom_measurable = 1
+		group.custom_measurement_preset = None
+		with self.assertRaises(frappe.ValidationError):
+			group.save(ignore_permissions=True)
+
+	def test_the_form_is_put_straight_from_the_rule(self):
+		"""Disable the rule on its own form and the checkbox must stop claiming."""
+		from insite.overrides.measurable import refresh_from_rule
+
+		self._tick("Area")
+		self._rule().db_set("disabled", 1)
+
+		group = frappe.get_doc("Item Group", self.group)
+		refresh_from_rule(group)
+		self.assertFalse(group.custom_measurable)
+		self.assertIsNone(group.custom_measurement_preset)

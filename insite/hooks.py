@@ -67,6 +67,17 @@ doc_events["Sales Invoice"]["validate"].append("insite.overrides.transaction.war
 # quotation means nothing until it has been ordered.
 doc_events["Sales Order"]["on_submit"] = ["insite.overrides.transaction.set_the_plan_from_the_first_order"]
 
+# Tick Measurable on an Item Group, a Brand or an Item and Insite writes the
+# rule; untick it and the rule is disabled. The rule stays the authority, so the
+# fields are put straight from it whenever the form is opened.
+for _measurable in ("Item Group", "Brand", "Item"):
+	doc_events[_measurable] = {
+		"onload": "insite.overrides.measurable.refresh_from_rule",
+		"on_update": "insite.overrides.measurable.sync_rule",
+	}
+
+del _measurable
+
 # Rejected work is ERPNext's Quality Inspection. Insite gives it a Scope and
 # works out what the refused quantity was worth.
 doc_events["Quality Inspection"] = {"validate": ["insite.overrides.quality_inspection.price_the_rejection"]}
