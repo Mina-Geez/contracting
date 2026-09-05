@@ -187,6 +187,44 @@ item on several lines, each under its own scope. Install turns on ERPNext's
 **Allow Item to Be Added Multiple Times in a Transaction** for exactly this
 reason.
 
+## What a scope has cost, and what it is about to cost
+
+Revenue and cost both reach the ledger tagged with the Scope, so ERPNext can
+report profit per scope without Insite adding anything. **Profitability
+Analysis** does exactly that, and a scope can carry an ERPNext **Budget** the
+way a cost centre can.
+
+What no ledger holds is the **commitment**. A Purchase Order is a promise to pay
+that has not been posted, so a scope reads as profitable right up to the moment
+the supplier's invoices arrive. That is the quiet way a contract is lost: the
+margin was spent months before anyone could see it.
+
+So Insite separates three things:
+
+| | What it is |
+| --- | --- |
+| **Cost** | posted to expense accounts against the scope |
+| **Committed** | ordered from suppliers and not yet invoiced |
+| **Expected Cost** | the two together — what the scope will have cost |
+
+**Margin** is the Contract Value less the Expected Cost, which is the number to
+manage a job by. **Scope Profitability** shows all of it, worst margin first,
+life-to-date — a contract is not a fiscal year, and costing a scope over a
+period while its contract value covers the whole job compares two different
+things.
+
+## Collecting a payment
+
+A contractor is paid per job. A customer with three jobs running has open
+invoices on all three, and allocating a receipt against the wrong one puts the
+money on the wrong contract.
+
+So the outstanding invoices a Payment Entry offers can be filtered by
+**Project**, or by **Scope** to collect against one part of a job. A project is
+matched on the invoice; a scope on its lines, because that is where a scope
+lives — an invoice covering three scopes appears under all three. Allocation is
+still per invoice. What the filters change is which invoices you choose among.
+
 ## A change of scope
 
 Insite has no change document. A mid-project change of scope is another Sales
@@ -271,5 +309,9 @@ that include it, so the table cannot drift between documents.
    delivery line and Insite carries the Scope onto it.
 5. **Contract Progress** shows, for each scope: planned, ordered, the variance
    to plan, delivered, what is rejected, invoiced, and what is left to invoice.
+   **Measurement Register** shows what a scope is made of. **Scope
+   Profitability** shows whether it will make money, commitments included.
 6. You print the quotation or the invoice grouped by scope, with the
    measurements shown, and the client can check the arithmetic.
+7. When the payment arrives, you filter the outstanding invoices to that job so
+   the receipt lands on the right contract.

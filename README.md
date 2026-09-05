@@ -53,6 +53,18 @@ ordered, delivered and invoiced.
   purchase orders raised but not yet invoiced. No ledger holds that number, so
   every accounting report shows a scope as profitable until the supplier
   invoices land. Worst margin first.
+- **Collect a payment for one job** — Get Outstanding Invoices takes a
+  **Project**, and a **Scope**, so a receipt is allocated against the invoices of
+  the job it was paid for and not against another contract's.
+- **Pickers that only offer what will be accepted** — the Project on a selling
+  document is narrowed to that customer's jobs, and the Scope on each line to
+  that document's project. A document is never refused for a value its own
+  picker suggested.
+- **The reports ERPNext already had** — registering the Scope as an accounting
+  dimension is what makes **Profitability Analysis**, **Budget Variance Report**
+  and the financial statements work per scope, with nothing built and nothing to
+  maintain. A scope can carry an ERPNext **Budget** like any cost centre. The
+  workspace links the first two rather than rebuilding them.
 - **Print formats that show the work** — the quotation, order, delivery note and
   invoice, with the lines grouped by Scope and a subtotal each, and the
   measurement printed under every line: `H 1.500 × W 2.800 × 40 off`. A client
