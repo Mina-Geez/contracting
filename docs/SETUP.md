@@ -75,7 +75,11 @@ Two more choices sit in the same list. **Manual** tells Insite never to
 calculate the line, and to keep the quantity you typed. **Custom** is for a
 formula you write from scratch.
 
-Add a rule for each item group, item, template or attribute value you measure.
+Add a rule for each item group, brand, item, template or attribute value you
+measure. When two rules match the same item the narrower one wins, in the order
+ERPNext already uses on the Item: item, then template, then attribute value,
+then brand, then item group. A rule on an item group also covers the groups
+beneath it, so one rule on a parent group can cover a whole branch.
 
 ### Adjust the measurement
 

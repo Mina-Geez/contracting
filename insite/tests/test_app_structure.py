@@ -287,6 +287,7 @@ _THEIRS_TO_TRANSLATE = {
 	"Status",
 	"Title",
 	"UOM",
+	"Brand",  # العلامة التجارية
 	# ERPNext's own reports, which the workspace points at rather than rebuilding
 	"Budget Variance Report",
 	"Profitability Analysis",

@@ -3,6 +3,12 @@
 // The Project and the Scope Item are the two things Insite reports against, so
 // a project should lead to its scopes rather than making someone start from
 // the Scope Item list and pick the project back.
+//
+// This menu is also where the contracting features meet the Projects module.
+// The desk in v16 is scoped by app — each app owns its own workspaces — so
+// Insite's page cannot be nested inside ERPNext's Projects page, whatever
+// `parent_page` suggests. What can be done is this: from the job, reach
+// everything about the job, already filtered to it.
 
 frappe.ui.form.on("Project", {
 	refresh(frm) {
@@ -14,9 +20,15 @@ frappe.ui.form.on("Project", {
 
 		frm.add_custom_button(__("Add Scopes"), () => insite_add_scopes(frm), __("Insite"));
 
-		frm.add_custom_button(__("Contract Progress"), () => {
-			frappe.set_route("query-report", "Contract Progress", { project: frm.doc.name });
-		}, __("Insite"));
+		[
+			["Contract Progress", "Contract Progress"],
+			["Scope Profitability", "Scope Profitability"],
+			["Measurement Register", "Measurement Register"],
+		].forEach(([label, report]) => {
+			frm.add_custom_button(__(label), () => {
+				frappe.set_route("query-report", report, { project: frm.doc.name });
+			}, __("Insite"));
+		});
 	},
 });
 

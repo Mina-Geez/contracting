@@ -20,6 +20,7 @@ _SCOPE_FIELDS = {
 	"Item Code": ("item_code", "Item"),
 	"Item Template": ("item_template", "Item Template"),
 	"Item Group": ("item_group", "Item Group"),
+	"Brand": ("brand", "Brand"),
 	"Item Attribute Value": ("item_attribute", "Attribute"),
 }
 

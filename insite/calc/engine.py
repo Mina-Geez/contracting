@@ -12,6 +12,8 @@ from __future__ import annotations
 import frappe
 from frappe import _
 from frappe.utils import cint, flt
+from frappe.utils.caching import request_cache
+from frappe.utils.nestedset import get_ancestors_of
 
 from insite.calc import measures
 from insite.calc.resolve import resolve_rule
@@ -77,6 +79,7 @@ def load_rules():
 				"item_code": doc.item_code,
 				"item_template": doc.item_template,
 				"item_group": doc.item_group,
+				"brand": doc.brand,
 				"item_attribute": doc.item_attribute,
 				"attribute_value": doc.attribute_value,
 				"priority": cint(doc.priority),
@@ -289,17 +292,33 @@ def _item_values_for(item_code, rule):
 
 def _item_context(item_code, attributes):
 	values = frappe.get_cached_value(
-		"Item", item_code, ["item_group", "variant_of", "has_variants"], as_dict=True
+		"Item", item_code, ["item_group", "brand", "variant_of", "has_variants"], as_dict=True
 	)
 	if not values:
 		return None
 	return {
 		"item_code": item_code,
 		"item_group": values.get("item_group"),
+		"item_group_ancestry": _group_ancestry(values.get("item_group")),
+		"brand": values.get("brand"),
 		"variant_of": values.get("variant_of"),
 		"has_variants": values.get("has_variants"),
 		"attributes": attributes.get(item_code, {}),
 	}
+
+
+@request_cache
+def _group_ancestry(item_group):
+	"""The item's group and then its parents, nearest first.
+
+	A rule written on a parent group reaches everything under it, the way an
+	Item Default does, so the resolver needs the whole line of descent and not
+	just the group on the item. Cached for the request: a document of forty
+	lines is usually forty items out of two or three groups.
+	"""
+	if not item_group:
+		return []
+	return [item_group, *get_ancestors_of("Item Group", item_group, order_by="lft desc")]
 
 
 def _attributes_for(items):

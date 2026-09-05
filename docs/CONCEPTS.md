@@ -29,7 +29,7 @@ A record of its own. It answers one question. For this item, how is the quantity
 calculated?
 
 A rule belongs to a Work Item Type. **Applies To** says what the rule covers. It
-takes an item, an item group, an item template, or an attribute value. Insite
+takes an item, an item group, a brand, an item template, or an attribute value. Insite
 names each rule after the work and what it covers. Nobody types a code.
 
 ### Start from, and Worked out as
@@ -117,9 +117,25 @@ to the same field twice. Insite refuses both when you save the rule.
 
 ### Which rule runs
 
-When two rules match the same item, the more specific one wins: item, then
-template, then attribute value, then item group. Priority breaks a tie between
-two rules that are equally specific.
+When two rules match the same item, the more specific one wins. The order is
+the one ERPNext already teaches on the Item, so there is no second convention to
+learn: a default on the item beats one on its brand, which beats one on its item
+group.
+
+| Applies To | Covers |
+| --- | --- |
+| **Item Code** | this one item |
+| **Item Template** | every variant of a template |
+| **Item Attribute Value** | every item with an attribute, such as 6mm |
+| **Brand** | every item of a make |
+| **Item Group** | every item in a group, **and in the groups beneath it** |
+
+**Item Group is a tree, and a rule on a parent reaches everything under it** —
+the way an Item Default does. A rule on `Products` covers `Products > Glazing`
+until someone writes one on `Glazing`, which is nearer and wins. A nearer group
+never outranks a brand, however deep the tree goes.
+
+Priority breaks a tie between two rules that are equally specific.
 
 A line whose inputs are all empty is left alone. Insite does not overwrite a
 typed quantity when nothing was measured.

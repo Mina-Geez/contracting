@@ -6,7 +6,7 @@ For people changing the app. [SETUP.md](./SETUP.md) is for people running it.
 
 ```bash
 # offline — no site needed
-python -m pytest insite/tests -q     # 96 tests
+python -m pytest insite/tests -q     # 104 tests
 ruff check insite
 ruff format --check insite
 node --check insite/public/js/insite_transaction.js
