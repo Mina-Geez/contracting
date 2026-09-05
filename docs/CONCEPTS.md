@@ -118,6 +118,11 @@ never outranks a brand, however deep the tree goes.
 
 Priority breaks a tie between two rules that are equally specific.
 
+An **Item** and an **Item Group** each say at the top of their form which rule
+measures them, and name the group a rule was inherited from. The rule stays its
+own record — reusable, prioritised, able to cover a group, a brand, a template
+or one item — but you no longer have to know that to find it.
+
 A line whose inputs are all empty is left alone. Insite does not overwrite a
 typed quantity when nothing was measured.
 

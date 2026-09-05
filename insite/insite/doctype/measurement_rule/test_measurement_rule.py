@@ -99,3 +99,117 @@ class TestAddingAFieldWhileWritingARule(IntegrationTestCase):
 		field = self._add(f"Inline Number Of Panels {frappe.generate_hash(length=5)}")
 		self.assertTrue(field.field_name.startswith("custom_"))
 		self.assertNotIn(" ", field.field_name)
+
+
+class TestWhatMeasuresThis(IntegrationTestCase):
+	"""The answer to "where do I set the calculation?", on the form it was asked on.
+
+	A Measurement Rule is its own record, targeted the way a Pricing Rule is,
+	which is the right shape — but it left an Item Group saying nothing at all
+	about how the things in it are measured.
+	"""
+
+	@classmethod
+	def setUpClass(cls):
+		super().setUpClass()
+		cls.parent_group = _ensure_group("Insite Measured Parent", is_group=1)
+		cls.child_group = _ensure_group("Insite Measured Child", parent=cls.parent_group)
+		cls.quiet_group = _ensure_group("Insite Unmeasured")
+		cls.item = frappe.db.get_value("Item", {"item_group": cls.child_group}, "name") or (
+			frappe.get_doc(
+				{
+					"doctype": "Item",
+					"item_code": "INSITE-MEASURED-ITEM",
+					"item_name": "Insite Measured Item",
+					"item_group": cls.child_group,
+					"stock_uom": "Nos",
+					"is_stock_item": 0,
+				}
+			)
+			.insert(ignore_permissions=True)
+			.name
+		)
+		frappe.db.commit()
+
+	def tearDown(self):
+		for name in frappe.get_all(
+			"Measurement Rule", filters={"rule_title": ["like", "Insite Measured%"]}, pluck="name"
+		):
+			frappe.delete_doc("Measurement Rule", name, force=True, ignore_permissions=True)
+		frappe.db.commit()
+
+	def _rule(self, item_group, title):
+		return (
+			frappe.get_doc(
+				{
+					"doctype": "Measurement Rule",
+					"rule_title": title,
+					"apply_on": "Item Group",
+					"item_group": item_group,
+					"preset": "Count",
+					"inputs": [{"source": "Line", "field_name": "custom_base_qty", "token": "count"}],
+					"formula": "count",
+				}
+			)
+			.insert(ignore_permissions=True)
+			.name
+		)
+
+	def test_a_group_with_no_rule_says_so(self):
+		from insite.api import measured_by
+
+		self.assertIsNone(measured_by("Item Group", self.quiet_group))
+
+	def test_a_group_names_its_own_rule(self):
+		from insite.api import measured_by
+
+		name = self._rule(self.child_group, "Insite Measured Own")
+		answer = measured_by("Item Group", self.child_group)
+		self.assertEqual(answer["rule"], name)
+		self.assertIsNone(answer["inherited_from"], "its own rule is not inherited")
+
+	def test_a_group_says_when_the_rule_belongs_to_a_parent(self):
+		"""Otherwise someone edits this group's rule and there isn't one."""
+		from insite.api import measured_by
+
+		self._rule(self.parent_group, "Insite Measured Parent Rule")
+		answer = measured_by("Item Group", self.child_group)
+		self.assertEqual(answer["inherited_from"], self.parent_group)
+
+	def test_the_nearer_rule_wins_and_stops_being_inherited(self):
+		from insite.api import measured_by
+
+		self._rule(self.parent_group, "Insite Measured Parent Rule")
+		own = self._rule(self.child_group, "Insite Measured Own")
+		answer = measured_by("Item Group", self.child_group)
+		self.assertEqual(answer["rule"], own)
+		self.assertIsNone(answer["inherited_from"])
+
+	def test_an_item_gets_the_answer_a_real_document_would(self):
+		from insite.api import measured_by
+
+		name = self._rule(self.child_group, "Insite Measured Own")
+		self.assertEqual(measured_by("Item", self.item)["rule"], name)
+
+	def test_it_answers_nothing_for_anything_else(self):
+		from insite.api import measured_by
+
+		self.assertIsNone(measured_by("Sales Order", "whatever"))
+		self.assertIsNone(measured_by("Item Group", None))
+
+
+def _ensure_group(name, is_group=0, parent=None):
+	if frappe.db.exists("Item Group", name):
+		return name
+	return (
+		frappe.get_doc(
+			{
+				"doctype": "Item Group",
+				"item_group_name": name,
+				"is_group": is_group,
+				"parent_item_group": parent or "All Item Groups",
+			}
+		)
+		.insert(ignore_permissions=True)
+		.name
+	)

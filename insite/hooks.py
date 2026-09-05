@@ -32,6 +32,10 @@ doctype_js = {dt: "public/js/insite_transaction.js" for dt in _c.TAGGED_DOCTYPES
 doctype_js["Measurement Rule"] = "public/js/measurement_rule.js"
 doctype_js["Project"] = "public/js/project.js"
 doctype_js["Payment Entry"] = "public/js/payment_entry.js"
+# A rule is its own record, so an Item and an Item Group say nothing about how
+# they are measured. These put the answer where someone goes looking for it.
+doctype_js["Item"] = "public/js/item_measurement.js"
+doctype_js["Item Group"] = "public/js/item_measurement.js"
 
 # --- Collecting a payment for one job ---------------------------------------
 # ERPNext's outstanding search filters by any active accounting dimension, so

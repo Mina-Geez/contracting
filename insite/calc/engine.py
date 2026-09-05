@@ -171,7 +171,7 @@ def recalculate_document(doc):
 	for row in items:
 		rule = None
 		if rules and row.get("item_code"):
-			item = _item_context(row.item_code, attributes)
+			item = item_context(row.item_code, attributes)
 			if item:
 				rule = resolve_rule(item, rules)
 		if rule:
@@ -286,7 +286,7 @@ def _item_values_for(item_code, rule):
 	return frappe.get_cached_value("Item", item_code, fields, as_dict=True) or {}
 
 
-def _item_context(item_code, attributes):
+def item_context(item_code, attributes=None):
 	values = frappe.get_cached_value(
 		"Item", item_code, ["item_group", "brand", "variant_of", "has_variants"], as_dict=True
 	)
@@ -295,16 +295,16 @@ def _item_context(item_code, attributes):
 	return {
 		"item_code": item_code,
 		"item_group": values.get("item_group"),
-		"item_group_ancestry": _group_ancestry(values.get("item_group")),
+		"item_group_ancestry": group_ancestry(values.get("item_group")),
 		"brand": values.get("brand"),
 		"variant_of": values.get("variant_of"),
 		"has_variants": values.get("has_variants"),
-		"attributes": attributes.get(item_code, {}),
+		"attributes": (attributes or {}).get(item_code, {}),
 	}
 
 
 @request_cache
-def _group_ancestry(item_group):
+def group_ancestry(item_group):
 	"""The item's group and then its parents, nearest first.
 
 	A rule written on a parent group reaches everything under it, the way an

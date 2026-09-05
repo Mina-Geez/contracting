@@ -131,6 +131,56 @@ def line_preview(item_code: str | None = None, values: str | dict | None = None)
 
 
 @frappe.whitelist()
+def measured_by(doctype: str, name: str):
+	"""Which Measurement Rule measures this Item or Item Group, if any.
+
+	The rules are their own records, targeted the way ERPNext targets a Pricing
+	Rule, which is right — but it means that standing on an Item Group there is
+	nothing on the form to say how it is measured, and the honest answer to
+	"where do I set this?" was "somewhere else". This answers it in place.
+
+	The Item case runs the same resolution a real document runs, so what it
+	reports is what will actually happen. The Item Group case resolves against
+	the group alone, which is the question being asked: what measures things
+	here, before any item, brand or template of their own gets a say.
+	"""
+	if doctype not in ("Item", "Item Group") or not name:
+		return None
+	if not frappe.has_permission("Measurement Rule", "read"):
+		return None
+
+	rules = engine.load_rules()
+	if not rules:
+		return None
+
+	if doctype == "Item":
+		item = engine.item_context(name)
+	else:
+		item = {"item_group": name, "item_group_ancestry": engine.group_ancestry(name)}
+	if not item:
+		return None
+
+	rule = resolve_rule(item, rules)
+	if not rule:
+		return None
+
+	# A rule on a parent group covers this one. Say so, or it looks like the
+	# rule was written here and someone edits the wrong record.
+	own_group = item.get("item_group")
+	inherited_from = None
+	if rule["apply_on"] == "Item Group" and rule["item_group"] != own_group:
+		inherited_from = rule["item_group"]
+
+	return {
+		"rule": rule["rule"],
+		"title": rule["title"],
+		"applies_on": rule["apply_on"],
+		"inherited_from": inherited_from,
+		"summary": frappe.db.get_value("Measurement Rule", rule["rule"], "measurement_summary"),
+	}
+
+
+@frappe.whitelist()
 @frappe.validate_and_sanitize_search_inputs
 def scope_query(doctype, txt, searchfield, start, page_len, filters, reference_doctype=None):
 	"""The Scope picker on a document line: ERPNext's own list, narrowed to the project.

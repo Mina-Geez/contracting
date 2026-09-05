@@ -61,7 +61,13 @@ calculate the line, and to keep the quantity you typed. **Custom** is for a
 formula you write from scratch.
 
 Add a rule for each item group, brand, item, template or attribute value you
-measure. When two rules match the same item the narrower one wins, in the order
+measure.
+
+**To find out what measures something, open it.** An Item or an Item Group says
+at the top of its form which rule measures it, how that rule works out, and a
+button to open it. Where nothing does, it says so and offers to write one
+already pointed at what you were looking at. A rule inherited from a parent
+group names the group it was set on, so nobody edits the wrong record. When two rules match the same item the narrower one wins, in the order
 ERPNext already uses on the Item: item, then template, then attribute value,
 then brand, then item group. A rule on an item group also covers the groups
 beneath it, so one rule on a parent group can cover a whole branch.

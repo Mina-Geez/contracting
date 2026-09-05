@@ -11,7 +11,7 @@ ruff check insite
 ruff format --check insite
 node --check insite/public/js/insite_transaction.js
 
-# on a bench — 44 integration tests
+# on a bench — 54 integration tests
 bench --site test.localhost migrate
 bench --site test.localhost run-tests --app insite
 ```
