@@ -115,6 +115,7 @@ def get_data(filters):
 		data.append(
 			{
 				"scope": scope.name,
+				"scope_title": scope.scope_title,
 				"project": scope.project,
 				"status": scope.status,
 				"contract_value": contract_value,
@@ -128,7 +129,27 @@ def get_data(filters):
 		)
 
 	data.sort(key=lambda row: row["margin"])
+	if data:
+		data.append(_total_row(data))
 	return data
+
+
+def _total_row(rows):
+	"""One totals line, with Margin % worked out from the totals, not averaged.
+
+	Frappe's own total row averaged the Percent column; this divides the summed
+	margin by the summed contract value, which is what "margin overall" means.
+	add_total_row is 0 on the report so this is the only total shown. The JS
+	marks the row with is_total to render it in bold and label it "Total".
+	"""
+	fields = ("contract_value", "revenue", "cost", "committed", "expected_cost", "margin")
+	total = {field: sum(flt(row[field]) for row in rows) for field in fields}
+	total["margin_pct"] = (
+		(total["margin"] / total["contract_value"] * 100.0) if total["contract_value"] else 0.0
+	)
+	total["scope"] = ""
+	total["is_total"] = 1
+	return total
 
 
 def _scopes(filters):
@@ -141,7 +162,7 @@ def _scopes(filters):
 	return frappe.get_list(
 		"Scope Item",
 		filters=conditions,
-		fields=["name", "project", "status"],
+		fields=["name", "scope_title", "project", "status"],
 		order_by="name asc",
 		limit_page_length=0,
 	)

@@ -43,6 +43,13 @@ def get_columns():
 			"options": "Scope Item",
 			"width": 220,
 		},
+		{
+			"label": _("Project"),
+			"fieldname": "project",
+			"fieldtype": "Link",
+			"options": "Project",
+			"width": 160,
+		},
 		{"label": _("Status"), "fieldname": "status", "fieldtype": "Data", "width": 100},
 		{"label": _("Planned"), "fieldname": "planned", "fieldtype": "Currency", "width": 120},
 		{"label": _("Ordered"), "fieldname": "ordered", "fieldtype": "Currency", "width": 120},
@@ -86,6 +93,8 @@ def get_data(filters):
 		data.append(
 			{
 				"scope": scope.name,
+				"scope_title": scope.scope_title,
+				"project": scope.project,
 				"status": scope.status,
 				"planned": planned,
 				"ordered": ordered_amount,
@@ -97,7 +106,31 @@ def get_data(filters):
 				"pct_invoiced": (invoiced_amount / committed * 100.0) if committed else 0.0,
 			}
 		)
+
+	if data:
+		data.append(_total_row(data))
 	return data
+
+
+def _total_row(rows):
+	"""One totals line, with the percentage worked out from the totals.
+
+	Frappe's own total row averaged the Percent column — 42.84%, 0, 0 came out
+	as 14.28% — which is not what "% Invoiced overall" means. So the report turns
+	that off (add_total_row is 0) and totals its own money, then divides the
+	summed invoiced by the summed commitment. The JS marks the row with is_total
+	so the grid can show it in bold and label it "Total".
+	"""
+	fields = ("planned", "ordered", "variance_to_plan", "delivered", "rejected_open", "invoiced", "variance")
+	total = {field: sum(flt(row[field]) for row in rows) for field in fields}
+	# Committed per row is "ordered, or the plan if nothing is ordered yet", so
+	# the overall commitment is the sum of those, not ordered-or-planned of the
+	# totals. Left to Invoice already carries it: committed = invoiced + variance.
+	committed = total["invoiced"] + total["variance"]
+	total["pct_invoiced"] = (total["invoiced"] / committed * 100.0) if committed else 0.0
+	total["scope"] = ""
+	total["is_total"] = 1
+	return total
 
 
 def _scopes(filters):
@@ -110,7 +143,7 @@ def _scopes(filters):
 	return frappe.get_list(
 		"Scope Item",
 		filters=conditions,
-		fields=["name", "scope_title", "status", "planned_amount"],
+		fields=["name", "scope_title", "project", "status", "planned_amount"],
 		order_by="name asc",
 		limit_page_length=0,
 	)

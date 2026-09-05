@@ -34,6 +34,17 @@ frappe.query_reports["Scope Profitability"] = {
 	],
 
 	formatter(value, row, column, data, default_formatter) {
+		// The totals line: label the first column and bold the rest.
+		if (data && data.is_total) {
+			if (column.fieldname === "scope") return `<b>${__("Total")}</b>`;
+			return `<b>${default_formatter(value, row, column, data)}</b>`;
+		}
+		// Show the scope by its title, not its code, while keeping it a link.
+		if (column.fieldname === "scope" && data && data.scope_title) {
+			return `<a href="/app/scope-item/${encodeURIComponent(value)}">${frappe.utils.escape_html(
+				data.scope_title
+			)}</a>`;
+		}
 		const formatted = default_formatter(value, row, column, data);
 		// A scope that is going to lose money should not need reading twice.
 		if (["margin", "margin_pct"].includes(column.fieldname) && data && data.margin < 0) {

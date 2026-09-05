@@ -12,6 +12,12 @@ msgstr "أُبقيت كما قِيست — تغيّرت القاعدة بعد ت
 msgid "Row {0}: kept at {1} ({2})"
 msgstr "صف {0}: أُبقي على {1} ({2})"
 
+msgid "Total"
+msgstr "الإجمالي"
+
+msgid "In metres."
+msgstr "بالأمتار."
+
 msgid "% Invoiced"
 msgstr "٪ المفوتر"
 

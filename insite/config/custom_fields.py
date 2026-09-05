@@ -44,6 +44,7 @@ def _fields():
 			"label": "Height",
 			"fieldtype": "Float",
 			"insert_after": "custom_base_qty",
+			"description": "In metres.",
 		},
 		{
 			"fieldname": "custom_width",
@@ -51,6 +52,7 @@ def _fields():
 			"label": "Width",
 			"fieldtype": "Float",
 			"insert_after": "custom_height",
+			"description": "In metres.",
 		},
 		{"fieldname": "custom_insite_dim_cb", "fieldtype": "Column Break", "insert_after": "custom_width"},
 		{
@@ -59,6 +61,7 @@ def _fields():
 			"label": "Length",
 			"fieldtype": "Float",
 			"insert_after": "custom_insite_dim_cb",
+			"description": "In metres.",
 		},
 		{
 			"fieldname": "custom_waste_factor",

@@ -1809,3 +1809,71 @@ def _a_measured_item():
 			}
 		).insert(ignore_permissions=True)
 	return code
+
+
+class TestReportTotals(IntegrationTestCase):
+	"""The totals line is worked out from the totals, never by averaging.
+
+	Frappe's own total row averaged the Percent columns: 42.84%, 0, 0 came out
+	as 14.28%, and 294,000 of 744,632 read as anything but the 39.5% it is. The
+	reports now turn that off and total their own money, then divide once. These
+	exercise the pure total-row helpers, so they are deterministic.
+	"""
+
+	def test_contract_progress_percent_is_from_the_totals(self):
+		from insite.insite.report.contract_progress.contract_progress import _total_row
+
+		rows = [
+			{
+				"planned": 0,
+				"ordered": 700_000,
+				"variance_to_plan": 0,
+				"delivered": 0,
+				"rejected_open": 0,
+				"invoiced": 294_000,
+				"variance": 406_000,  # committed 700,000 − invoiced 294,000
+			},
+			{
+				"planned": 0,
+				"ordered": 44_632,
+				"variance_to_plan": 0,
+				"delivered": 0,
+				"rejected_open": 0,
+				"invoiced": 0,
+				"variance": 44_632,
+			},
+		]
+		total = _total_row(rows)
+		# 294,000 invoiced of 744,632 committed is 39.48%, not the 14.28% you get
+		# by averaging 42.0%, 0 and 0.
+		self.assertAlmostEqual(total["pct_invoiced"], 294_000 / 744_632 * 100.0, places=2)
+		self.assertAlmostEqual(total["invoiced"], 294_000)
+
+	def test_scope_profitability_margin_percent_is_from_the_totals(self):
+		from insite.insite.report.scope_profitability.scope_profitability import _total_row
+
+		rows = [
+			{
+				"contract_value": 30_000,
+				"revenue": 0,
+				"cost": 0,
+				"committed": 0,
+				"expected_cost": 0,
+				"margin": 30_000,
+				"margin_pct": 100.0,
+			},
+			{
+				"contract_value": 10_000,
+				"revenue": 0,
+				"cost": 10_000,
+				"committed": 0,
+				"expected_cost": 10_000,
+				"margin": 0,
+				"margin_pct": 0.0,
+			},
+		]
+		total = _total_row(rows)
+		# 30,000 margin on 40,000 of contract value is 75%, not the 50% you get by
+		# averaging 100% and 0%.
+		self.assertAlmostEqual(total["margin_pct"], 75.0)
+		self.assertAlmostEqual(total["margin"], 30_000)
