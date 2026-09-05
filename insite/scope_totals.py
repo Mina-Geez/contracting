@@ -146,27 +146,67 @@ def committed_by_scope(scopes, company=None):
 	that has not reached the ledger, so a scope can look profitable right up to
 	the moment the invoices arrive.
 
-	**Worked out by comparing the two totals, not from `billed_amt`.** ERPNext
-	only maintains `billed_amt` on a Purchase Order line when the invoice is
-	raised *from* the order, through `po_detail`. An invoice keyed in from the
-	supplier's paperwork instead — the everyday case in an accounts office —
-	posts its cost to the ledger while leaving the order looking unbilled. The
-	same spend was then counted twice: once as Cost, once as Committed. Ten
-	thousand spent read as sixteen thousand expected.
+	**Worked out per Purchase Order line, from ERPNext's own `billed_amt`.** Each
+	line's uninvoiced fraction — `(amount − billed_amt) / amount`, floored at zero
+	— valued at the line's net amount in company currency. Summed by scope.
 
-	So: everything ordered for the scope, less everything invoiced for it,
-	floored at zero. Invoicing more than was ordered is not a negative
-	commitment — the excess is posted, and Cost already has it.
+	This is deliberately the *over-stating* answer, and the choice matters.
+	ERPNext maintains `billed_amt` on a Purchase Order line only when the invoice
+	is raised *from* the order, through `po_detail`. An invoice keyed straight
+	from the supplier's paperwork — the everyday case in an accounts office —
+	posts its cost to the ledger while leaving the order looking unbilled. So
+	that spend can show twice: once as Cost (the ledger has it) and once here as
+	Committed (the order still looks open), until the Purchase Order is Closed or
+	the invoice is linked back to it.
+
+	That residual double-count is the price of the safe error. The alternative —
+	netting every supplier invoice on a scope against every order on it — hides a
+	liability instead: an invoice keyed against one order silently eats a
+	*different* open order's commitment, so a 260,000 order at 0% billed reads as
+	211,650 committed. Over-stating expected cost is recoverable; under-stating
+	what you still owe is not. To make Committed exact, raise supplier invoices
+	from the Purchase Order (so `billed_amt` tracks), or Close a Purchase Order
+	once its off-order invoices are in.
 	"""
 	if not scopes:
 		return {}
 
-	ordered = sum_lines_by_scope(
-		"Purchase Order Item", "Purchase Order", scopes, company, skip_states=SETTLED_ORDER_STATES
-	)
-	invoiced = sum_lines_by_scope("Purchase Invoice Item", "Purchase Invoice", scopes, company)
+	_require_scope_field("Purchase Order Item")
 
-	return {scope: max(0.0, flt(ordered.get(scope)) - flt(invoiced.get(scope))) for scope in ordered}
+	child = frappe.qb.DocType("Purchase Order Item")
+	parent = frappe.qb.DocType("Purchase Order")
+	scope_column = getattr(child, SCOPE_FIELD)
+
+	query = (
+		frappe.qb.from_(child)
+		.join(parent)
+		.on(child.parent == parent.name)
+		.select(
+			scope_column.as_("scope"),
+			child.amount,
+			child.billed_amt,
+			child.base_net_amount,
+		)
+		.where(scope_column.isin(scopes))
+		.where(parent.docstatus == 1)
+		.where(parent.status.notin(SETTLED_ORDER_STATES))
+	)
+	if company:
+		query = query.where(parent.company == company)
+
+	totals: dict[str, float] = {}
+	for row in query.run(as_dict=True):
+		amount = flt(row.amount)
+		if amount <= 0:
+			continue
+		# The uninvoiced fraction of the line, valued at its net company-currency
+		# amount. `billed_amt` is in the order's own currency, so the fraction is
+		# dimensionless and safe to apply to the base figure. Over-billing a line
+		# floors the fraction at zero — the excess is posted, and Cost has it.
+		uninvoiced = max(0.0, (amount - flt(row.billed_amt)) / amount)
+		if uninvoiced:
+			totals[row.scope] = totals.get(row.scope, 0.0) + flt(row.base_net_amount) * uninvoiced
+	return totals
 
 
 def _require_scope_field(doctype):

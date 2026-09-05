@@ -26,22 +26,55 @@
 		<tr>
 			<td>
 				<div>{{ (row.item_name or row.item_code) | e }}</div>
+				{#- The measurement sentence is built from the boxes the line's RULE
+				    actually reads (recorded in custom_measurement_inputs), not from
+				    a fixed list of the shipped five. A rule that measures by a
+				    custom field — panels, say — used to print "H × W × 6 off" beside
+				    a quantity worked out from panels, naming a Count the rule never
+				    touched. Now it prints exactly what the quantity was worked out
+				    from. A line with no rule (custom_measurement_inputs unset) falls
+				    back to whatever shipped boxes were filled in by hand. -#}
 				{%- set measured = [] -%}
-				{%- for value, label in [
-					(row.get("custom_height"), _("H")),
-					(row.get("custom_width"), _("W")),
-					(row.get("custom_length"), _("L")),
-				] -%}
-					{%- if value -%}{%- set _x = measured.append(label ~ " " ~ "%.3f"|format(value)) -%}{%- endif -%}
-				{%- endfor -%}
-				{%- if row.get("custom_base_qty") -%}
-					{%- set _x = measured.append("%g"|format(row.custom_base_qty) ~ " " ~ _("off")) -%}
-				{%- endif -%}
-				{%- if row.get("custom_waste_factor") -%}
-					{%- set _x = measured.append(_("waste") ~ " × " ~ "%g"|format(row.custom_waste_factor)) -%}
+				{%- set inputs = row.get("custom_measurement_inputs") -%}
+				{%- if inputs and inputs != "-" -%}
+					{%- for fn in inputs.split(",") -%}
+						{%- set fn = fn.strip() -%}
+						{%- set value = row.get(fn) -%}
+						{%- if value -%}
+							{%- if fn == "custom_height" -%}
+								{%- set _x = measured.append(_("H") ~ " " ~ "%.3f"|format(value)) -%}
+							{%- elif fn == "custom_width" -%}
+								{%- set _x = measured.append(_("W") ~ " " ~ "%.3f"|format(value)) -%}
+							{%- elif fn == "custom_length" -%}
+								{%- set _x = measured.append(_("L") ~ " " ~ "%.3f"|format(value)) -%}
+							{%- elif fn == "custom_base_qty" -%}
+								{%- set _x = measured.append("%g"|format(value) ~ " " ~ _("off")) -%}
+							{%- elif fn == "custom_waste_factor" -%}
+								{%- set _x = measured.append(_("waste") ~ " × " ~ "%g"|format(value)) -%}
+							{%- else -%}
+								{%- set label = frappe.db.get_value("Measurement Field", {"field_name": fn}, "field_label") or fn -%}
+								{%- set _x = measured.append(label ~ " " ~ "%g"|format(value)) -%}
+							{%- endif -%}
+						{%- endif -%}
+					{%- endfor -%}
+				{%- else -%}
+					{%- for value, label in [
+						(row.get("custom_height"), _("H")),
+						(row.get("custom_width"), _("W")),
+						(row.get("custom_length"), _("L")),
+					] -%}
+						{%- if value -%}{%- set _x = measured.append(label ~ " " ~ "%.3f"|format(value)) -%}{%- endif -%}
+					{%- endfor -%}
+					{%- if row.get("custom_base_qty") -%}
+						{%- set _x = measured.append("%g"|format(row.custom_base_qty) ~ " " ~ _("off")) -%}
+					{%- endif -%}
+					{%- if row.get("custom_waste_factor") -%}
+						{%- set _x = measured.append(_("waste") ~ " × " ~ "%g"|format(row.custom_waste_factor)) -%}
+					{%- endif -%}
 				{%- endif -%}
 				{% if measured %}
-					{#- joined with a real × and spaced in CSS, so nothing needs `| safe` -#}
+					{#- joined with a real × and spaced in CSS; escaped at output, so a
+					    custom field's label cannot inject markup. -#}
 					<div class="insite-measure">{{ measured | join("  ×  ") | e }}</div>
 				{% endif %}
 			</td>

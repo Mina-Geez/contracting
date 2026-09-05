@@ -49,14 +49,15 @@ def recalculate(doc, method=None):
 	measurements, which threw away the record of what came back.
 
 	So the measurements ride along as a description of what was returned, and
-	the quantity stays what the return says it is.
+	the quantity stays what the return says it is. That is `write_qty=False`:
+	the engine stamps how the line was measured but never writes the quantity,
+	so a saved return reads as measured (it used to come back blank) without the
+	sign of its quantity ever being flipped.
 	"""
 	if doc.doctype not in MEASURED_DOCTYPES or doc.docstatus != 0:
 		return
-	if doc.get("is_return"):
-		return
 	try:
-		engine.recalculate_document(doc)
+		engine.recalculate_document(doc, write_qty=not doc.get("is_return"))
 	except frappe.ValidationError:
 		raise
 	except Exception:

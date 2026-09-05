@@ -19,8 +19,13 @@ from frappe.model.document import Document
 from insite.config.available_fields import INSITE_FIELDS
 from insite.constants import ITEM_DOCTYPES
 
-#: New fields sit at the end of the Measurements section Insite already draws.
+#: New fields sit at the end of the Measurements section Insite already draws,
+#: after the last shipped box (Wastage).
 INSERT_AFTER = "custom_waste_factor"
+
+#: The section break that opens the (collapsed) Calculated section. Site fields
+#: must land *before* it — see `reflow_measurement_section`.
+CALC_SECTION_BREAK = "custom_insite_calc_sb"
 
 PREFIX = "custom_"
 
@@ -106,6 +111,12 @@ class MeasurementField(Document):
 		create_custom_fields(
 			{doctype: [definition] for doctype in self.target_doctypes}, ignore_validate=True
 		)
+		if self.applies_to != "Item":
+			# The field was created after Wastage, where the Calculated section
+			# break also sits. Chain the site fields and push the break past
+			# them, so a second field can never land inside the Calculated
+			# section, invisible and impossible to type into.
+			reflow_measurement_section()
 
 	# --- deletion -------------------------------------------------------------
 
@@ -164,6 +175,75 @@ def remove_field(field_name, doctypes=ITEM_DOCTYPES):
 		name = frappe.db.exists("Custom Field", {"dt": doctype, "fieldname": field_name})
 		if name:
 			frappe.delete_doc("Custom Field", name, force=True, ignore_permissions=True)
+	# The section break now sits after one fewer field; close the gap.
+	reflow_measurement_section()
+
+
+def transaction_line_site_fields():
+	"""Site-defined transaction-line fields, oldest first.
+
+	The order is by creation, not by `modified`, so the chain is stable: a field
+	edited today does not jump ahead of one added before it.
+	"""
+	return frappe.get_all(
+		"Measurement Field",
+		filters={"is_standard": 0, "applies_to": ["!=", "Item"]},
+		order_by="creation asc",
+		pluck="field_name",
+	)
+
+
+def reflow_measurement_section(doctypes=ITEM_DOCTYPES):
+	"""Chain site fields after Wastage and keep the Calculated break after them.
+
+	Every site field was inserted after `custom_waste_factor`, and so was the
+	Calculated section break. When both claimed that one slot, the second site
+	field resolved *after* the break — inside the collapsed Calculated section,
+	where its box could not be typed into. Silent, and it killed the app's
+	headline feature (a number Insite does not ship).
+
+	So the site fields are chained one after another off Wastage, and the break
+	is moved to sit after the last of them (or back onto Wastage when a site
+	removes them all). Idempotent: it only writes an anchor that is wrong.
+	"""
+	reference = doctypes[0] if doctypes else ITEM_DOCTYPES[0]
+	# Only fields that still have a live Custom Field belong in the chain. On
+	# deletion `remove_field` drops the Custom Field before this runs while the
+	# Measurement Field row is still present (on_trash is before the delete), so
+	# a name read from the master alone would anchor the break onto a field that
+	# no longer exists.
+	site_fields = [
+		field_name
+		for field_name in transaction_line_site_fields()
+		if frappe.db.exists("Custom Field", {"dt": reference, "fieldname": field_name})
+	]
+
+	anchor = INSERT_AFTER
+	chain = []
+	for field_name in site_fields:
+		chain.append((field_name, anchor))
+		anchor = field_name
+
+	touched = set()
+	for doctype in doctypes:
+		for field_name, after in chain:
+			if _set_insert_after(doctype, field_name, after):
+				touched.add(doctype)
+		# The break follows the last site field, or Wastage when there are none.
+		if _set_insert_after(doctype, CALC_SECTION_BREAK, anchor):
+			touched.add(doctype)
+
+	for doctype in touched:
+		frappe.clear_cache(doctype=doctype)
+
+
+def _set_insert_after(doctype, field_name, after):
+	"""Point one Custom Field's `insert_after` at `after`. Returns whether it moved."""
+	name = frappe.db.exists("Custom Field", {"dt": doctype, "fieldname": field_name})
+	if not name or frappe.db.get_value("Custom Field", name, "insert_after") == after:
+		return False
+	frappe.db.set_value("Custom Field", name, "insert_after", after, update_modified=False)
+	return True
 
 
 def _holds_a_value(doctype, field_name):
@@ -219,6 +299,13 @@ def ensure_standard_fields():
 
 
 def apply_all():
-	"""Re-assert every site-defined field. Runs on install and every migrate."""
-	for name in frappe.get_all("Measurement Field", pluck="name"):
+	"""Re-assert every site-defined field. Runs on install and every migrate.
+
+	Applied oldest first so the chain is asserted in the order the fields were
+	created, then the whole Measurements section is reflowed once at the end —
+	which also puts the Calculated break back in its place after a migrate has
+	re-created it at `custom_waste_factor`.
+	"""
+	for name in frappe.get_all("Measurement Field", order_by="creation asc", pluck="name"):
 		frappe.get_cached_doc("Measurement Field", name).apply()
+	reflow_measurement_section()

@@ -94,6 +94,61 @@ class TestTheShippedMeasurementFields(IntegrationTestCase):
 		self.assertFalse(frappe.db.exists("Measurement Field", field.name))
 
 
+class TestSiteFieldsStayInTheMeasurementSection(IntegrationTestCase):
+	"""A site field must land in the Measurements section, never past it.
+
+	Every site field, and the Calculated section break, was inserted after
+	Wastage. When both claimed that one slot the second site field resolved
+	*after* the break — inside the collapsed Calculated section, where its box
+	could not be typed into. Silent, and it killed the app's headline feature.
+	"""
+
+	def test_two_site_fields_chain_before_the_calculated_break(self):
+		from insite.insite.doctype.measurement_field.measurement_field import CALC_SECTION_BREAK
+
+		suffix = frappe.generate_hash(length=5)
+		one = frappe.get_doc(
+			{
+				"doctype": "Measurement Field",
+				"field_label": f"Panels A {suffix}",
+				"applies_to": "Transaction line",
+			}
+		).insert(ignore_permissions=True)
+		two = frappe.get_doc(
+			{
+				"doctype": "Measurement Field",
+				"field_label": f"Panels B {suffix}",
+				"applies_to": "Transaction line",
+			}
+		).insert(ignore_permissions=True)
+
+		def anchor(fieldname, doctype="Sales Order Item"):
+			return frappe.db.get_value(
+				"Custom Field", {"dt": doctype, "fieldname": fieldname}, "insert_after"
+			)
+
+		try:
+			# The two newest site fields chain in creation order, and the
+			# Calculated section break sits after the last of them — never before.
+			self.assertEqual(anchor(two.field_name), one.field_name)
+			self.assertEqual(
+				anchor(CALC_SECTION_BREAK),
+				two.field_name,
+				"the second field slipped past the Calculated section break",
+			)
+			# Neither field is anchored after the break — that was the bug.
+			self.assertNotEqual(anchor(one.field_name), CALC_SECTION_BREAK)
+			self.assertNotEqual(anchor(two.field_name), CALC_SECTION_BREAK)
+
+			# Removing the last one closes the gap: the break falls back onto it.
+			frappe.delete_doc("Measurement Field", two.name, ignore_permissions=True)
+			self.assertEqual(anchor(CALC_SECTION_BREAK), one.field_name)
+		finally:
+			for name in (two.name, one.name):
+				if frappe.db.exists("Measurement Field", name):
+					frappe.delete_doc("Measurement Field", name, ignore_permissions=True)
+
+
 def _a_company():
 	return frappe.get_all("Company", pluck="name")[0]
 

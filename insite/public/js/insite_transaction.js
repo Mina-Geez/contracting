@@ -37,6 +37,12 @@ function insite_refresh_line(frm, cdt, cdn) {
 		values[fieldname] = row[fieldname] || 0;
 	});
 
+	// A return carries a negative quantity that no measurement formula can
+	// produce, and the server never recalculates it. Writing the positive
+	// preview into qty flipped −50.4 to +16.8 and ERPNext then refused the
+	// document. So a return shows the boxes but its quantity is left alone.
+	const is_return = frm.doc.is_return;
+
 	frappe.call({
 		method: "insite.api.line_preview",
 		args: { item_code: row.item_code, values: values },
@@ -44,8 +50,18 @@ function insite_refresh_line(frm, cdt, cdn) {
 			const answer = r.message;
 			if (!answer) return;
 			frappe.model.set_value(cdt, cdn, "custom_measurement_inputs", answer.inputs);
-			if (answer.quantity !== null && answer.quantity !== undefined) {
+
+			const computed = answer.quantity !== null && answer.quantity !== undefined;
+			if (computed && !is_return) {
 				frappe.model.set_value(cdt, cdn, "qty", answer.quantity);
+				// The line has a measured quantity, so qty is read-only from here
+				// (a Property Setter keys the lock to this field). The server
+				// writes the authoritative figure on save.
+				frappe.model.set_value(cdt, cdn, "custom_calculated_qty", answer.quantity);
+			} else if (!is_return) {
+				// A manual rule, no rule, or nothing measured yet: qty stays the
+				// user's to type, so it must not be locked.
+				frappe.model.set_value(cdt, cdn, "custom_calculated_qty", null);
 			}
 		},
 	});

@@ -800,6 +800,113 @@ class TestContractorJourney(IntegrationTestCase):
 		self.assertAlmostEqual(row["invoiced"], measured * 3500)
 		self.assertAlmostEqual(row["pct_invoiced"], 100.0)
 
+	def _measured_quotation(self):
+		return frappe.get_doc(
+			{
+				"doctype": "Quotation",
+				"quotation_to": "Customer",
+				"party_name": self.customer,
+				"company": self.company,
+				"items": [
+					{
+						"item_code": self.item,
+						"qty": 1,
+						"rate": 3500,
+						"scope_item": self.scope,
+						"custom_height": 1.5,
+						"custom_width": 2.8,
+						"custom_base_qty": 40,
+					}
+				],
+			}
+		)
+
+	def test_a_rule_change_after_a_quote_never_breaks_the_order(self):
+		"""Freeze: a measured line keeps the quantity it was recorded with.
+
+		A rule edited between quoting and ordering used to re-derive the ordered
+		line — and when it derived zero, the save failed with "Quantity cannot be
+		zero" and there was no way forward. The line now keeps what it was
+		measured under; re-measuring it (as the desk does when a box changes)
+		takes up the changed rule.
+		"""
+		from erpnext.selling.doctype.quotation.quotation import make_sales_order
+
+		from insite.api import line_preview
+
+		measured = 1.5 * 2.8 * 40  # 168
+		quotation = self._measured_quotation().insert()
+		self.assertAlmostEqual(quotation.items[0].qty, measured)
+		quotation.submit()
+
+		rule = frappe.get_doc("Measurement Rule", {"item_group": self.group})
+		original = rule.formula
+		try:
+			rule.formula = "height * width * count * 2"  # the same rule, now doubled
+			rule.save(ignore_permissions=True)
+
+			order = make_sales_order(quotation.name)
+			order.delivery_date = frappe.utils.add_days(frappe.utils.today(), 30)
+			order.project = self.project
+			order.insert()  # must not throw, and must not silently double the order
+			self.assertAlmostEqual(
+				order.items[0].qty, measured, msg="the ordered quote kept the quantity it was measured with"
+			)
+
+			# Re-measure the line the way the desk does: the box changes, the
+			# client syncs qty from the preview, and the server then recomputes.
+			order.items[0].custom_base_qty = 41
+			order.items[0].qty = line_preview(
+				self.item, {"custom_height": 1.5, "custom_width": 2.8, "custom_base_qty": 41}
+			)["quantity"]
+			order.save()
+			self.assertAlmostEqual(order.items[0].qty, 1.5 * 2.8 * 41 * 2)
+		finally:
+			rule.formula = original
+			rule.save(ignore_permissions=True)
+
+	def test_a_return_records_the_measurement_without_flipping_the_quantity(self):
+		"""A return keeps its negative quantity and still reads as measured.
+
+		The engine never recalculates a return — a formula cannot produce the
+		negative quantity that makes it a return — but it does stamp how the
+		returned work was measured, so the credit note reads as measured instead
+		of blank. Touching a measurement box on it must not flip the sign.
+		"""
+		from erpnext.controllers.sales_and_purchase_return import make_return_doc
+
+		measured = 1.5 * 2.8 * 40  # 168
+		delivery = frappe.get_doc(
+			{
+				"doctype": "Delivery Note",
+				"customer": self.customer,
+				"company": self.company,
+				"project": self.project,
+				"items": [
+					{
+						"item_code": self.item,
+						"qty": 1,
+						"rate": 3500,
+						"scope_item": self.scope,
+						"custom_height": 1.5,
+						"custom_width": 2.8,
+						"custom_base_qty": 40,
+					}
+				],
+			}
+		).insert()
+		self.assertAlmostEqual(delivery.items[0].qty, measured)
+		delivery.submit()
+
+		credit = make_return_doc("Delivery Note", delivery.name)
+		credit.insert()
+		self.assertAlmostEqual(
+			credit.items[0].qty, -measured, msg="a return keeps the negative quantity it was created with"
+		)
+		self.assertTrue(
+			credit.items[0].custom_calc_source, "the return should still read as measured, not blank"
+		)
+
 
 class TestScopeProfitability(IntegrationTestCase):
 	"""Money still to be spent is money already lost, and no ledger holds it.
@@ -907,8 +1014,10 @@ class TestScopeProfitability(IntegrationTestCase):
 	def _billed(self, rate, qty=1):
 		"""A real Purchase Invoice on the scope, with no link back to any order.
 
-		Deliberately unlinked: that is the case `billed_amt` cannot see, and the
-		one that used to count the same spend as both Cost and Committed.
+		Deliberately unlinked: `billed_amt` on the order never sees it, so the
+		order stays committed. Under Insite's over-stating rule the spend then
+		shows as both Cost and Committed — the safe error, documented on
+		`scope_totals.committed_by_scope`.
 		"""
 		bill = frappe.get_doc(
 			{
@@ -923,23 +1032,37 @@ class TestScopeProfitability(IntegrationTestCase):
 		bill.submit()
 		return bill
 
-	def test_what_the_supplier_has_invoiced_stops_being_committed(self):
+	def test_invoicing_the_order_itself_stops_it_being_committed(self):
+		"""billed_amt tracks an invoice raised from the order, so committed clears."""
+		from erpnext.buying.doctype.purchase_order.purchase_order import make_purchase_invoice
+
 		self._sold(rate=10_000)
-		self._bought(rate=6_000)
+		order = self._bought(rate=6_000)
 		self.assertAlmostEqual(self._row()["committed"], 6_000)
 
-		self._billed(2_500)
-		self.assertAlmostEqual(self._row()["committed"], 3_500)
+		bill = frappe.get_doc(make_purchase_invoice(order.name))
+		bill.insert()
+		bill.submit()
+		self.assertAlmostEqual(self._row()["committed"], 0)
 
-	def test_an_over_billed_line_is_not_a_negative_commitment(self):
+	def test_an_unlinked_invoice_leaves_the_order_committed(self):
+		"""Over-stating is the safe error, and it never goes negative.
+
+		An invoice keyed without a link back to its order — the everyday
+		accounts-office case — leaves `billed_amt` at zero, so the order stays
+		fully committed even when the invoice is larger than it. The spend then
+		shows once as Cost and once as Committed until the order is linked or
+		Closed. The alternative — netting invoices against orders — hid a live
+		liability, so this is deliberate; see `scope_totals.committed_by_scope`.
+		"""
 		self._sold(rate=10_000)
 		self._bought(rate=6_000)
-		self._billed(7_000)
+		self._billed(7_000)  # unlinked, and larger than the order
 
 		row = self._row()
-		self.assertAlmostEqual(row["committed"], 0)
-		# and the 7,000 is counted once, as cost
-		self.assertAlmostEqual(row["expected_cost"], 7_000, places=2)
+		self.assertAlmostEqual(row["committed"], 6_000)  # unchanged, never negative
+		self.assertAlmostEqual(row["cost"], 7_000, places=2)
+		self.assertAlmostEqual(row["expected_cost"], 13_000, places=2)
 
 	def test_a_closed_order_is_no_longer_money_we_are_going_to_spend(self):
 		self._sold(rate=10_000)
@@ -1496,13 +1619,39 @@ class TestTheIntegrityFixes(IntegrationTestCase):
 			flt(frappe.db.get_value("Scope Item", self.scope, "planned_amount")), 75_000, places=2
 		)
 
-	# --- committed cost does not double count --------------------------------
+	# --- committed cost errs by over-stating, never by hiding a liability ----
 
-	def test_an_invoice_keyed_without_its_order_does_not_double_count(self):
-		from insite.scope_totals import committed_by_scope, posted_by_scope
+	def test_an_order_invoiced_from_itself_stops_being_committed(self):
+		"""billed_amt tracks an invoice raised from the order, so committed clears."""
+		from erpnext.buying.doctype.purchase_order.purchase_order import make_purchase_invoice
 
-		self._order(10_000, doctype="Purchase Order")
+		from insite.scope_totals import committed_by_scope
+
+		po = self._order(10_000, doctype="Purchase Order")
 		self.assertAlmostEqual(committed_by_scope([self.scope], self.company)[self.scope], 10_000)
+
+		bill = frappe.get_doc(make_purchase_invoice(po.name))
+		bill.insert()
+		bill.submit()
+
+		committed = committed_by_scope([self.scope], self.company).get(self.scope, 0)
+		self.assertAlmostEqual(
+			committed, 0, places=2, msg="invoiced from the order itself; nothing is still committed"
+		)
+
+	def test_an_unlinked_invoice_never_eats_a_different_orders_commitment(self):
+		"""Regression: netting invoices against orders under-stated what was owed.
+
+		A 260,000 order at 0% billed once read as 211,650 committed, because an
+		off-order invoice on the same scope was subtracted straight out of it. An
+		open order is money still owed. An invoice keyed without ``po_detail``
+		leaves ``billed_amt`` at zero, so the order stays fully committed — the
+		safe error. The residual double-count with Cost is documented in
+		``scope_totals.committed_by_scope``.
+		"""
+		from insite.scope_totals import committed_by_scope
+
+		self._order(260_000, doctype="Purchase Order")  # 0% billed, fully open
 
 		bill = frappe.get_doc(
 			{
@@ -1510,16 +1659,19 @@ class TestTheIntegrityFixes(IntegrationTestCase):
 				"supplier": self.supplier,
 				"company": self.company,
 				"project": self.project,
-				"items": [{"item_code": self.item, "qty": 1, "rate": 10_000, "scope_item": self.scope}],
+				"items": [{"item_code": self.item, "qty": 1, "rate": 48_350, "scope_item": self.scope}],
 			}
 		)
 		bill.insert()
 		bill.submit()
 
-		committed = committed_by_scope([self.scope], self.company).get(self.scope, 0)
-		cost = (posted_by_scope([self.scope], self.company).get(self.scope) or {}).get("expense", 0)
-		self.assertAlmostEqual(committed, 0, msg="the order is fully invoiced; nothing is still committed")
-		self.assertAlmostEqual(cost + committed, 10_000, places=2, msg="10,000 was spent, not 20,000")
+		committed = committed_by_scope([self.scope], self.company)[self.scope]
+		self.assertAlmostEqual(
+			committed,
+			260_000,
+			places=2,
+			msg="an unlinked invoice must not reduce a still-open order's commitment",
+		)
 
 	# --- a scope cannot wander onto another project's document ---------------
 

@@ -116,8 +116,30 @@ def item_fields_used(rule):
 	]
 
 
-def apply_rule_to_row(row, rule, item_values=None):
-	"""Write the measured quantity and the audit trail onto `row`."""
+def apply_rule_to_row(row, rule, item_values=None, *, write_qty=True):
+	"""Write the measured quantity and the audit trail onto `row`.
+
+	Returns one of ``None``, ``("changed", previous, rounded)`` or
+	``("kept", quantity)`` — the caller turns these into the messages a user sees.
+
+	`write_qty=False` measures for the record only: it stamps what the line comes
+	to and why, but never touches `qty`. A return carries a negative quantity,
+	which a measurement formula can never produce, so the number stays what the
+	return says it is while the measurement still rides along as a description of
+	what came back.
+	"""
+	# Captured before anything is written, so a line already measured under an
+	# earlier version of the rule — a quote being ordered, a draft reopened —
+	# can be told apart from a blank one the moment its rule stops agreeing.
+	precision = _precision(row)
+	prior_qty = flt(row.get(TARGET_FIELD))
+	prior_calc = flt(row.get("custom_calculated_qty"))
+	was_measured = (
+		bool(row.get("custom_calc_source"))
+		and prior_calc
+		and flt(prior_qty, precision) == flt(prior_calc, precision)
+	)
+
 	row.set(VISIBILITY_FIELD, ",".join(line_fields_used(rule)) or NOTHING_MEASURED)
 	if rule["preset"] == measures.MANUAL:
 		# The rule exists to say "do not calculate this". Record that, and leave
@@ -140,8 +162,12 @@ def apply_rule_to_row(row, rule, item_values=None):
 	try:
 		qty = measures.evaluate_formula(rule["formula"], values)
 	except ValueError as e:
+		if was_measured and write_qty:
+			return _keep_as_recorded(row, rule, prior_qty)
 		frappe.throw(_("Row {0}: {1}").format(row.idx, str(e)), title=_("Measurement Problem"))
 	except ArithmeticError:
+		if was_measured and write_qty:
+			return _keep_as_recorded(row, rule, prior_qty)
 		frappe.throw(
 			_("Row {0}: the formula on {1} cannot be worked out with these measurements ({2}).").format(
 				row.idx, rule["source"], _describe(values)
@@ -149,16 +175,42 @@ def apply_rule_to_row(row, rule, item_values=None):
 			title=_("Measurement Problem"),
 		)
 
+	if not write_qty:
+		# A return: keep the record of how the returned work was measured, but
+		# never write over the quantity the return itself carries.
+		_stamp(row, rule, values)
+		_write_outputs(row, rule, values)
+		row.set("custom_calculated_qty", None)
+		return None
+
+	rounded = flt(qty, precision)
+	if was_measured and rounded != flt(prior_qty, precision):
+		# The rule now produces a different number than the one the line was
+		# recorded with. The recorded quantity stands; a contract value changes
+		# only when someone re-measures the line, not when a rule is edited under
+		# it. (A line measured live already carries the current number, so this
+		# never fires during ordinary entry.)
+		return _keep_as_recorded(row, rule, prior_qty)
+
 	_stamp(row, rule, values)
 	_write_outputs(row, rule, values)
-
-	precision = _precision(row)
-	rounded = flt(qty, precision)
-	previous = flt(row.get(TARGET_FIELD))
 	row.set(TARGET_FIELD, rounded)
 	# Unrounded, so the audit trail can still show what the engine really computed.
 	row.set("custom_calculated_qty", qty)
-	return (previous, rounded) if flt(previous, precision) != rounded else None
+	return ("changed", prior_qty, rounded) if flt(prior_qty, precision) != rounded else None
+
+
+def _keep_as_recorded(row, rule, quantity):
+	"""Freeze a measured line at the quantity it was recorded with.
+
+	The stamp is refreshed so the line still reads as measured, and the audit
+	quantity is held level with the quantity on the line — the two agree, which
+	is what stops the next save from mistaking the frozen line for a fresh one.
+	"""
+	row.set("custom_calc_measure", rule["title"])
+	row.set("custom_calc_source", rule["source"])
+	row.set("custom_calculated_qty", quantity)
+	return ("kept", quantity)
 
 
 def _refuse_negative_measurements(row, rule, values):
@@ -211,8 +263,13 @@ def _refuse_a_unit_the_rule_did_not_measure(row, rule):
 		)
 
 
-def recalculate_document(doc):
-	"""Recompute every measured line on `doc`. Returns the number changed."""
+def recalculate_document(doc, *, write_qty=True):
+	"""Recompute every measured line on `doc`. Returns the number changed.
+
+	`write_qty=False` measures for the record only, leaving every quantity
+	alone. It is how a return is handled: the measurements describe what came
+	back, but the negative quantity is the return's to keep.
+	"""
 	items = doc.get("items")
 	if not items:
 		return 0
@@ -220,6 +277,7 @@ def recalculate_document(doc):
 	rules = load_rules()
 	attributes = _attributes_for(items) if rules else {}
 	changes = []
+	frozen = []
 	no_longer_measured = []
 
 	for row in items:
@@ -229,9 +287,13 @@ def recalculate_document(doc):
 			if item:
 				rule = resolve_rule(item, rules)
 		if rule:
-			change = apply_rule_to_row(row, rule, _item_values_for(row.item_code, rule))
-			if change:
-				changes.append((row.idx, change[0], change[1], rule["source"]))
+			result = apply_rule_to_row(row, rule, _item_values_for(row.item_code, rule), write_qty=write_qty)
+			if not result:
+				continue
+			if result[0] == "changed":
+				changes.append((row.idx, result[1], result[2], rule["source"]))
+			elif result[0] == "kept":
+				frozen.append((row.idx, result[1], rule["source"]))
 		else:
 			# No rule applies any more. Anything the engine wrote before must go,
 			# or the line keeps an audit trail it no longer earns. The quantity
@@ -243,9 +305,30 @@ def recalculate_document(doc):
 
 	if changes:
 		_report_changes(changes)
+	if frozen:
+		_report_frozen(frozen)
 	if no_longer_measured:
 		_report_no_longer_measured(no_longer_measured)
 	return len(changes)
+
+
+def _report_frozen(rows):
+	"""Tell the user which lines kept a recorded quantity because the rule changed.
+
+	The line is not broken and nothing is lost: the quantity it was measured
+	under stands, and re-measuring it (touching a measurement box) takes up the
+	current rule. Said plainly so a changed contract value is never a surprise.
+	"""
+	lines = [
+		_("Row {0}: kept at {1} ({2})").format(idx, quantity, source) for idx, quantity, source in rows[:10]
+	]
+	if len(rows) > 10:
+		lines.append(_("… and {0} more").format(len(rows) - 10))
+	frappe.msgprint(
+		"<br>".join(lines),
+		title=_("Kept as measured — the rule changed after these were recorded"),
+		indicator="orange",
+	)
 
 
 def _report_changes(changes):

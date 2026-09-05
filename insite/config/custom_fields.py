@@ -13,7 +13,7 @@ from __future__ import annotations
 from frappe.custom.doctype.custom_field.custom_field import create_custom_fields
 
 from insite.calc.measures import PRESET_CHOICES
-from insite.constants import ITEM_DOCTYPES
+from insite.constants import ITEM_DOCTYPES, MEASURED_DOCTYPES
 
 
 def _fields():
@@ -82,7 +82,15 @@ def _fields():
 			"fieldtype": "Float",
 			"insert_after": "custom_insite_calc_sb",
 			"read_only": 1,
-			"no_copy": 1,
+			# no_copy is set to 0 explicitly, not merely omitted: the field was
+			# shipped no_copy, and create_custom_fields only writes the properties
+			# it is given, so an already-installed site keeps the old value unless
+			# the new one is stated. The measurement stamp must travel with the
+			# line — ordering a quote (or reopening a draft) carries "measured by
+			# rule X = this quantity", which is what lets the engine tell a line
+			# already measured under an earlier rule from a blank one, and keep
+			# the recorded quantity when the rule has since changed.
+			"no_copy": 0,
 		},
 		{
 			"fieldname": "custom_calc_measure",
@@ -91,7 +99,7 @@ def _fields():
 			"fieldtype": "Data",
 			"insert_after": "custom_calculated_qty",
 			"read_only": 1,
-			"no_copy": 1,
+			"no_copy": 0,  # travels with the line — see custom_calculated_qty
 		},
 		{
 			"fieldname": "custom_insite_calc_cb",
@@ -105,7 +113,7 @@ def _fields():
 			"fieldtype": "Data",
 			"insert_after": "custom_insite_calc_cb",
 			"read_only": 1,
-			"no_copy": 1,
+			"no_copy": 0,  # travels with the line — see custom_calculated_qty
 		},
 		{
 			"fieldname": "custom_measurement_inputs",
@@ -114,7 +122,7 @@ def _fields():
 			"insert_after": "custom_calc_source",
 			"read_only": 1,
 			"hidden": 1,
-			"no_copy": 1,
+			"no_copy": 0,  # travels with the line — see custom_calculated_qty
 			"description": "Insite records which boxes this line's rule reads, so the rest stay out of the way.",
 		},
 	]
@@ -216,6 +224,8 @@ def _quotation_scope_field():
 			"fieldtype": "Link",
 			"options": "Scope Item",
 			"insert_after": "warehouse",
+			"in_list_view": 1,
+			"columns": 2,
 			"description": "The scope of work this line belongs to. It carries through to the Sales Order.",
 		}
 	]
@@ -275,8 +285,22 @@ def _measurable_fields(insert_after):
 	]
 
 
+def _show_in_grid(field_list, fieldnames):
+	"""Bring a few boxes out of the row expander and into the grid itself."""
+	for field in field_list:
+		if field["fieldname"] in fieldnames:
+			field["in_list_view"] = 1
+			field["columns"] = 1
+
+
 def get_custom_fields():
 	fields = {doctype: _fields() for doctype in ITEM_DOCTYPES}
+	# On the selling side the quantity is measured, so Count, Height and Width
+	# belong in the grid where they are read and typed — forty lines should not
+	# be forty expansions. On the buying side the same boxes exist but are
+	# unused, so they stay tucked away and the grid stays uncluttered.
+	for parent in MEASURED_DOCTYPES:
+		_show_in_grid(fields[f"{parent} Item"], {"custom_base_qty", "custom_height", "custom_width"})
 	fields["Quotation Item"] = fields["Quotation Item"] + _quotation_scope_field()
 	fields["Quotation"] = _quotation_project_field()
 	fields["Quality Inspection"] = _quality_inspection_fields()

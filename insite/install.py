@@ -10,6 +10,7 @@ import frappe
 
 from insite.config.accounting_dimension import ensure_scope_dimension
 from insite.config.custom_fields import ensure_custom_fields
+from insite.config.property_setters import ensure_property_setters
 from insite.insite.doctype.measurement_field.measurement_field import apply_all as apply_site_fields
 from insite.insite.doctype.measurement_field.measurement_field import ensure_standard_fields
 
@@ -35,6 +36,7 @@ def setup():
 	# UOM ships its own and a site adds more.
 	ensure_standard_fields()
 	apply_site_fields()  # after Insite's own: these are inserted after them
+	ensure_property_setters()
 	ensure_settings_singleton()
 	allow_an_item_on_more_than_one_line()
 	ensure_scope_dimension()
