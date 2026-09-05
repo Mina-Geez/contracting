@@ -37,6 +37,7 @@ def setup():
 	ensure_standard_fields()
 	apply_site_fields()  # after Insite's own: these are inserted after them
 	ensure_property_setters()
+	ensure_report_settings()
 	ensure_settings_singleton()
 	allow_an_item_on_more_than_one_line()
 	ensure_scope_dimension()
@@ -61,6 +62,25 @@ def allow_an_item_on_more_than_one_line():
 	settings = frappe.get_single("Selling Settings")
 	settings.allow_multiple_items = 1
 	settings.save(ignore_permissions=True)
+
+
+#: Reports that return their own totals row and must not get Frappe's as well.
+REPORTS_WITHOUT_AUTO_TOTAL = ("Contract Progress", "Scope Profitability", "Measurement Register")
+
+
+def ensure_report_settings():
+	"""Turn off Frappe's automatic total row on the reports that total themselves.
+
+	Frappe's own total row averages the Percent columns — % Invoiced and Margin %
+	come out as the mean of the rows instead of the overall figure — so each of
+	these reports computes its own total line and the JSON sets add_total_row to
+	0. But a standard Script Report is imported on install and a later migrate
+	does not re-import it, so an existing site keeps the old value. Put it
+	straight in code, idempotently, the way the custom fields are.
+	"""
+	for report in REPORTS_WITHOUT_AUTO_TOTAL:
+		if frappe.db.exists("Report", report) and frappe.db.get_value("Report", report, "add_total_row"):
+			frappe.db.set_value("Report", report, "add_total_row", 0)
 
 
 def create_roles():

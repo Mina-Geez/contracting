@@ -1820,6 +1820,22 @@ class TestReportTotals(IntegrationTestCase):
 	exercise the pure total-row helpers, so they are deterministic.
 	"""
 
+	def test_frappes_auto_total_row_is_off_on_the_self_totalling_reports(self):
+		"""Or the framework adds its averaged total on top of the report's own.
+
+		A standard Script Report is imported on install and not re-imported by a
+		later migrate, so this is enforced in code (install.ensure_report_settings)
+		and a browser once showed both totals at once — 20.79% beside 0.87%.
+		"""
+		from insite.install import REPORTS_WITHOUT_AUTO_TOTAL
+
+		for report in REPORTS_WITHOUT_AUTO_TOTAL:
+			self.assertEqual(
+				frappe.db.get_value("Report", report, "add_total_row"),
+				0,
+				f"{report} still lets Frappe add its own averaged total row",
+			)
+
 	def test_contract_progress_percent_is_from_the_totals(self):
 		from insite.insite.report.contract_progress.contract_progress import _total_row
 
