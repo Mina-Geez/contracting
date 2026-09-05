@@ -696,17 +696,11 @@ class TestContractorJourney(IntegrationTestCase):
 				"is_stock_item": 0,
 			},
 		)
-		# The field is work_item_type_name; the doctype is autonamed from it.
-		cls.work_item_type = _ensure(
-			"Work Item Type",
-			{"work_item_type_name": "Insite Journey Glass"},
-			{"work_item_type_name": "Insite Journey Glass"},
-		)
 		if not frappe.db.exists("Measurement Rule", {"item_group": cls.group}):
 			frappe.get_doc(
 				{
 					"doctype": "Measurement Rule",
-					"work_item_type": cls.work_item_type,
+					"rule_title": "Insite Journey Glass",
 					"apply_on": "Item Group",
 					"item_group": cls.group,
 					"preset": "Area",

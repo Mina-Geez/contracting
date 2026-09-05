@@ -31,31 +31,16 @@ setting back off.
 Give the **Contracting Manager** role to the people who set up the work and run
 the contracts.
 
-## 2. Set up a Work Item Type
+## 2. Add a Measurement Rule
 
-Open **Insite > Work Item Type > New**.
-
-1. Name the type after the work, for example `Glass`.
-2. Write a **Description** if the name needs one.
-3. Save.
-
-There are no accounts here. Set the income account, the expense account and the
-cost centre where ERPNext already keeps them — **Item Defaults** on the Item or
-the Item Group.
-
-The saved form lists the rules of this type under **Measurement**. A Work Item
-Type measures nothing until it has a rule.
-
-Repeat this for each kind of work.
-
-## 3. Add a Measurement Rule
-
-Open the Work Item Type. Under **Measurement**, create a **Measurement Rule**.
+This is the only thing to set up before you start. Open
+**Insite > Measurement Rule > New**.
 
 1. Set **Applies To** to `Item Group`, then choose your glass item group.
 2. Set **Start from** to **Area**.
 3. Read **Worked out as**. It says `Height × Width × Count`.
-4. Save. Insite names the rule for you.
+4. Save. Insite names the rule after what it applies to. Type a **Title** of
+   your own if you would rather, and it keeps it.
 5. Choose **Try it**. Enter sample numbers, then read the quantity.
 
 Most rules need nothing more than those five steps.
@@ -117,7 +102,7 @@ To read a sheet size from the material rather than from the line:
 4. Use the name of that row in the **Formula**.
 5. Save, then choose **Try it**.
 
-Section 4 says how to add a number such as **Sheet Length** to the Item.
+Section 3 says how to add a number such as **Sheet Length** to the Item.
 
 ### What else these measurements give you
 
@@ -136,7 +121,7 @@ someone saves the document.
 A rule may not write to a field it reads. A rule may not write to the same field
 twice. Insite refuses both when you save the rule.
 
-## 4. Add a number of your own
+## 3. Add a number of your own
 
 Insite ships five measurement boxes: Count, Height, Width, Length and Wastage.
 Add a **Measurement Field** for any other number your site measures.
@@ -168,7 +153,7 @@ in it, tick **Hide on documents**.
 The site keeps the number and the label its people already know. Insite fits the
 site, and the site does not fit Insite.
 
-## 5. Create the job
+## 4. Create the job
 
 1. Create a **Project** for the job.
 2. Open it, and choose **Insite > Add Scopes**.
@@ -183,7 +168,7 @@ Order** on the scope, because the order is the commitment. A quotation does not
 set it. After that it holds still, and later orders on the scope read as
 **Variance to Plan**. Edit it when a change is formally agreed.
 
-## 6. Quote, order, deliver, invoice
+## 5. Quote, order, deliver, invoice
 
 Work as usual in ERPNext. On each item row, open **Measurements** and enter what
 you measured on site. The row shows only the boxes its rule reads.
@@ -230,7 +215,7 @@ matched. Insite does not check a line that no rule matched, so ordinary sales
 still work. To switch the whole check off, clear **Require Project and Scope on
 Sales Documents** in **Insite Settings**.
 
-## 7. Handle a change of scope
+## 6. Handle a change of scope
 
 Insite has no change document. You raise another Sales Order against the same
 scope, the way many contractors already work.
@@ -251,7 +236,7 @@ Step 6 is optional. It moves the baseline to the new contract value, so
 Scope Item. Leave the Planned Amount alone to keep the original baseline in
 view.
 
-## 8. Collect a payment for one job
+## 7. Collect a payment for one job
 
 A contractor is paid per job, but a customer with three jobs running has open
 invoices on all three. Allocating a receipt against the wrong one puts the money
@@ -272,7 +257,7 @@ where a scope lives: an invoice covering three scopes appears under all three.
 Allocation is still per invoice, so what these filters change is which invoices
 you are choosing among, not how a payment is split.
 
-## 9. Handle rejected work
+## 8. Handle rejected work
 
 The consultant rejects six of the panels you installed. Record it, so nobody
 invoices them and nobody forgets to redo them.
@@ -312,7 +297,7 @@ writes no statuses and posts nothing to the ledger.
 on the Purchase Receipt, which ERPNext already has. The Scope on the line carries
 the cost to the right place on its own.
 
-## 10. Print it for the client
+## 9. Print it for the client
 
 Insite ships four print formats: **Insite Quotation**, **Insite Sales Order**,
 **Insite Delivery Note** and **Insite Sales Invoice**.
@@ -330,7 +315,7 @@ arrived at, not the total.
 To make one the default for a document type, set it as the **Default Print
 Format** on that DocType, or pick it each time from the print view.
 
-## 11. Read the progress
+## 10. Read the progress
 
 Open **Contract Progress**. Filter by company, project or status.
 
@@ -359,7 +344,7 @@ A change of scope is another Sales Order, so **Ordered** is the current committe
 value of the work. **Variance to Plan** is how a change reads in the report. Work
 ordered beyond the original plan shows as a positive number.
 
-## 12. See what a scope is made of
+## 11. See what a scope is made of
 
 **Contract Progress** says where a scope stands. **Measurement Register** says
 what it is made of: every submitted line against the scope, the measurement
@@ -373,7 +358,7 @@ its own copy of the description from the moment it was raised, so editing the
 Item now cannot rewrite what a past delivery says it supplied. Nothing has to be
 switched on for this. The record was always there.
 
-## 13. See whether it is making money
+## 12. See whether it is making money
 
 Open **Scope Profitability**. One row per scope, worst margin first.
 
@@ -419,7 +404,7 @@ exactly as it does for a cost centre.
 Both **Profitability Analysis** and **Budget Variance Report** sit on the Insite
 workspace so nobody has to know they were already there.
 
-## 14. A worked example
+## 13. A worked example
 
 A client orders six glass units. Each unit is 2.4 m high and 1.8 m wide. The
 rate is 900 per square meter. The workshop also wants to know how much sheet the
@@ -427,7 +412,7 @@ order eats, at a 12 percent cutting allowance.
 
 1. Add a **Measurement Field** called `Sheet Area`. Set **Where it belongs** to
    `Transaction line`.
-2. On the Work Item Type `Glass`, add one rule on the glass item group. Set
+2. Add one rule on the glass item group. Set
    **Start from** to **Area**. **Worked out as** reads
    `Height × Width × Count`.
 3. Open **What else these measurements give you**. Add a row that writes to
@@ -461,20 +446,20 @@ Change the formula to `height * width * count * cutting_allowance`. **Worked out
 as** then reads `Height × Width × Count × 1.12`, and the quantity of the first
 line becomes 29.03.
 
-## 15. Change a Measurement Rule later
+## 14. Change a Measurement Rule later
 
-A change to a Work Item Type or a Measurement Rule does not touch the documents
+A change to a Measurement Rule does not touch the documents
 you already have. Insite calculates a quantity only when a person saves a
 document. Past quotations, orders, deliveries and invoices keep the quantities
 they hold. Submitted documents do not move.
 
 To apply a new rule to an open draft, open the draft and save it again.
 
-## 16. Who does what
+## 15. Who does what
 
 | Role | What they do |
 | --- | --- |
-| Contracting Manager | Sets up Work Item Types, Measurement Rules and Measurement Fields. Creates and edits Scope Items, and sets the Planned Amount. Edits Insite Settings. Reads Contract Progress. |
+| Contracting Manager | Sets up Measurement Rules and Measurement Fields. Creates and edits Scope Items, and sets the Planned Amount. Edits Insite Settings. Reads Contract Progress. |
 | Sales User | Reads Scope Items. Enters the measurements and the Scope on quotations, sales orders and delivery notes. Reads Contract Progress. |
 | Accounts User | Reads Scope Items. Enters the measurements and the Scope on invoices. Reads Contract Progress. |
 | Purchase User | Reads Scope Items. Sets the Scope on purchase documents. |
@@ -482,7 +467,7 @@ To apply a new rule to an open draft, open the draft and save it again.
 ## Troubleshooting
 
 **The quantity does not calculate.** No rule matched the item, or nothing was
-measured. Check that the Work Item Type is enabled. Check that a rule covers the
+measured. Check that the rule is enabled, and that it covers the
 item or its item group. Check that the rule is not disabled. Insite leaves the
 line alone when every field the rule reads is empty.
 
@@ -490,7 +475,7 @@ line alone when every field the rule reads is empty.
 is a multiplier. Type 1.1 to add 10 percent, and leave the field blank for none.
 
 **The quantity is not what I expect.** Open the row and read **Rule Used** and
-**Work Item Type** under **Calculated**. They name the rule that ran and the
+**Measured By** under **Calculated**. They name the rule that ran and the
 kind of work. Open that rule and read **Worked out as**.
 
 **Insite says a line is no longer measured.** No rule matches that item any
@@ -503,7 +488,7 @@ boxes its rule reads. Open the rule and read its **Inputs**.
 **The field I want is not in the rule's list.** The list holds Insite's five
 measurement boxes and every Measurement Field your site has added. Insite leaves
 out the standard ERPNext numbers, such as rate and amount. To measure by a
-number of your own, add a Measurement Field first. See section 4.
+number of your own, add a Measurement Field first. See section 3.
 
 **I cannot delete a Measurement Field.** A rule reads it. **Used by rules** names
 the rules. Change those rules first, or tick **Hide on documents** instead.

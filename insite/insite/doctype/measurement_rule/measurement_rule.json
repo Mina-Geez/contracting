@@ -10,7 +10,7 @@
  "show_title_field_in_link": 1,
  "track_changes": 1,
  "creation": "2026-09-03 00:00:00.000000",
- "modified": "2026-09-05 11:00:00.000000",
+ "modified": "2026-09-05 11:45:00.000000",
  "owner": "Administrator",
  "modified_by": "Administrator",
  "sort_field": "modified",
@@ -18,7 +18,6 @@
  "field_order": [
   "naming_series",
   "rule_title",
-  "work_item_type",
   "column_break_head",
   "apply_on",
   "item_code",
@@ -52,18 +51,9 @@
    "fieldname": "rule_title",
    "fieldtype": "Data",
    "label": "Rule",
-   "read_only": 1,
+   "read_only": 0,
    "in_list_view": 1,
-   "description": "Insite names the rule after the work and what it applies to."
-  },
-  {
-   "fieldname": "work_item_type",
-   "fieldtype": "Link",
-   "options": "Work Item Type",
-   "label": "Work Item Type",
-   "reqd": 1,
-   "in_standard_filter": 1,
-   "in_list_view": 1
+   "description": "Left blank, Insite names it after what it applies to."
   },
   {
    "fieldname": "column_break_head",

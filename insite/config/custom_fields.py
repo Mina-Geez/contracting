@@ -100,7 +100,7 @@ def _fields():
 		{
 			"fieldname": "custom_calc_source",
 			"depends_on": "eval:doc.custom_calc_source",
-			"label": "Work Item Type",
+			"label": "Measured By",
 			"fieldtype": "Data",
 			"insert_after": "custom_insite_calc_cb",
 			"read_only": 1,

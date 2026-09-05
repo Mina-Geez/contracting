@@ -7,12 +7,9 @@ ordered, delivered and invoiced.
 
 ## What it adds
 
-- **Work Item Type** — a kind of work, for example `Glass`. It holds a
-  description and a switch, nothing more — accounts stay in ERPNext's Item
-  Defaults. Its Measurement Rules are listed on the form under **Measurement**.
-- **Measurement Rule** — how a kind of work is measured. Say what the rule
-  **Applies To**, pick a **Start from**, and read **Worked out as**. That line
-  states the calculation in words, for example Height × Width × Count. Ready-made
+- **Measurement Rule** — how a kind of work is measured, and the only thing to
+  set up before you start. Say what it **Applies To**, pick a **Start from**, and
+  read **Worked out as**. That line states the calculation in words, for example Height × Width × Count. Ready-made
   starting points: Area, Perimeter, Linear, Count, Piece × Wastage and Volume.
   **Manual** keeps the quantity you typed. **Custom** is for a formula of your
   own.
@@ -105,8 +102,9 @@ the general ledger and accounting dimensions.
 
 The calculation code is plain Python and does not import Frappe. It holds the
 starting points, the formula reader and the rule match. The rule match picks the
-most specific rule: item, then template, then attribute value, then item group.
-Priority breaks a tie.
+most specific rule: item, then template, then attribute value, then brand, then
+item group — and a rule on an item group also covers the groups beneath it, the
+way an Item Default does. Priority breaks a tie.
 
 A document hook calls the calculation on the server before each save of a
 Quotation, a Sales Order, a Delivery Note or a Sales Invoice. The server writes

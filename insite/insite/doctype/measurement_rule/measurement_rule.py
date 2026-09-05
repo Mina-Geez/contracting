@@ -181,10 +181,21 @@ class MeasurementRule(Document):
 	# --- naming --------------------------------------------------------------
 
 	def _set_title(self):
+		"""Name the rule after what it covers, unless someone has named it themselves.
+
+		Only fills a blank. A title somebody typed is theirs — "Glass — area by
+		sheet" says more than any rule Insite could name for them, and having it
+		overwritten on the next save would be its own bug.
+		"""
+		if (self.rule_title or "").strip():
+			return
+		self.rule_title = self._default_title()
+
+	def _default_title(self):
 		target = self.get(_SCOPE_FIELDS.get(self.apply_on, ("", ""))[0]) or ""
 		if self.apply_on == "Item Attribute Value":
 			target = f"{self.item_attribute} = {self.attribute_value}"
-		self.rule_title = f"{self.work_item_type} · {target}" if target else self.work_item_type
+		return target or self.apply_on or self.name
 
 
 def in_plain_words(formula, inputs):

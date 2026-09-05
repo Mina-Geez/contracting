@@ -12,20 +12,17 @@ msgstr "٪ المفوتر"
 msgid "<b>Profitability Analysis</b> and <b>Budget Variance Report</b> are ERPNext's own. They work per scope because Insite registers the Scope as an accounting dimension, so a scope can carry a cost budget like any cost centre."
 msgstr "<b>تحليل الربحية</b> و<b>تقرير إنحرافات الموازنة</b> من ERPNext نفسه. يعملان لكل نطاق لأن Insite يسجّل النطاق كبُعد محاسبي، فيمكن للنطاق أن يحمل موازنة تكلفة مثل أي مركز تكلفة."
 
-msgid "<b>Set up once:</b> a <b>Work Item Type</b> for each kind of work, then a <b>Measurement Rule</b> saying how it is measured. <b>Then per job:</b> a <b>Scope Item</b> on the Project for each scope you report on."
-msgstr "<b>إعداد لمرة واحدة:</b> <b>نوع بند الأعمال</b> لكل نوع من الأعمال، ثم <b>قاعدة القياس</b> تحدد كيفية قياسه. <b>ثم لكل مشروع:</b> <b>بند نطاق العمل</b> على المشروع لكل نطاق تتابعه في التقارير."
+msgid "<b>Set up once:</b> a <b>Measurement Rule</b> for each kind of work, saying how it is measured. <b>Then per job:</b> a <b>Scope Item</b> on the Project for each scope you report on."
+msgstr "<b>إعداد لمرة واحدة:</b> <b>قاعدة القياس</b> لكل نوع من الأعمال، تحدد كيفية قياسه. <b>ثم لكل مشروع:</b> <b>بند نطاق العمل</b> على المشروع لكل نطاق تتابعه في التقارير."
 
 msgid "A field named {0} already exists on the transaction line."
 msgstr "يوجد حقل باسم {0} في سطر المستند بالفعل."
 
-msgid "Add Scopes to {0}"
-msgstr "أضف نطاقات إلى {0}"
-
 msgid "Add Scopes"
 msgstr "أضف نطاقات"
 
-msgid "Add a Measurement Rule"
-msgstr "أضف قاعدة قياس"
+msgid "Add Scopes to {0}"
+msgstr "أضف نطاقات إلى {0}"
 
 msgid "Add a Project in the header before you save this {0}. Insite tracks contracting work by project."
 msgstr "أضف المشروع في الترويسة قبل حفظ {0}. Insite يتابع أعمال المقاولات حسب المشروع."
@@ -60,23 +57,23 @@ msgstr "موجود بالفعل"
 msgid "Amount"
 msgstr "المبلغ"
 
-msgid "Applies To is set to {0}. Fill in the {1} box."
-msgstr "تُطبَّق على مضبوطة على {0}. املأ خانة {1}."
-
 msgid "Applies To"
 msgstr "تُطبَّق على"
+
+msgid "Applies To is set to {0}. Fill in the {1} box."
+msgstr "تُطبَّق على مضبوطة على {0}. املأ خانة {1}."
 
 msgid "Area"
 msgstr "المساحة"
 
-msgid "Attribute Value Required"
-msgstr "قيمة الخاصية مطلوبة"
+msgid "Attribute"
+msgstr "الخاصية"
 
 msgid "Attribute Value"
 msgstr "قيمة الخاصية"
 
-msgid "Attribute"
-msgstr "الخاصية"
+msgid "Attribute Value Required"
+msgstr "قيمة الخاصية مطلوبة"
 
 msgid "Breaks a tie between two rules that are equally specific. A more specific rule always wins, whatever the priority."
 msgstr "يفصل بين قاعدتين متساويتين في التخصيص. القاعدة الأكثر تخصيصًا تفوز دائمًا مهما كانت الأولوية."
@@ -129,11 +126,11 @@ msgstr "التاريخ"
 msgid "Delivered"
 msgstr "المُسلَّم"
 
-msgid "Document Type"
-msgstr "نوع المستند"
-
 msgid "Document"
 msgstr "المستند"
+
+msgid "Document Type"
+msgstr "نوع المستند"
 
 msgid "Duplicate Name"
 msgstr "اسم مكرر"
@@ -144,6 +141,9 @@ msgstr "لكل مشروع"
 msgid "Expected Cost"
 msgstr "التكلفة المتوقعة"
 
+msgid "Field"
+msgstr "الحقل"
+
 msgid "Field Already an Input"
 msgstr "الحقل مُستخدم كمُدخل"
 
@@ -152,9 +152,6 @@ msgstr "الحقل قيد الاستخدام"
 
 msgid "Field Name"
 msgstr "اسم الحقل"
-
-msgid "Field"
-msgstr "الحقل"
 
 msgid "Fill in the Attribute Value. A rule with no value can never match a line."
 msgstr "املأ قيمة الخاصية. القاعدة بلا قيمة لن تطابق أي سطر."
@@ -174,14 +171,14 @@ msgstr "مثال: تزجيج الواجهات، كلادينج، دّرابزي�
 msgid "For your own reference. Insite does not calculate with it."
 msgstr "لمرجعيتك فقط. لا يحسب Insite به."
 
+msgid "Formula"
+msgstr "المعادلة"
+
 msgid "Formula Problem"
 msgstr "مشكلة في المعادلة"
 
 msgid "Formula Required"
 msgstr "المعادلة مطلوبة"
-
-msgid "Formula"
-msgstr "المعادلة"
 
 msgid "From Date"
 msgstr "من تاريخ"
@@ -198,11 +195,14 @@ msgstr "إخفاؤه من المستندات"
 msgid "How is this measured?"
 msgstr "كيف يُقاس هذا؟"
 
+msgid "Inputs"
+msgstr "المُدخلات"
+
 msgid "Inputs Required"
 msgstr "المُدخلات مطلوبة"
 
-msgid "Inputs"
-msgstr "المُدخلات"
+msgid "Insite"
+msgstr "Insite"
 
 msgid "Insite Settings"
 msgstr "إعدادات Insite"
@@ -218,12 +218,6 @@ msgstr "يشتق Insite هذا من التسمية. لا تستخدمه المع
 
 msgid "Insite fills this in. A field used by a rule cannot be deleted."
 msgstr "يملأ Insite هذا. لا يمكن حذف حقل تستخدمه قاعدة."
-
-msgid "Insite names the rule after the work and what it applies to."
-msgstr "يسمي Insite القاعدة باسم العمل وما تُطبَّق عليه."
-
-msgid "Insite"
-msgstr "Insite"
 
 msgid "Invalid Name"
 msgstr "اسم غير صالح"
@@ -243,11 +237,14 @@ msgstr "قالب الصنف"
 msgid "Keeps the field and everything already entered in it, but takes the box off the line."
 msgstr "يُبقي الحقل وكل ما أُدخل فيه، لكنه يزيل الخانة من السطر."
 
+msgid "Label"
+msgstr "التسمية"
+
 msgid "Label Required"
 msgstr "التسمية مطلوبة"
 
-msgid "Label"
-msgstr "التسمية"
+msgid "Left blank, Insite names it after what it applies to."
+msgstr "إن تُرك فارغًا، يسمّيه Insite حسب ما ينطبق عليه."
 
 msgid "Left to Invoice"
 msgstr "المتبقي للفوترة"
@@ -267,11 +264,11 @@ msgstr "حروف صغيرة وأرقام وشرطات سفلية، مثل sheet_
 msgid "Manual"
 msgstr "يدوي"
 
-msgid "Margin %"
-msgstr "نسبة الهامش"
-
 msgid "Margin"
 msgstr "الهامش"
+
+msgid "Margin %"
+msgstr "نسبة الهامش"
 
 msgid "Measured"
 msgstr "القياس"
@@ -302,9 +299,6 @@ msgstr "الاسم مستخدم بالفعل"
 
 msgid "Name in the formula"
 msgstr "الاسم في المعادلة"
-
-msgid "Nothing is measured yet. Add a Measurement Rule to say how {0} work is worked out."
-msgstr "لا يوجد قياس بعد. أضف قاعدة قياس لتحديد كيف تُحسب أعمال {0}."
 
 msgid "Nothing to Add"
 msgstr "لا شيء لإضافته"
@@ -342,6 +336,9 @@ msgstr "اختر ما يوافق طريقة تسعيرك لهذا العمل."
 msgid "Piece × Wastage"
 msgstr "قطعة × هالك"
 
+msgid "Planned"
+msgstr "المخطط"
+
 msgid "Planned Amount"
 msgstr "المبلغ المخطط"
 
@@ -350,9 +347,6 @@ msgstr "الكمية المخططة"
 
 msgid "Planned Values"
 msgstr "القيم المخططة"
-
-msgid "Planned"
-msgstr "المخطط"
 
 msgid "Project Required"
 msgstr "المشروع مطلوب"
@@ -372,14 +366,14 @@ msgstr "السعر"
 msgid "Refuse to Submit Invoices for a Scope With Rejected Work"
 msgstr "منع اعتماد الفواتير للنطاق الذي به أعمال مرفوضة"
 
-msgid "Rejected Work on This Scope"
-msgstr "أعمال مرفوضة على هذا النطاق"
+msgid "Rejected"
+msgstr "مرفوض"
 
 msgid "Rejected Work"
 msgstr "الأعمال المرفوضة"
 
-msgid "Rejected"
-msgstr "مرفوض"
+msgid "Rejected Work on This Scope"
+msgstr "أعمال مرفوضة على هذا النطاق"
 
 msgid "Require Project and Scope on Sales Documents"
 msgstr "اشتراط المشروع والنطاق في مستندات البيع"
@@ -414,6 +408,9 @@ msgstr "صف {0}: الاسم '{1}' مستخدم مرتين. كل مُدخل يح
 msgid "Row {0}: this rule reads {1}, so it cannot also write to it. Write the answer to a different field."
 msgstr "صف {0}: هذه القاعدة تقرأ {1}، فلا يمكنها الكتابة فيه أيضًا. اكتب الناتج في حقل آخر."
 
+msgid "Row {0}: {1}"
+msgstr "صف {0}: {1}"
+
 msgid "Row {0}: {1} cannot be worked out with these measurements ({2})."
 msgstr "صف {0}: لا يمكن حساب {1} بهذه القياسات ({2})."
 
@@ -426,9 +423,6 @@ msgstr "صف {0}: {1} — {2}"
 msgid "Row {0}: {1} → {2} ({3})"
 msgstr "صف {0}: {1} → {2} ({3})"
 
-msgid "Row {0}: {1}"
-msgstr "صف {0}: {1}"
-
 msgid "Rule"
 msgstr "القاعدة"
 
@@ -437,6 +431,9 @@ msgstr "يجب أن تحمل أوامر البيع وإذون التسليم و�
 
 msgid "Same Item on Another Scope"
 msgstr "نفس الصنف على نطاق آخر"
+
+msgid "Scope"
+msgstr "النطاق"
 
 msgid "Scope Belongs to Another Company"
 msgstr "النطاق يتبع شركة أخرى"
@@ -468,9 +465,6 @@ msgstr "النطاق مطلوب"
 msgid "Scope of Work"
 msgstr "نطاق العمل"
 
-msgid "Scope"
-msgstr "النطاق"
-
 msgid "Set up"
 msgstr "الإعداد"
 
@@ -492,9 +486,6 @@ msgstr "المواصفة وقتها"
 msgid "Start from"
 msgstr "ابدأ من"
 
-msgid "Stops every rule for this kind of work. Quantities are no longer calculated for these items."
-msgstr "يوقف كل قواعد هذا النوع من العمل. لن تُحسب الكميات لهذه الأصناف بعد الآن."
-
 msgid "Stops this scope appearing in the Scope list on new documents. Documents that already use it keep it."
 msgstr "يمنع ظهور هذا النطاق في قائمة النطاقات على المستندات الجديدة. المستندات التي تستخدمه تحتفظ به."
 
@@ -515,9 +506,6 @@ msgstr "الحقل في السطر الذي يُكتب فيه هذا الرقم.
 
 msgid "The formula does not use: {0}. Remove the input, or use it in the formula."
 msgstr "المعادلة لا تستخدم: {0}. احذف المُدخل، أو استخدمه في المعادلة."
-
-msgid "The kind of work, for example Glass or Wood — Doors."
-msgstr "نوع العمل، مثل زجاج أو خشب — أبواب."
 
 msgid "The quantity above is what you bill. Add anything else the same measurements produce — the board a panel uses, the edging round it, the fittings that go on it."
 msgstr "الكمية أعلاه هي ما تفوتره. أضف أي شيء آخر تنتجه نفس القياسات — اللوح الذي يستهلكه اللوح، والحواف حوله، والإكسسوارات التي تُركب عليه."
@@ -546,11 +534,11 @@ msgstr "جرّبها"
 msgid "Try this rule"
 msgstr "جرّب هذه القاعدة"
 
-msgid "Type at least one scope, one per line."
-msgstr "اكتب نطاقًا واحدًا على الأقل، واحدًا في كل سطر."
-
 msgid "Type"
 msgstr "النوع"
+
+msgid "Type at least one scope, one per line."
+msgstr "اكتب نطاقًا واحدًا على الأقل، واحدًا في كل سطر."
 
 msgid "Unknown Field"
 msgstr "حقل غير معروف"
@@ -593,9 +581,6 @@ msgstr "أين يُستخدم"
 
 msgid "Which Line Failed?"
 msgstr "أي سطر هو المرفوض؟"
-
-msgid "Work Item Type"
-msgstr "نوع بند الأعمال"
 
 msgid "Work it out"
 msgstr "احسبها"
@@ -650,6 +635,7 @@ msgstr "… و{0} غيرها"
 
 msgid "…and more."
 msgstr "…وغيرها."
+
 
 
 

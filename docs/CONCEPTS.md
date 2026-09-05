@@ -1,34 +1,15 @@
 # Insite concepts
 
-Insite adds four records to ERPNext: the Work Item Type, the Measurement Rule,
-the Measurement Field and the Scope Item. Everything else — quotations, orders,
+Insite adds three records to ERPNext: the Measurement Rule, the Measurement
+Field and the Scope Item. Everything else — quotations, orders,
 deliveries, invoices, accounting — stays standard ERPNext.
-
-## Work Item Type
-
-A kind of work you do. Example: "Glass", "Wood — Doors", "Handrails".
-
-A Work Item Type holds:
-
-- **Description** — what this kind of work covers.
-- **Disabled** — stops every rule for this kind of work.
-
-It holds no accounts. ERPNext already keeps the income account, the expense
-account and the cost centre per company as **Item Defaults**, on the Item and
-the Item Group, and those are what post. A second place to set them would only
-be a decoration that disagrees with the first.
-
-The form lists the rules of this type under **Measurement**. You create a rule
-from there.
-
-To add a new kind of work, add a Work Item Type. You do not write code.
 
 ## Measurement Rule
 
 A record of its own. It answers one question. For this item, how is the quantity
 calculated?
 
-A rule belongs to a Work Item Type. **Applies To** says what the rule covers. It
+**Applies To** says what the rule covers. It
 takes an item, an item group, a brand, an item template, or an attribute value. Insite
 names each rule after the work and what it covers. Nobody types a code.
 
@@ -314,8 +295,8 @@ that include it, so the table cannot drift between documents.
 
 ## How the pieces work together
 
-1. You set up the Work Item Types and their Measurement Rules once. You add a
-   Measurement Field for any number Insite does not ship.
+1. You write the Measurement Rules once, and add a Measurement Field for any
+   number Insite does not ship.
 2. You create a Project and its Scope Items, with the planned amounts.
 3. Your team quotes, orders, delivers and invoices as usual. Insite calculates
    the quantity of a measured line, writes any other numbers the rule produces,

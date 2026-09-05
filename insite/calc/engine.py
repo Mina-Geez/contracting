@@ -36,15 +36,11 @@ NOTHING_MEASURED = "-"
 
 
 def load_rules():
-	"""Every enabled rule whose Work Item Type is also enabled, most important first."""
-	enabled_types = set(frappe.get_all("Work Item Type", filters={"disabled": 0}, pluck="name"))
-	if not enabled_types:
-		return []
-
+	"""Every enabled rule, most important first."""
 	rules = []
 	names = frappe.get_all(
 		"Measurement Rule",
-		filters={"disabled": 0, "work_item_type": ["in", list(enabled_types)]},
+		filters={"disabled": 0},
 		pluck="name",
 		order_by="modified desc",
 	)
@@ -52,7 +48,7 @@ def load_rules():
 		doc = frappe.get_cached_doc("Measurement Rule", name)
 		rules.append(
 			{
-				"source": doc.work_item_type,
+				"source": doc.rule_title or doc.name,
 				"rule": doc.name,
 				"title": doc.rule_title or doc.name,
 				"preset": doc.preset,
