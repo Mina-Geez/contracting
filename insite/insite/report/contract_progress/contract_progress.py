@@ -26,7 +26,7 @@ from frappe.query_builder.functions import Sum
 from frappe.utils import flt
 
 from insite.constants import QI_REJECTED, QUALITY_INSPECTION
-from insite.scope_totals import sum_lines_by_scope
+from insite.scope_totals import narrow_to_customer, sum_lines_by_scope
 
 
 def execute(filters=None):
@@ -101,6 +101,7 @@ def _scopes(filters):
 	for field in ("status", "project", "company"):
 		if filters.get(field):
 			conditions[field] = filters.get(field)
+	narrow_to_customer(conditions, filters.get("customer"))
 	return frappe.get_list(
 		"Scope Item",
 		filters=conditions,

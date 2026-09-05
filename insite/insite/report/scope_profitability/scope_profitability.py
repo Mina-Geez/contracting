@@ -40,7 +40,12 @@ import frappe
 from frappe import _
 from frappe.utils import flt
 
-from insite.scope_totals import committed_by_scope, posted_by_scope, sum_lines_by_scope
+from insite.scope_totals import (
+	committed_by_scope,
+	narrow_to_customer,
+	posted_by_scope,
+	sum_lines_by_scope,
+)
 
 
 def execute(filters=None):
@@ -129,6 +134,7 @@ def _scopes(filters):
 	for field in ("status", "project", "company"):
 		if filters.get(field):
 			conditions[field] = filters.get(field)
+	narrow_to_customer(conditions, filters.get("customer"))
 	return frappe.get_list(
 		"Scope Item",
 		filters=conditions,

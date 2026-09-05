@@ -33,6 +33,31 @@ INCOME = "Income"
 EXPENSE = "Expense"
 
 
+def narrow_to_customer(conditions, customer):
+	"""Add "this customer's jobs" to a set of filters on Project or on a scope.
+
+	One definition for all three reports. A customer does not appear on a Scope
+	Item — it appears on the Project — so filtering by customer means filtering
+	to their projects. Doing that in one place is what stops two reports
+	answering the same question differently.
+
+	Read with `get_list`, so a reader still only sees the projects they may see.
+	A customer with no projects narrows to nothing rather than to everything,
+	which is the answer they asked for.
+	"""
+	if not customer:
+		return conditions
+
+	theirs = frappe.get_list("Project", filters={"customer": customer}, pluck="name", limit_page_length=0)
+	wanted = conditions.get("project")
+	if wanted and not isinstance(wanted, list | tuple):
+		# Both a customer and one project: the project has to be one of theirs.
+		theirs = [name for name in theirs if name == wanted]
+
+	conditions["project"] = ["in", theirs]
+	return conditions
+
+
 def sum_lines_by_scope(child_doctype, parent_doctype, scopes, company=None):
 	"""Submitted line amounts per scope, in company currency."""
 	if not scopes:

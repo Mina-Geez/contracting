@@ -1212,3 +1212,148 @@ class TestScopeProfitability(IntegrationTestCase):
 		self.assertTrue(
 			frappe.db.exists("Accounting Dimension", {"document_type": "Scope Item", "disabled": 0})
 		)
+
+
+class TestFilteringReportsByCustomer(IntegrationTestCase):
+	"""A contractor works for several clients at once.
+
+	"Show me everything for this customer" is the question the reports could not
+	answer — they took a project and nothing above it. A customer is not on a
+	Scope Item, it is on the Project, so all three narrow the same way through
+	one helper. Two reports disagreeing about who a customer is would be worse
+	than neither of them knowing.
+	"""
+
+	@classmethod
+	def setUpClass(cls):
+		super().setUpClass()
+		cls.company = _a_company()
+		cls.ours = _ensure(
+			"Customer",
+			{"customer_name": "Insite Filter Ours"},
+			{"customer_name": "Insite Filter Ours", "customer_type": "Company"},
+		)
+		cls.theirs = _ensure(
+			"Customer",
+			{"customer_name": "Insite Filter Theirs"},
+			{"customer_name": "Insite Filter Theirs", "customer_type": "Company"},
+		)
+		cls.item = _ensure(
+			"Item",
+			{"item_code": "INSITE-FILTER-ITEM"},
+			{
+				"item_code": "INSITE-FILTER-ITEM",
+				"item_name": "Insite Filter Item",
+				"item_group": frappe.get_all("Item Group", filters={"is_group": 0}, pluck="name")[0],
+				"stock_uom": "Nos",
+				"is_stock_item": 0,
+			},
+		)
+		cls.our_project = _ensure(
+			"Project",
+			{"project_name": "Insite Filter Ours Job"},
+			{
+				"project_name": "Insite Filter Ours Job",
+				"company": cls.company,
+				"status": "Open",
+				"customer": cls.ours,
+			},
+		)
+		cls.their_project = _ensure(
+			"Project",
+			{"project_name": "Insite Filter Theirs Job"},
+			{
+				"project_name": "Insite Filter Theirs Job",
+				"company": cls.company,
+				"status": "Open",
+				"customer": cls.theirs,
+			},
+		)
+		frappe.db.commit()
+
+	def setUp(self):
+		self.our_scope = self._scope(self.our_project, "Ours")
+		self.their_scope = self._scope(self.their_project, "Theirs")
+
+	def _scope(self, project, tag):
+		return (
+			frappe.get_doc(
+				{
+					"doctype": "Scope Item",
+					"scope_title": f"Filter {tag} {frappe.generate_hash(length=6)}",
+					"project": project,
+					"status": "Active",
+				}
+			)
+			.insert()
+			.name
+		)
+
+	def _scopes_in(self, report_module, **filters):
+		rows = report_module.execute({"company": self.company, **filters})[1]
+		return {row.get("scope") for row in rows}
+
+	def test_every_report_narrows_to_one_customer(self):
+		from insite.insite.report.contract_progress import contract_progress
+		from insite.insite.report.scope_profitability import scope_profitability
+
+		for report in (contract_progress, scope_profitability):
+			everything = self._scopes_in(report)
+			self.assertTrue(
+				{self.our_scope, self.their_scope} <= everything,
+				f"{report.__name__}: both scopes should show with no customer filter",
+			)
+
+			ours = self._scopes_in(report, customer=self.ours)
+			self.assertIn(self.our_scope, ours, report.__name__)
+			self.assertNotIn(self.their_scope, ours, f"{report.__name__} showed another customer's scope")
+
+	def test_a_customer_and_a_project_that_is_not_theirs_gives_nothing(self):
+		from insite.insite.report.scope_profitability import scope_profitability
+
+		mixed = self._scopes_in(scope_profitability, customer=self.ours, project=self.their_project)
+		self.assertEqual(mixed, set(), "a customer and someone else's project should agree on nothing")
+
+		matching = self._scopes_in(scope_profitability, customer=self.ours, project=self.our_project)
+		self.assertIn(self.our_scope, matching)
+
+	def test_a_customer_with_no_projects_narrows_to_nothing(self):
+		"""Not to everything, which is the bug this shape of filter usually has."""
+		from insite.insite.report.scope_profitability import scope_profitability
+
+		stranger = _ensure(
+			"Customer",
+			{"customer_name": "Insite Filter Stranger"},
+			{"customer_name": "Insite Filter Stranger", "customer_type": "Company"},
+		)
+		self.assertEqual(self._scopes_in(scope_profitability, customer=stranger), set())
+
+	def test_the_register_narrows_to_the_same_customer(self):
+		from insite.insite.report.measurement_register import measurement_register
+
+		def invoice(project, scope, amount):
+			doc = frappe.get_doc(
+				{
+					"doctype": "Sales Invoice",
+					"customer": frappe.db.get_value("Project", project, "customer"),
+					"company": self.company,
+					"project": project,
+					"due_date": frappe.utils.add_days(frappe.utils.today(), 30),
+					"items": [{"item_code": self.item, "qty": 1, "rate": amount, "scope_item": scope}],
+				}
+			)
+			doc.insert()
+			doc.submit()
+			return doc.name
+
+		mine = invoice(self.our_project, self.our_scope, 1_000)
+		theirs = invoice(self.their_project, self.their_scope, 2_000)
+
+		def documents(**filters):
+			rows = measurement_register.execute({"company": self.company, **filters})[1]
+			return {row["document"] for row in rows}
+
+		self.assertTrue({mine, theirs} <= documents())
+		narrowed = documents(customer=self.ours)
+		self.assertIn(mine, narrowed)
+		self.assertNotIn(theirs, narrowed)

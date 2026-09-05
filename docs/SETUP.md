@@ -317,7 +317,17 @@ Format** on that DocType, or pick it each time from the print view.
 
 ## 10. Read the progress
 
-Open **Contract Progress**. Filter by company, project or status.
+Open **Contract Progress**. Filter by company, customer, project or status.
+
+**Filtering by customer** works on all three Insite reports, and means the same
+thing in each: the scopes on that customer's projects. Choosing a customer also
+narrows the Project list to their jobs, so the two filters cannot contradict
+each other.
+
+It reads the **Customer** on the Project — the same field ERPNext uses to narrow
+the project picker on a sales document. A project with no customer set belongs
+to nobody, so it is left out rather than shown under every customer. If a
+customer filter comes back empty, that field is the first thing to check.
 
 | Column | Meaning |
 | --- | --- |
@@ -350,7 +360,7 @@ ordered beyond the original plan shows as a positive number.
 what it is made of: every submitted line against the scope, the measurement
 behind its quantity, and the specification that was on the item at the time.
 
-Filter it by project, scope, document type or date.
+Filter it by customer, project, scope, document type or date.
 
 That last column answers the argument that starts when a developer changes a
 standard mid-job. Which deliveries were made to the old one? Every line keeps
@@ -360,7 +370,8 @@ switched on for this. The record was always there.
 
 ## 12. See whether it is making money
 
-Open **Scope Profitability**. One row per scope, worst margin first.
+Open **Scope Profitability**. One row per scope, worst margin first. Filter by
+company, customer, project or status.
 
 | Column | Meaning |
 | --- | --- |

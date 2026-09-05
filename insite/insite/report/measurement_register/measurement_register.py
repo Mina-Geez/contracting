@@ -21,6 +21,7 @@ from frappe import _
 from frappe.utils import flt
 
 from insite.config.accounting_dimension import DIMENSION_FIELDNAME as SCOPE_FIELD
+from insite.scope_totals import narrow_to_customer
 
 #: What a contractor supplies against a scope, in the order it happens.
 SOURCES = (
@@ -95,6 +96,10 @@ def _lines(doctype, child_doctype, date_field, filters):
 			conditions[field] = filters.get(field)
 	if filters.get("from_date"):
 		conditions[date_field] = [">=", filters.from_date]
+	# A scope belongs to a project, and Insite refuses a line whose scope is on
+	# another project, so narrowing the documents by project is the same answer
+	# as narrowing the scopes — and one query instead of hundreds.
+	narrow_to_customer(conditions, filters.get("customer"))
 
 	documents = frappe.get_list(doctype, filters=conditions, fields=["name", date_field], limit_page_length=0)
 	if not documents:
