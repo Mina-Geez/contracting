@@ -213,3 +213,89 @@ def _ensure_group(name, is_group=0, parent=None):
 		.insert(ignore_permissions=True)
 		.name
 	)
+
+
+class TestMeasuringFromTheRecordItself(IntegrationTestCase):
+	"""Writing the rule from the Item Group, Brand or Item you are standing on.
+
+	Being on the record is what says what the rule applies to, so the only thing
+	worth asking is how it is measured. Everything else the old route made you
+	fill in carried no information.
+	"""
+
+	@classmethod
+	def setUpClass(cls):
+		super().setUpClass()
+		cls.group = _ensure_group("Insite Measure From Group")
+		cls.brand = (
+			frappe.db.exists("Brand", "Insite Measure Brand")
+			or frappe.get_doc({"doctype": "Brand", "brand": "Insite Measure Brand"})
+			.insert(ignore_permissions=True)
+			.name
+		)
+		frappe.db.commit()
+
+	def tearDown(self):
+		for name in frappe.get_all(
+			"Measurement Rule",
+			filters={"item_group": ["like", "Insite Measure%"]},
+			pluck="name",
+		) + frappe.get_all("Measurement Rule", filters={"brand": ["like", "Insite Measure%"]}, pluck="name"):
+			frappe.delete_doc("Measurement Rule", name, force=True, ignore_permissions=True)
+		frappe.db.commit()
+
+	def test_an_item_group_writes_its_own_rule_from_a_starting_point(self):
+		from insite.api import measure_this
+
+		answer = measure_this("Item Group", self.group, "Area")
+		rule = frappe.get_doc("Measurement Rule", answer["rule"])
+
+		self.assertEqual(rule.apply_on, "Item Group")
+		self.assertEqual(rule.item_group, self.group)
+		self.assertEqual(rule.formula, "height * width * count")
+		self.assertEqual({row.token for row in rule.inputs}, {"height", "width", "count"})
+		# and it comes back readable, not as a formula
+		self.assertEqual(rule.measurement_summary, "Height × Width × Count")
+
+	def test_a_brand_writes_a_brand_rule(self):
+		from insite.api import measure_this
+
+		rule = frappe.get_doc("Measurement Rule", measure_this("Brand", self.brand, "Count")["rule"])
+		self.assertEqual(rule.apply_on, "Brand")
+		self.assertEqual(rule.brand, self.brand)
+
+	def test_manual_writes_a_rule_that_calculates_nothing(self):
+		from insite.api import measure_this
+
+		rule = frappe.get_doc("Measurement Rule", measure_this("Item Group", self.group, "Manual")["rule"])
+		self.assertEqual(rule.preset, "Manual")
+		self.assertFalse(rule.inputs)
+
+	def test_a_title_of_your_own_is_kept(self):
+		from insite.api import measure_this
+
+		answer = measure_this("Item Group", self.group, "Area", title="Glass — area by sheet")
+		self.assertEqual(answer["title"], "Glass — area by sheet")
+
+	def test_a_second_rule_on_the_same_record_is_refused(self):
+		"""Two rules on one target is a tie broken by priority — not what the
+		button meant, and the first one is the one to edit."""
+		from insite.api import measure_this
+
+		measure_this("Item Group", self.group, "Area")
+		with self.assertRaises(frappe.ValidationError):
+			measure_this("Item Group", self.group, "Count")
+
+	def test_it_refuses_a_record_it_cannot_measure(self):
+		from insite.api import measure_this
+
+		with self.assertRaises(frappe.ValidationError):
+			measure_this("Sales Order", "anything", "Area")
+		with self.assertRaises(frappe.ValidationError):
+			measure_this("Item Group", "No Such Group", "Area")
+
+	def test_the_form_then_reports_what_was_just_written(self):
+		from insite.api import measure_this, measured_by
+
+		name = measure_this("Item Group", self.group, "Area")["rule"]
+		self.assertEqual(measured_by("Item Group", self.group)["rule"], name)

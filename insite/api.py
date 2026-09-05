@@ -10,6 +10,7 @@ from frappe.utils import flt
 from insite.calc import engine
 from insite.calc.measures import MANUAL, evaluate_formula
 from insite.calc.resolve import resolve_rule
+from insite.insite.doctype.measurement_rule.measurement_rule import get_preset
 
 
 @frappe.whitelist(methods=["POST"])
@@ -130,9 +131,61 @@ def line_preview(item_code: str | None = None, values: str | dict | None = None)
 	return answer
 
 
+#: Where a rule can be written from the record it measures, and the Applies To
+#: it becomes. The ladder that decides which one wins lives in `resolve.py`:
+#: Item Group, then Brand, then the item itself.
+MEASURABLE_FROM = {
+	"Item Group": ("Item Group", "item_group"),
+	"Brand": ("Brand", "brand"),
+	"Item": ("Item Code", "item_code"),
+}
+
+
+@frappe.whitelist(methods=["POST"])
+def measure_this(doctype: str, name: str, preset: str, title: str | None = None):
+	"""Write a Measurement Rule for this Item Group, Brand or Item, from its own form.
+
+	Opening a new rule and filling in Applies To with the record you were just
+	looking at is three steps that carry no information — you already said what
+	you meant by being there. Choosing how it is measured is the only real
+	decision, so that is all this asks.
+	"""
+	frappe.only_for(["Contracting Manager", "System Manager"])
+	if doctype not in MEASURABLE_FROM:
+		frappe.throw(_("A rule cannot be written from {0}.").format(_(doctype)))
+	if not frappe.db.exists(doctype, name):
+		frappe.throw(_("{0} {1} does not exist.").format(_(doctype), name))
+
+	apply_on, field = MEASURABLE_FROM[doctype]
+	already = frappe.db.get_value(
+		"Measurement Rule", {"apply_on": apply_on, field: name, "disabled": 0}, "name"
+	)
+	if already:
+		frappe.throw(
+			_("{0} is already measured by {1}. Edit that rule rather than adding a second.").format(
+				name, already
+			),
+			title=_("Already Measured"),
+		)
+
+	rule = frappe.get_doc({"doctype": "Measurement Rule", "apply_on": apply_on, field: name})
+	rule.preset = preset
+	if (title or "").strip():
+		rule.rule_title = title.strip()
+
+	if preset != MANUAL:
+		starting_point = get_preset(preset)
+		rule.formula = starting_point.get("formula")
+		for row in starting_point.get("inputs") or []:
+			rule.append("inputs", {"source": "Line", **row})
+
+	rule.insert()
+	return {"rule": rule.name, "title": rule.rule_title, "summary": rule.measurement_summary}
+
+
 @frappe.whitelist()
 def measured_by(doctype: str, name: str):
-	"""Which Measurement Rule measures this Item or Item Group, if any.
+	"""Which Measurement Rule measures this Item Group, Brand or Item, if any.
 
 	The rules are their own records, targeted the way ERPNext targets a Pricing
 	Rule, which is right — but it means that standing on an Item Group there is
@@ -144,7 +197,7 @@ def measured_by(doctype: str, name: str):
 	the group alone, which is the question being asked: what measures things
 	here, before any item, brand or template of their own gets a say.
 	"""
-	if doctype not in ("Item", "Item Group") or not name:
+	if doctype not in MEASURABLE_FROM or not name:
 		return None
 	if not frappe.has_permission("Measurement Rule", "read"):
 		return None
@@ -155,6 +208,8 @@ def measured_by(doctype: str, name: str):
 
 	if doctype == "Item":
 		item = engine.item_context(name)
+	elif doctype == "Brand":
+		item = {"brand": name}
 	else:
 		item = {"item_group": name, "item_group_ancestry": engine.group_ancestry(name)}
 	if not item:

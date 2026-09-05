@@ -18,6 +18,9 @@ msgstr "<b>إعداد لمرة واحدة:</b> <b>قاعدة القياس</b> ل
 msgid "A field named {0} already exists on the transaction line."
 msgstr "يوجد حقل باسم {0} في سطر المستند بالفعل."
 
+msgid "A rule cannot be written from {0}."
+msgstr "لا يمكن كتابة قاعدة من {0}."
+
 msgid "Add Scopes"
 msgstr "أضف نطاقات"
 
@@ -50,6 +53,9 @@ msgstr "يُضاف إلى الصنف، لرقم ثابت في المادة نف�
 
 msgid "Adjust the measurement"
 msgstr "تعديل طريقة القياس"
+
+msgid "Already Measured"
+msgstr "مقيس بالفعل"
 
 msgid "Already There"
 msgstr "موجود بالفعل"
@@ -195,6 +201,9 @@ msgstr "إخفاؤه من المستندات"
 msgid "How is this measured?"
 msgstr "كيف يُقاس هذا؟"
 
+msgid "How is {0} measured?"
+msgstr "كيف يُقاس {0}؟"
+
 msgid "Inputs"
 msgstr "المُدخلات"
 
@@ -272,6 +281,9 @@ msgstr "نسبة الهامش"
 
 msgid "Measure This"
 msgstr "قِس هذا"
+
+msgid "Measure it"
+msgstr "قِسه"
 
 msgid "Measured"
 msgstr "القياس"
@@ -606,6 +618,9 @@ msgstr "اكتب معادلة، أو اختر نقطة بداية أخرى."
 msgid "Writes to"
 msgstr "يُكتب في"
 
+msgid "Writing the rule…"
+msgstr "جارٍ كتابة القاعدة…"
+
 msgid "Written Twice"
 msgstr "مكتوب مرتين"
 
@@ -627,6 +642,12 @@ msgstr "سطر المستند"
 msgid "{0} added. These were already on the project, so they were left alone: {1}"
 msgstr "تمت إضافة {0}. وهذه كانت موجودة بالفعل في المشروع فتُركت كما هي: {1}"
 
+msgid "{0} is already measured by {1}. Edit that rule rather than adding a second."
+msgstr "{0} مقيس بالفعل بواسطة {1}. عدّل تلك القاعدة بدلًا من إضافة أخرى."
+
+msgid "{0} is now measured: {1}"
+msgstr "{0} أصبح مقيسًا: {1}"
+
 msgid "{0} is now on every document that needs it."
 msgstr "{0} أصبح متاحًا في كل مستند يحتاجه."
 
@@ -642,11 +663,15 @@ msgstr "{0} تستخدمه: {1}. عدّل هذه القواعد أولًا، أ�
 msgid "{0} scopes added."
 msgstr "تمت إضافة {0} نطاقات."
 
+msgid "{0} {1} does not exist."
+msgstr "{0} {1} غير موجود."
+
 msgid "… and {0} more"
 msgstr "… و{0} غيرها"
 
 msgid "…and more."
 msgstr "…وغيرها."
+
 
 
 

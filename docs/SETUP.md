@@ -63,11 +63,17 @@ formula you write from scratch.
 Add a rule for each item group, brand, item, template or attribute value you
 measure.
 
-**To find out what measures something, open it.** An Item or an Item Group says
-at the top of its form which rule measures it, how that rule works out, and a
-button to open it. Where nothing does, it says so and offers to write one
-already pointed at what you were looking at. A rule inherited from a parent
-group names the group it was set on, so nobody edits the wrong record. When two rules match the same item the narrower one wins, in the order
+**You can also write the rule from the thing it measures.** Open an **Item
+Group**, a **Brand** or an **Item**. The top of the form says which rule
+measures it and how that rule works out, with a button to open it. Where nothing
+does, it says so and offers **Measure This** — pick a starting point, and the
+rule is written and pointed at the record you were standing on. Being there is
+what said what it applies to, so it is not asked again.
+
+A rule inherited from a parent item group names the group it was set on, so
+nobody edits the wrong record. A record that already has a rule is not given a
+second one — two rules on one target is a tie broken by priority, which is not
+what the button meant. When two rules match the same item the narrower one wins, in the order
 ERPNext already uses on the Item: item, then template, then attribute value,
 then brand, then item group. A rule on an item group also covers the groups
 beneath it, so one rule on a parent group can cover a whole branch.

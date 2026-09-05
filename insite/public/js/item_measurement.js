@@ -10,7 +10,7 @@
 // So the answer lives here too. Not the setting — the answer, and a way to
 // reach the record that holds it.
 
-["Item", "Item Group"].forEach((doctype) => {
+["Item", "Item Group", "Brand"].forEach((doctype) => {
 	frappe.ui.form.on(doctype, {
 		refresh(frm) {
 			if (frm.is_new()) return;
@@ -53,14 +53,52 @@ function insite_offer_a_rule(frm, doctype) {
 		__("Nothing measures this yet, so quantities are typed by hand."),
 		"orange"
 	);
-	insite_add_button(frm, __("Measure This"), () => {
-		// Open a rule already pointed at what you were looking at.
-		const values =
-			doctype === "Item Group"
-				? { apply_on: "Item Group", item_group: frm.doc.name }
-				: { apply_on: "Item Code", item_code: frm.doc.name };
-		frappe.new_doc("Measurement Rule", values);
+	insite_add_button(frm, __("Measure This"), () => insite_measure_this_dialog(frm, doctype));
+}
+
+// Being on this record is what says what the rule applies to, so the dialog
+// does not ask again. How it is measured is the only real decision here, and
+// the rule can be opened afterwards for anything the starting points do not do.
+function insite_measure_this_dialog(frm, doctype) {
+	const dialog = new frappe.ui.Dialog({
+		title: __("How is {0} measured?", [frm.doc.name]),
+		fields: [
+			{
+				fieldname: "preset",
+				label: __("Start from"),
+				fieldtype: "Select",
+				reqd: 1,
+				default: "Area",
+				options: ["Area", "Perimeter", "Linear", "Count", "Piece × Wastage", "Volume", "Manual"],
+				description: __("Pick the one that matches how you price this work."),
+			},
+			{
+				fieldname: "title",
+				label: __("Title"),
+				fieldtype: "Data",
+				description: __("Left blank, Insite names it after what it applies to."),
+			},
+		],
+		primary_action_label: __("Measure it"),
+		primary_action(values) {
+			dialog.hide();
+			frappe.call({
+				method: "insite.api.measure_this",
+				args: { doctype: doctype, name: frm.doc.name, preset: values.preset, title: values.title },
+				freeze: true,
+				freeze_message: __("Writing the rule…"),
+				callback(r) {
+					if (!r.message) return;
+					frappe.show_alert({
+						message: __("{0} is now measured: {1}", [frm.doc.name, r.message.summary || r.message.title]),
+						indicator: "green",
+					});
+					frm.refresh();
+				},
+			});
+		},
 	});
+	dialog.show();
 }
 
 function insite_add_button(frm, label, action) {

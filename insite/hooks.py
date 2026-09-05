@@ -36,6 +36,7 @@ doctype_js["Payment Entry"] = "public/js/payment_entry.js"
 # they are measured. These put the answer where someone goes looking for it.
 doctype_js["Item"] = "public/js/item_measurement.js"
 doctype_js["Item Group"] = "public/js/item_measurement.js"
+doctype_js["Brand"] = "public/js/item_measurement.js"
 
 # --- Collecting a payment for one job ---------------------------------------
 # ERPNext's outstanding search filters by any active accounting dimension, so
