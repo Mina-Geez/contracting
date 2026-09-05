@@ -146,9 +146,14 @@ says which kind of number it is.
 Insite adds the field everywhere it is needed, and adds it again on every
 migrate. A rule then reads it like any other number.
 
-**Used by rules** lists the rules that read the field. A field a rule uses cannot
-be deleted. To take the box off the documents and keep everything already
-entered in it, tick **Hide on documents**.
+The five Insite ships — Count, Height, Width, Length and Wastage — are records
+in this list too, the way UOM ships Nos and Kg and a site adds its own. One list
+shows every number a rule can read.
+
+A Measurement Field cannot be deleted while a rule reads it, while it is one
+Insite ships, or while any document still holds a number in it. Deleting the
+field drops its column, and the measurements go with it. **Hide on documents**
+takes the box off the forms and keeps them.
 
 ## On a transaction line
 

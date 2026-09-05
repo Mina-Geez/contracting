@@ -165,6 +165,9 @@ msgstr "الحقل"
 msgid "Field Already an Input"
 msgstr "الحقل مُستخدم كمُدخل"
 
+msgid "Field Holds Data"
+msgstr "الحقل يحتوي على بيانات"
+
 msgid "Field In Use"
 msgstr "الحقل قيد الاستخدام"
 
@@ -381,6 +384,9 @@ msgstr "من حين لآخر"
 msgid "Off, Insite warns and names the rejected work but lets the invoice through. On, it refuses to submit the invoice until each Quality Inspection is settled. A draft can always be saved either way, and credit notes are always allowed."
 msgstr "عند الإيقاف ينبه Insite ويسمي الأعمال المرفوضة لكنه يمرر الفاتورة. وعند التفعيل يرفض اعتماد الفاتورة حتى تُسوَّى كل عملية فحص جودة. وفي الحالتين يمكن دائمًا حفظ المسودة، وإشعارات الخصم مسموحة دائمًا."
 
+msgid "One of the boxes Insite ships. It cannot be deleted, because documents hold measurements in it."
+msgstr "أحد الحقول المضمّنة مع Insite. لا يمكن حذفه لأن المستندات تحتوي على قياسات فيه."
+
 msgid "One scope per line"
 msgstr "نطاق واحد في كل سطر"
 
@@ -558,6 +564,12 @@ msgstr "سوِّها، أو افوتر الأعمال المقبولة فقط."
 msgid "Setup Incomplete"
 msgstr "الإعداد غير مكتمل"
 
+msgid "Shipped With Insite"
+msgstr "مضمّن مع Insite"
+
+msgid "Shipped with Insite"
+msgstr "مضمّن مع Insite"
+
 msgid "Show the scopes"
 msgstr "اعرض النطاقات"
 
@@ -732,11 +744,17 @@ msgstr "أصبح مخطط {0} هو {1}، من هذا الأمر. عدّل الن
 msgid "{0} is on {1} lines of {2}, and they may be different scopes at different rates. Create the inspection from the line that failed, so Insite knows which one it was."
 msgstr "{0} موجود في {1} سطور من {2}، وقد تكون نطاقات مختلفة بأسعار مختلفة. أنشئ الفحص من السطر المرفوض حتى يعرف Insite أيها كان."
 
+msgid "{0} is one of the boxes Insite ships and cannot be deleted. Tick 'Hide on documents' to take it off the forms."
+msgstr "{0} أحد الحقول المضمّنة مع Insite ولا يمكن حذفه. فعّل \"إخفاؤه من المستندات\" لإزالته من النماذج."
+
 msgid "{0} is used by: {1}. Change those rules first, or tick 'Hide on documents' instead."
 msgstr "{0} تستخدمه: {1}. عدّل هذه القواعد أولًا، أو فعّل 'إخفاؤه من المستندات' بدلًا من ذلك."
 
 msgid "{0} scopes added."
 msgstr "تمت إضافة {0} نطاقات."
+
+msgid "{0} still holds measurements on {1}. Tick 'Hide on documents' to take it off the forms without losing them."
+msgstr "{0} ما زال يحتوي على قياسات في {1}. فعّل \"إخفاؤه من المستندات\" لإزالته من النماذج دون فقدانها."
 
 msgid "{0} {1} does not exist."
 msgstr "{0} {1} غير موجود."
@@ -746,6 +764,7 @@ msgstr "… و{0} غيرها"
 
 msgid "…and more."
 msgstr "…وغيرها."
+
 
 
 

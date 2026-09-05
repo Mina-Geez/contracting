@@ -168,9 +168,16 @@ Insite adds the field everywhere it is needed, and adds it again on every
 migrate. A rule then reads it like any other number. To measure by panels, point
 a rule at **Number of Panels** and write `height * width * number_of_panels`.
 
-**Used by rules** lists the rules that read the field. A field a rule uses cannot
-be deleted. To take the box off the documents and keep everything already entered
-in it, tick **Hide on documents**.
+The five boxes Insite ships — Count, Height, Width, Length and Wastage — are in
+this list too, marked **Shipped with Insite**, so one place shows every number a
+rule can read. They cannot be deleted.
+
+**Nothing that holds measurements can be deleted.** A Measurement Field is
+refused deletion when a rule reads it, when it is one Insite ships, or when any
+document anywhere still holds a number in it — because deleting the field drops
+the column, and with it every measurement ever entered, on submitted documents,
+with no undo. **Hide on documents** takes the box off the forms and keeps
+everything in it.
 
 The site keeps the number and the label its people already know. Insite fits the
 site, and the site does not fit Insite.

@@ -11,6 +11,7 @@ import frappe
 from insite.config.accounting_dimension import ensure_scope_dimension
 from insite.config.custom_fields import ensure_custom_fields
 from insite.insite.doctype.measurement_field.measurement_field import apply_all as apply_site_fields
+from insite.insite.doctype.measurement_field.measurement_field import ensure_standard_fields
 
 #: Roles Insite needs. Frappe's Role doctype carries no description field, so
 #: what each role is for lives in docs/SETUP.md, not on the record.
@@ -29,6 +30,10 @@ def setup():
 	"""Everything the app needs on a site. Runs on install and every migrate."""
 	create_roles()
 	ensure_custom_fields()
+	# The shipped boxes are recorded in the master after the fields themselves
+	# exist, so the list shows every measurable number in one place — the way
+	# UOM ships its own and a site adds more.
+	ensure_standard_fields()
 	apply_site_fields()  # after Insite's own: these are inserted after them
 	ensure_settings_singleton()
 	allow_an_item_on_more_than_one_line()
